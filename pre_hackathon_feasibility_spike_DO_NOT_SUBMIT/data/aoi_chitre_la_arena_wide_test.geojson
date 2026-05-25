@@ -1,0 +1,43 @@
+{
+  "type": "FeatureCollection",
+  "name": "aoi_chitre_la_arena_wide_test_DO_NOT_SUBMIT",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Wider approximate Chitre / La Arena exploratory envelope",
+        "status": "APPROXIMATE_NOT_VALIDATED_WIDE_TEST",
+        "warning": "Private pre-hackathon feasibility spike only. Do not submit. Coordinates must be validated or redrawn during official competition window.",
+        "intended_use": "Wider exploratory Sentinel-2 Statistical API test if the narrow/initial AOI returns empty data.",
+        "crs": "EPSG:4326"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.500,
+              7.920
+            ],
+            [
+              -80.370,
+              7.920
+            ],
+            [
+              -80.370,
+              8.040
+            ],
+            [
+              -80.500,
+              8.040
+            ],
+            [
+              -80.500,
+              7.920
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}

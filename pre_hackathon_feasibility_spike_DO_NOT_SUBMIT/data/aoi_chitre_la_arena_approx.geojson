@@ -1,0 +1,43 @@
+{
+  "type": "FeatureCollection",
+  "name": "aoi_chitre_la_arena_approx_DO_NOT_SUBMIT",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Approximate Chitre / La Arena exploratory envelope",
+        "status": "APPROXIMATE_NOT_VALIDATED",
+        "warning": "Private pre-hackathon feasibility spike only. Do not submit. Coordinates must be validated or redrawn during official competition window.",
+        "intended_use": "Exploratory Sentinel-2 Statistical API test over the Chitre / La Arena node near Rio La Villa.",
+        "crs": "EPSG:4326"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.468,
+              7.948
+            ],
+            [
+              -80.412,
+              7.948
+            ],
+            [
+              -80.412,
+              8.006
+            ],
+            [
+              -80.468,
+              8.006
+            ],
+            [
+              -80.468,
+              7.948
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
