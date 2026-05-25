@@ -45,4 +45,4 @@ python -m azuero_kairos.brief_generator
 streamlit run dashboard/app.py
 ```
 
-These commands are placeholders for future implementation work. Cloud infrastructure, AWS services, Twilio, and external notification integrations are intentionally not part of this initial scaffold.
+These commands are placeholders for future implementation work. External operational integrations are intentionally not part of this initial scaffold.
