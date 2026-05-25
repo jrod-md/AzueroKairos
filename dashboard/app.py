@@ -181,18 +181,20 @@ def inject_css() -> None:
           --ak-red-muted: #8a3f3b;
           --ak-green: #1f7a62;
           --ak-border: rgba(23, 35, 46, 0.14);
+          --ak-border-strong: rgba(13, 70, 102, 0.22);
+          --ak-shadow: 0 18px 46px rgba(38, 43, 47, 0.10);
         }
 
         .stApp {
           background:
-            radial-gradient(circle at 15% 0%, rgba(23, 108, 132, 0.11), transparent 32%),
-            linear-gradient(135deg, var(--ak-bg) 0%, #f8f2e8 52%, #eadcc8 100%);
+            radial-gradient(circle at 8% 0%, rgba(23, 108, 132, 0.10), transparent 28%),
+            linear-gradient(135deg, var(--ak-bg) 0%, #f8f2e8 56%, #eadcc8 100%);
           color: var(--ak-text);
         }
 
         .block-container {
-          max-width: 1160px;
-          padding: 2rem 2rem 3rem;
+          max-width: 1180px;
+          padding: 1.1rem 1.55rem 2.2rem;
         }
 
         h1, h2, h3, p, li, div, label {
@@ -201,42 +203,65 @@ def inject_css() -> None:
 
         h1 {
           color: var(--ak-river);
-          font-size: clamp(2.35rem, 5vw, 4.5rem);
-          line-height: 0.96;
+          font-size: 2.65rem;
+          line-height: 0.98;
+          margin-bottom: 0.15rem;
         }
 
         h2, h3 {
           color: var(--ak-river);
         }
 
+        h3 {
+          margin-top: 0.15rem;
+          margin-bottom: 0.35rem;
+        }
+
+        p {
+          margin-bottom: 0.45rem;
+        }
+
+        div[data-testid="stVerticalBlock"] {
+          gap: 0.62rem;
+        }
+
         div[data-testid="stVerticalBlockBorderWrapper"] {
           border-color: var(--ak-border);
-          background: rgba(255, 250, 241, 0.82);
+          background: rgba(255, 250, 241, 0.90);
           border-radius: 8px;
-          box-shadow: 0 12px 32px rgba(38, 43, 47, 0.08);
+          box-shadow: var(--ak-shadow);
+        }
+
+        div[data-testid="stVerticalBlockBorderWrapper"] > div {
+          padding: 0.82rem 0.95rem;
         }
 
         div[data-testid="stMetric"] {
           background: var(--ak-surface);
           border: 1px solid var(--ak-border);
           border-radius: 8px;
-          padding: 1rem;
-          min-height: 108px;
+          padding: 0.74rem 0.85rem;
+          min-height: 82px;
+          box-shadow: 0 8px 24px rgba(38, 43, 47, 0.06);
         }
 
         div[data-testid="stMetricLabel"] p {
-          color: var(--ak-muted);
-          font-weight: 760;
+          color: #40505c;
+          font-size: 0.78rem;
+          font-weight: 780;
           text-transform: uppercase;
         }
 
         div[data-testid="stMetricValue"] {
           color: var(--ak-text);
+          font-size: 1.18rem;
           font-weight: 820;
         }
 
         div[data-testid="stAlert"] {
           border-radius: 8px;
+          padding: 0.6rem 0.75rem;
+          border: 1px solid var(--ak-border);
         }
 
         div[data-testid="stButton"] button {
@@ -253,8 +278,28 @@ def inject_css() -> None:
           color: #fffaf1;
         }
 
+        div[data-baseweb="select"] > div {
+          border-radius: 8px;
+          border-color: var(--ak-border-strong);
+          background-color: #fffaf1;
+        }
+
+        label, div[data-testid="stCaptionContainer"] {
+          color: #5f6a72;
+        }
+
         .stMarkdown p {
           line-height: 1.58;
+        }
+
+        @media (max-width: 900px) {
+          .block-container {
+            padding: 0.8rem 0.85rem 1.8rem;
+          }
+
+          h1 {
+            font-size: 2.15rem;
+          }
         }
         </style>
         """,
@@ -325,7 +370,7 @@ def normalize_record(record: dict[str, Any]) -> dict[str, Any]:
 
 def render_header() -> None:
     st.title("Azuero Kairós")
-    st.markdown("### Semáforo de confianza satelital para decisiones agrícolas")
+    st.markdown("#### Semáforo de confianza satelital para decisiones agrícolas")
     st.write(
         "Azuero Kairós evalúa si una observación Sentinel tiene evidencia suficiente "
         "para interpretar, revisar o no inferir."
@@ -334,7 +379,8 @@ def render_header() -> None:
 
 def render_input_panel(selected_date: str, selected_aoi: str, source_path: str | None) -> tuple[str, str]:
     with st.container(border=True):
-        col_date, col_aoi, col_source = st.columns([1, 1, 1.35])
+        st.caption("Panel de control")
+        col_date, col_aoi, col_source = st.columns([0.9, 0.75, 1.45], vertical_alignment="bottom")
         with col_date:
             next_date = st.selectbox(
                 "Fecha de observación",
@@ -343,22 +389,27 @@ def render_input_panel(selected_date: str, selected_aoi: str, source_path: str |
             )
         with col_aoi:
             next_aoi = st.selectbox(
-                "AOI",
+                "Área de interés",
                 AOIS,
                 index=AOIS.index(selected_aoi),
             )
         with col_source:
             st.markdown("**Fuente de datos**")
-            st.caption(source_path or "Sin CSV oficial cargado")
+            st.caption(source_path or "Vista previa hasta ejecutar el batch oficial Sentinel-2")
     return next_date, next_aoi
 
 
 def render_preview_notice(using_preview: bool) -> None:
     if not using_preview:
         return
-    st.warning("No official processed CSV found yet. Showing UI preview data only.")
-    st.info("Ejecuta el batch oficial Sentinel-2 para reemplazar esta vista previa con evidencia oficial.")
-    st.caption("UI preview only, not official evidence.")
+    with st.container(border=True):
+        col_status, col_action = st.columns([1.0, 1.9], vertical_alignment="center")
+        with col_status:
+            st.markdown("**Vista previa de interfaz**")
+            st.caption("UI preview only, not official evidence.")
+        with col_action:
+            st.write("No official processed CSV found yet. Showing UI preview data only.")
+            st.caption("Ejecuta el batch oficial Sentinel-2 para reemplazar esta vista previa con evidencia oficial.")
 
 
 def render_hero_card(record: dict[str, Any]) -> None:
@@ -371,9 +422,9 @@ def render_hero_card(record: dict[str, Any]) -> None:
     action = str(record.get("recommended_action") or "Sin acción recomendada disponible.")
 
     with st.container(border=True):
-        top_left, top_right = st.columns([0.9, 1.4], vertical_alignment="center")
+        top_left, top_right = st.columns([0.85, 1.55], vertical_alignment="center")
         with top_left:
-            st.caption(f"Fecha: {record.get('date')} | AOI: {record.get('aoi')}")
+            st.caption(f"{record.get('date')} · {record.get('aoi')}")
             st.markdown(f"## {state_label}")
             if style["streamlit_state"] == "success":
                 st.success(decision_label)
@@ -382,30 +433,34 @@ def render_hero_card(record: dict[str, Any]) -> None:
             else:
                 st.error(decision_label)
         with top_right:
+            st.caption("Decisión responsable")
             st.markdown(f"**{reason}**")
-            st.write(f"Siguiente acción: {action}")
-            st.caption("Una mala inferencia también es un riesgo.")
+            st.write(f"**Siguiente acción:** {action}")
+            st.info("Insight de producto: Una mala inferencia también es un riesgo.")
 
 
 def render_metrics(record: dict[str, Any]) -> None:
     st.subheader("Métricas críticas")
     row_one = st.columns(4)
-    row_one[0].metric("validPercent", display_value(record.get("validPercent"), suffix="%"))
-    row_one[1].metric("sampleCount", display_value(record.get("sampleCount")))
-    row_one[2].metric("noDataCount", display_value(record.get("noDataCount")))
-    row_one[3].metric("resolution_m", display_value(record.get("resolution_m"), suffix=" m"))
+    row_one[0].metric("Porcentaje válido", display_value(record.get("validPercent"), suffix="%"))
+    row_one[1].metric("Muestras", display_value(record.get("sampleCount")))
+    row_one[2].metric("Sin datos", display_value(record.get("noDataCount")))
+    row_one[3].metric("Resolución", display_value(record.get("resolution_m"), suffix=" m"))
 
     row_two = st.columns(2)
-    row_two[0].metric("MNDWI", display_value(record.get("mndwi_mean")))
-    row_two[1].metric("NDTI", display_value(record.get("ndti_mean")))
+    row_two[0].metric("Promedio MNDWI", display_value(record.get("mndwi_mean")))
+    row_two[1].metric("Promedio NDTI", display_value(record.get("ndti_mean")))
 
 
 def render_what_now(record: dict[str, Any]) -> None:
     confidence = str(record.get("confidence_class", "do_not_infer"))
     action = WHAT_NOW.get(confidence, WHAT_NOW["do_not_infer"])
     with st.container(border=True):
-        st.subheader("Qué hacer ahora")
-        st.write(action)
+        col_label, col_action = st.columns([0.72, 2.1], vertical_alignment="center")
+        with col_label:
+            st.subheader("Qué hacer ahora")
+        with col_action:
+            st.markdown(f"**{action}**")
 
 
 def workflow_steps(record_exists: bool, confidence_class: str, brief_generated: bool) -> list[tuple[str, str]]:
@@ -433,11 +488,11 @@ def render_workflow(record: dict[str, Any] | None, brief_generated: bool) -> Non
 
     with st.container(border=True):
         st.subheader("Flujo de evidencia")
-        columns = st.columns(7)
+        columns = st.columns(7, gap="small")
         for index, ((name, status), column) in enumerate(zip(steps, columns), start=1):
             with column:
                 st.caption(f"{index}. {name}")
-                st.write(status)
+                st.markdown(f"**{status}**")
 
 
 def brief_output_path(record: dict[str, Any]) -> Path:
@@ -481,6 +536,7 @@ def render_brief_panel(record: dict[str, Any], is_preview: bool, state_key: str)
 
     with st.container(border=True):
         st.subheader("Confidence Brief")
+        st.caption("Localización del brief pendiente. Por ahora se conserva la salida del generador oficial.")
         if st.button("Generar Confidence Brief", use_container_width=False):
             generate_brief(record, is_preview, state_key)
 
@@ -494,7 +550,7 @@ def render_brief_panel(record: dict[str, Any], is_preview: bool, state_key: str)
 def render_limits() -> None:
     with st.container(border=True):
         st.subheader("Límites científicos")
-        st.write(SCIENTIFIC_LIMITS)
+        st.caption(SCIENTIFIC_LIMITS)
 
 
 def render_no_record(selected_date: str, selected_aoi: str) -> None:
@@ -527,12 +583,11 @@ def main() -> None:
     brief_generated = bool(st.session_state.get(f"brief_generated_{state_key}", False))
 
     render_hero_card(record)
-    render_metrics(record)
     render_what_now(record)
-    render_brief_panel(record, is_preview, state_key)
-    brief_generated = bool(st.session_state.get(f"brief_generated_{state_key}", False))
+    render_metrics(record)
     render_workflow(record, brief_generated)
     render_limits()
+    render_brief_panel(record, is_preview, state_key)
 
 
 if __name__ == "__main__":
