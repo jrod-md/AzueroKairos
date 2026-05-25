@@ -1,0 +1,26 @@
+{
+  "type": "FeatureCollection",
+  "name": "aoi_corridor_wide_mvp",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "aoi_corridor_wide",
+        "description": "Official MVP agricultural-riparian corridor AOI for Azuero Kairós Sentinel-2 Statistical API runs at 20 m.",
+        "status": "official_mvp"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-80.61, 7.82],
+            [-80.38, 7.82],
+            [-80.36, 8.10],
+            [-80.59, 8.10],
+            [-80.61, 7.82]
+          ]
+        ]
+      }
+    }
+  ]
+}
