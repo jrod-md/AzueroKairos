@@ -15,6 +15,7 @@ env/
 
 # Local configuration
 .env
+*.env
 .env.*
 !.env.example
 
@@ -36,8 +37,21 @@ Thumbs.db
 
 # Local notebooks and scratch files
 .ipynb_checkpoints/
+*.ipynb
 *.log
 *.tmp
+
+# Local caches
+data/cache/
+cache/
+
+# Non-official binary exports and screenshots
+*.pdf
+*.docx
+*.pptx
+*.png
+*.jpg
+*.jpeg
 
 # Generated outputs
 outputs/raw_json/*
