@@ -88,7 +88,7 @@ if __name__ == "__main__":
     sample_record = {
         "date": "2025-06-10",
         "aoi": "corridor_wide",
-        "resolution_m": 10,
+        "resolution_m": 20,
         "mndwi_mean": None,
         "ndti_mean": None,
         "sampleCount": 0,
