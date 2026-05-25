@@ -1,0 +1,26 @@
+{
+  "type": "FeatureCollection",
+  "name": "aoi_river",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "aoi_river",
+        "description": "Draft river corridor AOI for Azuero Kairós official scaffold.",
+        "status": "validate_before_analysis"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-80.56, 7.86],
+            [-80.42, 7.86],
+            [-80.40, 8.08],
+            [-80.54, 8.08],
+            [-80.56, 7.86]
+          ]
+        ]
+      }
+    }
+  ]
+}

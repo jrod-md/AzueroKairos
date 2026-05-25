@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local configuration
+.env
+.env.*
+!.env.example
+
+# OS and editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Non-official Markdown drafts and generated notes.
+# Keep the official hackathon docs trackable.
+*.md
+!README.md
+!COMPLIANCE_AND_ORIGINALITY.md
+!SCIENTIFIC_LIMITS.md
+!ROADMAP.md
+!docs/
+!docs/*.md
+
+# Local notebooks and scratch files
+.ipynb_checkpoints/
+*.log
+*.tmp
+
+# Generated outputs
+outputs/raw_json/*
+outputs/processed_csv/*
+outputs/briefs/*
+outputs/ledger/*
+!outputs/raw_json/.gitkeep
+!outputs/processed_csv/.gitkeep
+!outputs/briefs/.gitkeep
+!outputs/ledger/.gitkeep
+
+# Local dashboard state
+.streamlit/secrets.toml

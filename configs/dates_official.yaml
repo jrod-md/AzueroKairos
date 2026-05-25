@@ -1,0 +1,14 @@
+# Official hackathon dates must be filled in from organizer guidance.
+# Keep this file as the single source of truth for reproducible date selection.
+hackathon_window:
+  start_utc: null
+  end_utc: null
+
+sentinel_products:
+  - Sentinel-2 L2A
+
+analysis_dates: []
+
+notes:
+  - Official outputs must be generated during the hackathon window.
+  - Do not import dates from discarded pre-hackathon feasibility spikes.

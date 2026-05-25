@@ -1,0 +1,26 @@
+{
+  "type": "FeatureCollection",
+  "name": "aoi_corridor_wide",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "aoi_corridor_wide",
+        "description": "Draft wide agricultural corridor AOI for Azuero Kairós official scaffold.",
+        "status": "validate_before_analysis"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [-80.75, 7.75],
+            [-80.25, 7.75],
+            [-80.25, 8.15],
+            [-80.75, 8.15],
+            [-80.75, 7.75]
+          ]
+        ]
+      }
+    }
+  ]
+}
