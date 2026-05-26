@@ -450,7 +450,7 @@ select {
 
 .threshold-visual,
 .observation-timeline,
-.territorial-motif {
+.territorial-context {
   position: relative;
   border: 1px solid color-mix(in oklch, var(--river) 10%, transparent);
   border-radius: 24px;
@@ -471,7 +471,7 @@ select {
 
 .threshold-heading,
 .timeline-heading,
-.motif-heading {
+.context-copy {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -479,7 +479,7 @@ select {
 }
 
 .threshold-heading h3,
-.motif-heading h3 {
+.context-copy h3 {
   margin: 5px 0 0;
   color: var(--river);
   font-size: clamp(1.2rem, 2vw, 1.65rem);
@@ -495,12 +495,14 @@ select {
 }
 
 .threshold-visual.tone-usable .threshold-heading strong,
-.territorial-motif.tone-usable .motif-heading h3 {
+.territorial-context.tone-usable .context-copy h3,
+.territorial-context.tone-usable .context-state {
   color: var(--usable);
 }
 
 .threshold-visual.tone-review .threshold-heading strong,
-.territorial-motif.tone-review .motif-heading h3 {
+.territorial-context.tone-review .context-copy h3,
+.territorial-context.tone-review .context-state {
   color: var(--review);
 }
 
@@ -637,7 +639,7 @@ select {
 }
 
 .timeline-heading span,
-.motif-heading > span {
+.context-copy > span {
   color: var(--river-soft);
   font-size: 0.82rem;
   font-weight: 760;
@@ -718,9 +720,9 @@ select {
   color: var(--river);
 }
 
-.territorial-motif {
+.territorial-context {
   overflow: hidden;
-  padding: 14px 14px 10px;
+  padding: 14px;
   color: var(--turquoise);
   background:
     radial-gradient(circle at 18% 30%, color-mix(in oklch, var(--stop) 10%, transparent), transparent 36%),
@@ -728,56 +730,137 @@ select {
     linear-gradient(135deg, color-mix(in oklch, var(--paper) 86%, transparent), color-mix(in oklch, var(--review-soft) 44%, var(--paper)));
 }
 
-.territorial-motif.tone-stop .motif-heading h3 {
+.territorial-context.tone-stop .context-copy h3,
+.territorial-context.tone-stop .context-state {
   color: var(--stop);
 }
 
-.territorial-motif svg {
-  display: block;
-  width: 100%;
-  height: 122px;
-  margin: 2px 0 0;
+.context-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(138px, 0.8fr);
+  gap: 12px;
+  align-items: center;
+  margin-top: 8px;
 }
 
-.motif-corridor,
-.motif-river {
+.territorial-context.technical .context-body {
+  grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+}
+
+.context-map {
+  display: block;
+  width: 100%;
+  height: 150px;
+}
+
+.territorial-context.technical .context-map {
+  height: 220px;
+}
+
+.context-paper {
+  fill: url("#context-paper");
+  stroke: color-mix(in oklch, var(--river) 9%, transparent);
+}
+
+.context-globe {
+  fill: color-mix(in oklch, var(--turquoise) 9%, var(--paper));
+  stroke: color-mix(in oklch, var(--river) 12%, transparent);
+  stroke-width: 1.2;
+}
+
+.context-america {
+  fill: color-mix(in oklch, var(--river) 12%, transparent);
+  stroke: color-mix(in oklch, var(--river) 18%, transparent);
+  stroke-width: 1.2;
+}
+
+.context-panama,
+.context-corridor,
+.context-route {
   fill: none;
   stroke-linecap: round;
 }
 
-.motif-corridor {
-  stroke: color-mix(in oklch, var(--review) 22%, transparent);
-  stroke-width: 24;
+.context-panama {
+  stroke: color-mix(in oklch, var(--river) 58%, transparent);
+  stroke-width: 9;
 }
 
-.motif-river {
-  stroke: url("#motif-river");
-  stroke-width: 8;
+.context-azuero {
+  fill: color-mix(in oklch, var(--review) 42%, var(--paper));
+  stroke: color-mix(in oklch, var(--river) 30%, transparent);
+  stroke-width: 1.4;
 }
 
-.motif-marker-halo {
+.context-corridor {
+  stroke: url("#context-river");
+  stroke-width: 5;
+}
+
+.context-route {
+  stroke: color-mix(in oklch, var(--river) 14%, transparent);
+  stroke-width: 1.4;
+  stroke-dasharray: 5 6;
+}
+
+.context-marker-halo {
   fill: var(--stop);
-  opacity: 0.16;
+  opacity: 0.14;
 }
 
-.motif-marker {
+.context-marker {
   fill: var(--stop);
   stroke: color-mix(in oklch, var(--paper) 92%, var(--cream));
   stroke-width: 3;
 }
 
-.territorial-motif.tone-usable .motif-marker,
-.territorial-motif.tone-usable .motif-marker-halo {
+.territorial-context.tone-usable .context-marker,
+.territorial-context.tone-usable .context-marker-halo {
   fill: var(--usable);
 }
 
-.territorial-motif.tone-review .motif-marker,
-.territorial-motif.tone-review .motif-marker-halo {
+.territorial-context.tone-review .context-marker,
+.territorial-context.tone-review .context-marker-halo {
   fill: var(--review);
 }
 
-.territorial-motif p {
-  margin: 0;
+.context-svg-label {
+  fill: color-mix(in oklch, var(--river) 86%, transparent);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 820;
+  letter-spacing: 0.02em;
+}
+
+.context-facts {
+  display: grid;
+  gap: 8px;
+  align-content: center;
+}
+
+.context-facts span,
+.context-facts strong {
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in oklch, var(--river) 10%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--paper) 72%, transparent);
+  color: var(--river-soft);
+  font-size: 0.82rem;
+  font-weight: 780;
+  overflow-wrap: anywhere;
+}
+
+.context-facts strong {
+  color: var(--river);
+}
+
+.context-state {
+  color: var(--stop);
+}
+
+.context-note {
+  margin: 8px 0 0;
   color: var(--river-soft);
   font-size: 0.82rem;
   font-weight: 720;
@@ -1054,6 +1137,7 @@ select {
 .metrics-section,
 .technical-trace-section,
 .threshold-visual.compact,
+.territorial-context.technical,
 .pipeline-section,
 .brief-section,
 .limits-card {
@@ -1191,6 +1275,7 @@ select {
 .comparison-section,
 .metrics-section,
 .technical-trace-section,
+.territorial-context.technical,
 .pipeline-section,
 .brief-section,
 .limits-card {
@@ -1365,7 +1450,7 @@ select {
   }
 
   .why-copy,
-  .territorial-motif {
+  .territorial-context {
     grid-column: 1 / -1;
   }
 
@@ -1487,6 +1572,7 @@ select {
   .trace-grid,
   .brief-grid,
   .technical-status-row,
+  .context-body,
   .modules-strip,
   .module-list {
     grid-template-columns: 1fr;
@@ -1521,7 +1607,7 @@ select {
   .threshold-marker,
   .timeline-point,
   .threshold-visual,
-  .territorial-motif {
+  .territorial-context {
     transition: none;
   }
 }
@@ -1538,7 +1624,7 @@ select {
   .trace-item,
   .threshold-visual,
   .timeline-point,
-  .territorial-motif {
+  .territorial-context {
     transition:
       transform 180ms ease-out,
       box-shadow 180ms ease-out,
@@ -1549,6 +1635,10 @@ select {
     animation: decision-enter 320ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
+  .context-marker-halo {
+    animation: context-marker-pulse 2.8s ease-out infinite;
+  }
+
   .summary-card:hover,
   .metric-card:hover,
   .comparison-card:hover,
@@ -1556,7 +1646,7 @@ select {
   .trace-item:hover,
   .timeline-point:hover,
   .threshold-visual:hover,
-  .territorial-motif:hover {
+  .territorial-context:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-soft);
   }
@@ -1571,5 +1661,20 @@ select {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes context-marker-pulse {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: scale(0.94);
+    transform-origin: center;
+  }
+
+  50% {
+    opacity: 0.22;
+    transform: scale(1.08);
+    transform-origin: center;
   }
 }

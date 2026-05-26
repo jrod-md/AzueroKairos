@@ -343,7 +343,7 @@ function DecisionLanding({
             selectedDate={selectedDate}
             setSelectedDate={setSelectedDate}
           />
-          <TerritorialEvidenceMotif record={record} />
+          <TerritorialContextModule record={record} />
         </aside>
       </section>
 
@@ -365,7 +365,7 @@ function DecisionLanding({
 
         <div className="tab-panel" role="tabpanel">
           {activeDetailTab === "resumen" ? (
-            <SummaryTab record={record} comparisonRecords={comparisonRecords} />
+            <SummaryTab record={record} />
           ) : null}
           {activeDetailTab === "evidencia" ? <EvidenceTab record={record} /> : null}
           {activeDetailTab === "trazabilidad" ? (
@@ -470,44 +470,81 @@ function ObservationTimeline({ records, selectedDate, setSelectedDate }) {
   );
 }
 
-function TerritorialEvidenceMotif({ record }) {
+function TerritorialContextModule({ record, variant = "decision" }) {
   const state = getStateMeta(record);
-  const markerPosition = clampPercentage(record.validPercent);
-  const markerX = 24 + (markerPosition / 100) * 252;
-  const markerY = 118 - (markerPosition / 100) * 55;
 
   return (
     <section
-      className={`territorial-motif tone-${state.tone}`}
-      aria-label="Esquema visual del corredor"
+      className={`territorial-context tone-${state.tone} ${variant}`}
+      aria-label="Contexto territorial"
     >
-      <div className="motif-heading">
+      <div className="context-copy">
         <div>
-          <p className="small-label">Corredor Río La Villa</p>
-          <h3>{state.label}</h3>
+          <p className="small-label">Contexto territorial</p>
+          <h3>Azuero, Panamá</h3>
         </div>
         <span>{record.date}</span>
       </div>
-      <svg viewBox="0 0 320 150" role="img" aria-label="Motivo abstracto del corredor">
+
+      <div className="context-body">
+        <svg
+          className="context-map"
+          viewBox="0 0 360 230"
+          role="img"
+          aria-label="Ubicación contextual de Panamá, Azuero y el Corredor Río La Villa"
+        >
         <defs>
-          <linearGradient id="motif-river" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="currentColor" stopOpacity="0.2" />
+          <radialGradient id="context-paper" cx="50%" cy="42%" r="68%">
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+          </radialGradient>
+          <linearGradient id="context-river" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0.18" />
             <stop offset="55%" stopColor="currentColor" stopOpacity="0.72" />
-            <stop offset="100%" stopColor="currentColor" stopOpacity="0.24" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0.28" />
           </linearGradient>
         </defs>
-        <path
-          className="motif-corridor"
-          d="M18 116 C70 74 101 90 137 68 C185 39 219 62 303 30"
-        />
-        <path
-          className="motif-river"
-          d="M16 119 C72 78 102 93 139 70 C187 41 219 64 304 34"
-        />
-        <circle className="motif-marker-halo" cx={markerX} cy={markerY} r="14" />
-        <circle className="motif-marker" cx={markerX} cy={markerY} r="5.5" />
-      </svg>
-      <p>Esquema visual del corredor, no mapa geográfico.</p>
+          <rect className="context-paper" x="18" y="16" width="324" height="188" rx="28" />
+          <circle className="context-globe" cx="102" cy="104" r="62" />
+          <path
+            className="context-america"
+            d="M68 76 C88 58 120 60 139 80 C157 98 148 125 126 136 C105 147 82 135 70 116 C59 98 55 86 68 76"
+          />
+          <path
+            className="context-panama"
+            d="M175 117 C194 106 211 107 228 115 C243 122 257 120 276 110"
+          />
+          <path
+            className="context-azuero"
+            d="M210 126 C219 121 229 124 232 133 C226 143 213 142 208 134 Z"
+          />
+          <path
+            className="context-corridor"
+            d="M211 133 C221 126 232 131 239 122 C246 114 257 119 270 111"
+          />
+          <circle className="context-marker-halo" cx="231" cy="130" r="18" />
+          <circle className="context-marker" cx="231" cy="130" r="6" />
+          <path
+            className="context-route"
+            d="M113 126 C150 149 188 146 231 130"
+          />
+          <text className="context-svg-label label-panama" x="175" y="102">
+            Panamá
+          </text>
+          <text className="context-svg-label label-azuero" x="245" y="148">
+            Azuero
+          </text>
+        </svg>
+
+        <div className="context-facts">
+          <span>Azuero, Panamá</span>
+          <strong>Corredor Río La Villa</strong>
+          <span>AOI: {record.aoi}</span>
+          <span className={`context-state tone-${state.tone}`}>{state.label}</span>
+        </div>
+      </div>
+
+      <p className="context-note">Ubicación contextual, no cartografía de precisión.</p>
     </section>
   );
 }
@@ -539,7 +576,7 @@ function CompactComparison({ records }) {
   );
 }
 
-function SummaryTab({ record, comparisonRecords }) {
+function SummaryTab({ record }) {
   const state = getStateMeta(record);
 
   return (
@@ -551,8 +588,11 @@ function SummaryTab({ record, comparisonRecords }) {
         <strong>{state.nextAction}</strong>
       </article>
       <article className="summary-card">
-        <span className="small-label">Contraste de demo</span>
-        <CompactComparison records={comparisonRecords} />
+        <span className="small-label">Lectura rápida</span>
+        <p>
+          La decisión resume si la observación Sentinel tiene suficiente evidencia
+          válida para interpretarse en el corredor seleccionado.
+        </p>
       </article>
       <article className="summary-card">
         <span className="small-label">Producto</span>
@@ -687,6 +727,7 @@ function TechnicalDashboard({
       </div>
 
       <ConfidenceThresholdVisual record={record} compact />
+      <TerritorialContextModule record={record} variant="technical" />
       <ComparisonSection records={comparisonRecords} />
       <MetricsSection record={record} />
       <EvidencePipeline />

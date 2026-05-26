@@ -1,0 +1,39 @@
+{
+  "country": "Panama",
+  "region": "Azuero",
+  "corridor_name": "Río La Villa",
+  "aoi_name": "corridor_wide",
+  "note": "Contextual geography only. Approximate public pilot locator, not cartography of precision.",
+  "coordinate_order": "lat_lng",
+  "panama_center": [8.538, -80.7821],
+  "azuero_center": [7.7605, -80.565],
+  "corridor_center": [7.884, -80.588],
+  "extent": {
+    "south": 7.49,
+    "west": -80.86,
+    "north": 8.03,
+    "east": -80.34
+  },
+  "corridor_path": [
+    [7.7112, -80.7633],
+    [7.758, -80.714],
+    [7.806, -80.66],
+    [7.858, -80.602],
+    [7.905, -80.535],
+    [7.94, -80.472],
+    [7.965, -80.425]
+  ],
+  "labels": {
+    "country": "Panamá",
+    "region": "Azuero",
+    "corridor": "Corredor Río La Villa",
+    "aoi": "AOI: corridor_wide",
+    "precision_note": "Ubicación contextual, no cartografía de precisión."
+  },
+  "metadata": {
+    "public_safe": true,
+    "contains_secrets": false,
+    "intended_use": "Frontend contextual map for the Azuero Kairós public demo.",
+    "precision": "approximate_contextual"
+  }
+}
