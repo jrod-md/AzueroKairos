@@ -82,6 +82,22 @@ The ledger is written to `outputs/ledger/evidence_ledger.csv` and links the deci
 raw JSON -> processed CSV -> confidence classification -> generated brief
 ```
 
+## Export Public Demo Data
+
+```powershell
+python scripts/export_public_data.py
+```
+
+This writes sanitized deployment JSON to `frontend/public/data/observations.json` and `frontend/public/data/evidence_ledger.json`. These files use relative artifact paths and do not include credentials, tokens, request headers, or secrets.
+
+## Create an Official Artifact Snapshot
+
+```powershell
+python scripts/create_official_snapshot.py
+```
+
+This creates `official_artifacts/<run_id>/` with the official CSV, Evidence Ledger if present, raw JSON responses, generated briefs if present, and `RUN_NOTES.md`. Official snapshots may be large, so review them deliberately before committing.
+
 ## Module Demos
 
 ```powershell

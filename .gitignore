@@ -63,5 +63,9 @@ outputs/ledger/*
 !outputs/briefs/.gitkeep
 !outputs/ledger/.gitkeep
 
+# Official snapshots may be large. Commit deliberately only after review.
+!official_artifacts/
+!official_artifacts/**
+
 # Local dashboard state
 .streamlit/secrets.toml
