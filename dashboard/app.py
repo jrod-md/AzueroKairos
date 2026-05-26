@@ -194,7 +194,7 @@ def inject_css() -> None:
 
         .block-container {
           max-width: 1340px;
-          padding: 1.05rem 1.55rem 2.3rem;
+          padding: 0.85rem 1.45rem 2rem;
         }
 
         h1, h2, h3, p, li, div, label, span {
@@ -214,18 +214,18 @@ def inject_css() -> None:
         }
 
         div[data-testid="stVerticalBlock"] {
-          gap: 0.62rem;
+          gap: 0.5rem;
         }
 
         div[data-testid="stVerticalBlockBorderWrapper"] {
           border: 1px solid var(--ak-border);
-          background: rgba(255, 250, 240, 0.92);
+          background: rgba(255, 250, 240, 0.95);
           border-radius: 8px;
-          box-shadow: var(--ak-shadow);
+          box-shadow: 0 10px 28px rgba(42, 39, 34, 0.07);
         }
 
         div[data-testid="stVerticalBlockBorderWrapper"] > div {
-          padding: 0.72rem 0.82rem;
+          padding: 0.62rem 0.75rem;
         }
 
         div[data-testid="stButton"] button {
@@ -279,7 +279,7 @@ def inject_css() -> None:
           align-items: flex-start;
           justify-content: space-between;
           gap: 1rem;
-          margin-bottom: 0.55rem;
+          margin-bottom: 0.38rem;
         }
 
         .ak-kicker {
@@ -292,7 +292,7 @@ def inject_css() -> None:
         .ak-title {
           margin: 0.05rem 0 0.2rem;
           color: var(--ak-river);
-          font-size: 2.45rem;
+          font-size: 2.32rem;
           line-height: 0.96;
           font-weight: 860;
         }
@@ -300,19 +300,27 @@ def inject_css() -> None:
         .ak-subtitle {
           margin: 0;
           color: #25495b;
-          font-size: 1.03rem;
+          font-size: 1rem;
           font-weight: 680;
+        }
+
+        .ak-thesis {
+          max-width: 46rem;
+          margin: 0.32rem 0 0;
+          color: #48606d;
+          font-size: 0.91rem;
+          line-height: 1.42;
         }
 
         .ak-risk {
           align-self: center;
-          max-width: 24rem;
+          max-width: 21rem;
           border: 1px solid rgba(155, 68, 61, 0.22);
           background: var(--ak-terracotta-soft);
           color: var(--ak-terracotta);
           border-radius: 8px;
-          padding: 0.68rem 0.82rem;
-          font-size: 0.92rem;
+          padding: 0.58rem 0.72rem;
+          font-size: 0.88rem;
           font-weight: 760;
         }
 
@@ -338,10 +346,10 @@ def inject_css() -> None:
         }
 
         .ak-hero {
-          min-height: 19.2rem;
+          min-height: 20.3rem;
           border: 1px solid var(--ak-border);
           border-radius: 8px;
-          padding: 1.15rem;
+          padding: 1rem 1.05rem;
           background:
             linear-gradient(160deg, rgba(255, 250, 240, 0.98), rgba(255, 246, 230, 0.96)),
             var(--ak-surface);
@@ -361,8 +369,8 @@ def inject_css() -> None:
         }
 
         .ak-state {
-          margin-top: 0.55rem;
-          font-size: 3.4rem;
+          margin-top: 0.46rem;
+          font-size: 3.08rem;
           line-height: 0.92;
           font-weight: 900;
         }
@@ -383,12 +391,12 @@ def inject_css() -> None:
           display: inline-flex;
           align-items: baseline;
           gap: 0.42rem;
-          margin-top: 0.55rem;
+          margin-top: 0.48rem;
           color: var(--ak-river);
         }
 
         .ak-evidence strong {
-          font-size: 2.05rem;
+          font-size: 2.2rem;
           line-height: 1;
           font-weight: 880;
         }
@@ -400,10 +408,10 @@ def inject_css() -> None:
         }
 
         .ak-hero-action {
-          margin: 0.9rem 0 0;
+          margin: 0.75rem 0 0;
           max-width: 42rem;
           color: var(--ak-text);
-          font-size: 1.07rem;
+          font-size: 1.03rem;
           font-weight: 760;
         }
 
@@ -413,6 +421,7 @@ def inject_css() -> None:
           font-size: 0.94rem;
         }
 
+        .ak-side-stack,
         .ak-side-panel,
         .ak-visual-card,
         .ak-compare-card,
@@ -425,8 +434,19 @@ def inject_css() -> None:
           box-shadow: 0 12px 30px rgba(42, 39, 34, 0.08);
         }
 
+        .ak-side-stack {
+          display: flex;
+          flex-direction: column;
+          min-height: 20.3rem;
+          padding: 0.82rem;
+          gap: 0.7rem;
+        }
+
         .ak-side-panel {
-          padding: 1rem;
+          padding: 0;
+          border: 0;
+          box-shadow: none;
+          background: transparent;
         }
 
         .ak-side-panel h3,
@@ -440,29 +460,33 @@ def inject_css() -> None:
 
         .ak-side-panel p {
           color: #3b4b55;
-          font-size: 0.94rem;
-          line-height: 1.48;
+          font-size: 0.91rem;
+          line-height: 1.42;
+          margin-top: 0.45rem;
         }
 
         .ak-next-action {
-          margin-top: 0.75rem;
+          margin-top: 0.62rem;
           border: 1px solid rgba(12, 72, 104, 0.15);
           background: var(--ak-river-soft);
           border-radius: 8px;
-          padding: 0.72rem;
+          padding: 0.62rem;
           color: #17384a;
           font-weight: 720;
         }
 
         .ak-visual-card {
-          padding: 1rem;
+          padding: 0;
+          border: 0;
+          box-shadow: none;
+          background: transparent;
         }
 
         .ak-river-visual {
           position: relative;
-          min-height: 8.5rem;
-          margin-top: 0.75rem;
-          border: 1px solid rgba(12, 72, 104, 0.16);
+          min-height: 7.45rem;
+          margin-top: 0.52rem;
+          border: 1px solid rgba(12, 72, 104, 0.15);
           border-radius: 8px;
           background:
             linear-gradient(135deg, rgba(215, 233, 236, 0.78), rgba(255, 246, 230, 0.95)),
@@ -502,8 +526,8 @@ def inject_css() -> None:
         .ak-tags {
           display: flex;
           flex-wrap: wrap;
-          gap: 0.38rem;
-          margin-top: 0.72rem;
+          gap: 0.32rem;
+          margin-top: 0.56rem;
         }
 
         .ak-tag {
@@ -539,12 +563,12 @@ def inject_css() -> None:
         }
 
         .ak-section-title {
-          margin: 0.2rem 0 0.45rem;
+          margin: 0.08rem 0 0.38rem;
         }
 
         .ak-compare-card {
-          padding: 0.82rem;
-          min-height: 10.4rem;
+          padding: 0.78rem;
+          min-height: 9.35rem;
         }
 
         .ak-compare-top {
@@ -561,9 +585,9 @@ def inject_css() -> None:
         }
 
         .ak-compare-value {
-          margin-top: 0.72rem;
+          margin-top: 0.58rem;
           color: var(--ak-river);
-          font-size: 1.65rem;
+          font-size: 1.78rem;
           line-height: 1;
           font-weight: 880;
         }
@@ -577,10 +601,10 @@ def inject_css() -> None:
         }
 
         .ak-compare-message {
-          margin-top: 0.66rem;
+          margin-top: 0.54rem;
           color: #3c4b55;
-          font-size: 0.86rem;
-          line-height: 1.42;
+          font-size: 0.84rem;
+          line-height: 1.35;
         }
 
         .ak-compare-mini {
@@ -597,26 +621,26 @@ def inject_css() -> None:
         }
 
         .ak-insight {
-          margin-top: 0.55rem;
+          margin-top: 0.5rem;
           border: 1px solid rgba(12, 72, 104, 0.14);
-          background: rgba(215, 233, 236, 0.58);
+          background: rgba(215, 233, 236, 0.44);
           color: #17384a;
           border-radius: 8px;
-          padding: 0.64rem 0.76rem;
-          font-size: 0.9rem;
+          padding: 0.56rem 0.7rem;
+          font-size: 0.88rem;
           font-weight: 740;
         }
 
         .ak-metric-grid {
           display: grid;
           grid-template-columns: repeat(6, minmax(0, 1fr));
-          gap: 0.55rem;
-          margin-top: 0.4rem;
+          gap: 0.48rem;
+          margin-top: 0.34rem;
         }
 
         .ak-metric-card {
-          padding: 0.72rem;
-          min-height: 5rem;
+          padding: 0.62rem;
+          min-height: 4.35rem;
         }
 
         .ak-metric-value {
@@ -628,7 +652,7 @@ def inject_css() -> None:
         }
 
         .ak-flow-card {
-          padding: 0.8rem;
+          padding: 0.62rem 0.72rem;
         }
 
         .ak-flow {
@@ -657,10 +681,37 @@ def inject_css() -> None:
         }
 
         .ak-limits-card {
-          padding: 0.82rem;
-          color: #4b5860;
+          padding: 0.72rem 0.8rem;
+          color: #40505a;
           font-size: 0.86rem;
-          line-height: 1.45;
+          line-height: 1.42;
+        }
+
+        .ak-brief-summary {
+          display: grid;
+          grid-template-columns: 1.1fr 1fr 1.25fr;
+          gap: 0.58rem;
+          margin-top: 0.65rem;
+        }
+
+        .ak-brief-card {
+          border: 1px solid var(--ak-border);
+          background: rgba(255, 250, 240, 0.92);
+          border-radius: 8px;
+          padding: 0.68rem;
+        }
+
+        .ak-brief-card strong {
+          color: var(--ak-text);
+          display: block;
+          font-size: 0.9rem;
+          margin-top: 0.16rem;
+        }
+
+        .ak-brief-path {
+          color: var(--ak-muted);
+          font-size: 0.82rem;
+          overflow-wrap: anywhere;
         }
 
         .ak-preview-note {
@@ -700,6 +751,10 @@ def inject_css() -> None:
 
           .ak-metric-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .ak-brief-summary {
+            grid-template-columns: 1fr;
           }
         }
         </style>
@@ -876,6 +931,7 @@ def render_header() -> None:
             <div class="ak-kicker">Consola de decisión territorial</div>
             <h1 class="ak-title">Azuero Kairós</h1>
             <p class="ak-subtitle">Semáforo de confianza satelital para decisiones agrícolas</p>
+            <p class="ak-thesis">Copernicus evidencia si una observación permite interpretar, revisar o no inferir antes de tomar una decisión territorial.</p>
           </div>
           <div class="ak-risk">Una mala inferencia también es un riesgo.</div>
         </div>
@@ -970,7 +1026,9 @@ def render_hero_card(record: dict[str, Any]) -> None:
     )
 
 
-def render_meaning_panel(record: dict[str, Any]) -> None:
+def render_decision_context_card(record: dict[str, Any]) -> None:
+    style = state_style(record)
+    label = state_label(record)
     reason = localized_value(record, "reason_es", "reason")
     action = localized_value(record, "recommended_action_es", "recommended_action")
     if action == "no proporcionado":
@@ -978,42 +1036,33 @@ def render_meaning_panel(record: dict[str, Any]) -> None:
 
     render_html(
         f"""
-        <section class="ak-side-panel">
-          <h3>Qué significa esto</h3>
-          <p>{safe(reason)}</p>
-          <div class="ak-next-action">
-            <div class="ak-mini-label">Siguiente acción</div>
-            <div>{safe(action)}</div>
-          </div>
-        </section>
-        """
-    )
-
-
-def render_territory_card(record: dict[str, Any]) -> None:
-    style = state_style(record)
-    label = state_label(record)
-    render_html(
-        f"""
-        <section class="ak-visual-card">
-          <h3>Corredor Río La Villa</h3>
-          <div class="ak-river-visual" aria-label="Visual abstracto del corredor Río La Villa">
-            <div class="ak-river-label">Corredor agrícola-ripario</div>
-            <svg viewBox="0 0 360 150" role="img" aria-label="Línea abstracta tipo río">
-              <path d="M-8 102 C 44 58, 82 132, 132 82 S 221 36, 270 77 S 329 120, 370 63"
-                    fill="none" stroke="#0c4868" stroke-width="14" stroke-linecap="round" opacity="0.24" />
-              <path d="M-8 102 C 44 58, 82 132, 132 82 S 221 36, 270 77 S 329 120, 370 63"
-                    fill="none" stroke="#176c84" stroke-width="5" stroke-linecap="round" opacity="0.82" />
-            </svg>
-            <div class="ak-river-badge">{safe(label)}</div>
-          </div>
-          <div class="ak-tags">
-            <span class="ak-tag">AOI corridor_wide</span>
-            <span class="ak-tag">Sentinel-2</span>
-            <span class="ak-tag">{safe(display_value(record.get("resolution_m"), suffix=" m"))}</span>
-            <span class="ak-status-chip {safe(style["class"])}">{safe(label)}</span>
-          </div>
-        </section>
+        <aside class="ak-side-stack">
+          <section class="ak-side-panel">
+            <h3>Qué significa esto</h3>
+            <p>{safe(reason)}</p>
+            <div class="ak-next-action">
+              <div class="ak-mini-label">Siguiente acción</div>
+              <div>{safe(action)}</div>
+            </div>
+          </section>
+          <section class="ak-visual-card">
+            <h3>Corredor Río La Villa</h3>
+            <div class="ak-river-visual" aria-label="Visual abstracto del corredor Río La Villa">
+              <div class="ak-river-label">AOI corridor_wide · Sentinel-2 · {safe(display_value(record.get("resolution_m"), suffix=" m"))}</div>
+              <svg viewBox="0 0 360 150" role="img" aria-label="Línea abstracta tipo río">
+                <path d="M-8 102 C 44 58, 82 132, 132 82 S 221 36, 270 77 S 329 120, 370 63"
+                      fill="none" stroke="#0c4868" stroke-width="14" stroke-linecap="round" opacity="0.20" />
+                <path d="M-8 102 C 44 58, 82 132, 132 82 S 221 36, 270 77 S 329 120, 370 63"
+                      fill="none" stroke="#176c84" stroke-width="5" stroke-linecap="round" opacity="0.82" />
+              </svg>
+              <div class="ak-river-badge">{safe(label)}</div>
+            </div>
+            <div class="ak-tags">
+              <span class="ak-status-chip {safe(style["class"])}">{safe(label)}</span>
+              <span class="ak-tag">Observación {safe(record.get("date"))}</span>
+            </div>
+          </section>
+        </aside>
         """
     )
 
@@ -1073,14 +1122,14 @@ def render_comparison_card(record: dict[str, Any], *, message: str) -> None:
             <span class="ak-status-chip {safe(style["class"])}">{safe(label)}</span>
           </div>
           <div class="ak-compare-value">{safe(display_percent(record.get("validPercent")))}</div>
-          <div class="ak-compare-label">validPercent</div>
+          <div class="ak-compare-label">Porcentaje válido</div>
           <div class="ak-compare-mini">
             <div>
-              <div class="ak-mini-label">sampleCount</div>
+              <div class="ak-mini-label">Muestras</div>
               <div class="ak-mini-value">{safe(display_count(record.get("sampleCount")))}</div>
             </div>
             <div>
-              <div class="ak-mini-label">noDataCount</div>
+              <div class="ak-mini-label">Sin datos</div>
               <div class="ak-mini-value">{safe(display_count(record.get("noDataCount")))}</div>
             </div>
           </div>
@@ -1092,12 +1141,12 @@ def render_comparison_card(record: dict[str, Any], *, message: str) -> None:
 
 def render_metrics(record: dict[str, Any]) -> None:
     metrics = [
-        ("validPercent", display_percent(record.get("validPercent"))),
-        ("sampleCount", display_count(record.get("sampleCount"))),
-        ("noDataCount", display_count(record.get("noDataCount"))),
+        ("Porcentaje válido", display_percent(record.get("validPercent"))),
+        ("Muestras evaluadas", display_count(record.get("sampleCount"))),
+        ("Muestras sin datos", display_count(record.get("noDataCount"))),
         ("MNDWI", display_decimal(record.get("mndwi_mean"))),
         ("NDTI", display_decimal(record.get("ndti_mean"))),
-        ("resolution_m", display_value(record.get("resolution_m"), suffix=" m")),
+        ("Resolución", display_value(record.get("resolution_m"), suffix=" m")),
     ]
     cards = "\n".join(
         f"""
@@ -1178,10 +1227,29 @@ def render_brief_panel(record: dict[str, Any], is_preview: bool, state_key: str)
             generate_brief(record, is_preview, state_key)
 
         if st.session_state.get(generated_key):
-            st.caption(f"Guardado en: {st.session_state[path_key]}")
-            st.markdown(st.session_state[markdown_key])
+            render_html(
+                f"""
+                <div class="ak-brief-path">Guardado en: {safe(st.session_state[path_key])}</div>
+                <div class="ak-brief-summary">
+                  <div class="ak-brief-card">
+                    <div class="ak-mini-label">Decisión ejecutiva</div>
+                    <strong>{safe(state_label(record))}</strong>
+                  </div>
+                  <div class="ak-brief-card">
+                    <div class="ak-mini-label">Calidad de evidencia</div>
+                    <strong>{safe(display_percent(record.get("validPercent")))} · {safe(display_count(record.get("sampleCount")))} muestras</strong>
+                  </div>
+                  <div class="ak-brief-card">
+                    <div class="ak-mini-label">Siguiente acción</div>
+                    <strong>{safe(localized_value(record, "recommended_action_es", "recommended_action"))}</strong>
+                  </div>
+                </div>
+                """
+            )
+            with st.expander("Ver informe completo"):
+                st.markdown(st.session_state[markdown_key])
         else:
-            st.caption("El informe se genera bajo demanda para mantener trazabilidad explícita.")
+            st.caption("Genera el informe bajo demanda para conservar una vista principal limpia y trazable.")
 
 
 def render_limits() -> None:
@@ -1232,8 +1300,7 @@ def main() -> None:
         render_hero_card(record)
         render_demo_comparison(records, using_preview)
     with side_col:
-        render_meaning_panel(record)
-        render_territory_card(record)
+        render_decision_context_card(record)
 
     render_metrics(record)
     render_workflow()
