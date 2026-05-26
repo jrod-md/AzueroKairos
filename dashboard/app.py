@@ -17,6 +17,12 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from azuero_kairos.brief_generator import generate_confidence_brief
+from azuero_kairos.confidence_engine import (
+    CONFIDENCE_LABELS_ES,
+    DECISION_LABELS_ES as DECISION_LABELS_BY_CONFIDENCE_ES,
+    REASONS_ES,
+    RECOMMENDED_ACTIONS_ES,
+)
 
 
 DATES = ["2025-06-02", "2025-06-10", "2025-06-15", "2025-06-30", "2025-07-15"]
@@ -28,8 +34,8 @@ BRIEF_DIR = PROJECT_ROOT / "outputs" / "briefs"
 
 CONFIDENCE_DISPLAY = {
     "usable": "USABLE",
-    "low_confidence": "LOW CONFIDENCE",
-    "do_not_infer": "DO NOT INFER",
+    "low_confidence": "BAJA CONFIANZA",
+    "do_not_infer": "NO INFERIR",
 }
 
 DECISION_DISPLAY = {
@@ -55,12 +61,12 @@ STATE_STYLE = {
     },
     "low_confidence": {
         "streamlit_state": "warning",
-        "label": "LOW CONFIDENCE",
+        "label": "BAJA CONFIANZA",
         "decision": "Revisar / verificar",
     },
     "do_not_infer": {
         "streamlit_state": "error",
-        "label": "DO NOT INFER",
+        "label": "NO INFERIR",
         "decision": "No inferir",
     },
 }
@@ -365,7 +371,33 @@ def normalize_record(record: dict[str, Any]) -> dict[str, Any]:
     normalized.setdefault("noDataCount", None)
     normalized.setdefault("validPercent", None)
     normalized.setdefault("raw_json_path", "pending official run")
+    add_localized_display_fields(normalized)
     return normalized
+
+
+def add_localized_display_fields(record: dict[str, Any]) -> None:
+    confidence_class = str(record.get("confidence_class", ""))
+    localized_defaults = {
+        "confidence_label_es": CONFIDENCE_LABELS_ES.get(confidence_class),
+        "decision_label_es": DECISION_LABELS_BY_CONFIDENCE_ES.get(confidence_class),
+        "reason_es": REASONS_ES.get(confidence_class),
+        "recommended_action_es": RECOMMENDED_ACTIONS_ES.get(confidence_class),
+    }
+    for key, value in localized_defaults.items():
+        if value is not None and value_is_missing(record.get(key)):
+            record[key] = value
+
+
+def localized_value(record: dict[str, Any], localized_key: str, fallback_key: str) -> str:
+    localized = record.get(localized_key)
+    if not value_is_missing(localized):
+        return str(localized)
+
+    fallback = record.get(fallback_key)
+    if not value_is_missing(fallback):
+        return str(fallback)
+
+    return "no proporcionado"
 
 
 def render_header() -> None:
@@ -414,12 +446,11 @@ def render_preview_notice(using_preview: bool) -> None:
 
 def render_hero_card(record: dict[str, Any]) -> None:
     confidence = str(record.get("confidence_class", "do_not_infer"))
-    decision = str(record.get("decision", "do_not_infer"))
     style = STATE_STYLE.get(confidence, STATE_STYLE["do_not_infer"])
-    state_label = CONFIDENCE_DISPLAY.get(confidence, style["label"])
-    decision_label = DECISION_DISPLAY.get(decision, style["decision"])
-    reason = str(record.get("reason") or "Sin razón disponible.")
-    action = str(record.get("recommended_action") or "Sin acción recomendada disponible.")
+    state_label = localized_value(record, "confidence_label_es", "confidence_class")
+    decision_label = localized_value(record, "decision_label_es", "decision")
+    reason = localized_value(record, "reason_es", "reason")
+    action = localized_value(record, "recommended_action_es", "recommended_action")
 
     with st.container(border=True):
         top_left, top_right = st.columns([0.85, 1.55], vertical_alignment="center")
@@ -454,7 +485,9 @@ def render_metrics(record: dict[str, Any]) -> None:
 
 def render_what_now(record: dict[str, Any]) -> None:
     confidence = str(record.get("confidence_class", "do_not_infer"))
-    action = WHAT_NOW.get(confidence, WHAT_NOW["do_not_infer"])
+    action = localized_value(record, "recommended_action_es", "recommended_action")
+    if action == "no proporcionado":
+        action = WHAT_NOW.get(confidence, WHAT_NOW["do_not_infer"])
     with st.container(border=True):
         col_label, col_action = st.columns([0.72, 2.1], vertical_alignment="center")
         with col_label:
@@ -475,10 +508,10 @@ def workflow_steps(record_exists: bool, confidence_class: str, brief_generated: 
         ("Adquisición Sentinel", first_status),
         ("Estadísticas del AOI", first_status),
         ("Clasificación de confianza", first_status),
-        ("Brief generado", brief_status),
+        ("Informe generado", brief_status),
         ("Verificación territorial si aplica", verification_status),
         ("Confirmación humana", human_status),
-        ("Brief final", final_status),
+        ("Informe final", final_status),
     ]
 
 
@@ -535,16 +568,15 @@ def render_brief_panel(record: dict[str, Any], is_preview: bool, state_key: str)
     path_key = f"brief_path_{state_key}"
 
     with st.container(border=True):
-        st.subheader("Confidence Brief")
-        st.caption("Localización del brief pendiente. Por ahora se conserva la salida del generador oficial.")
-        if st.button("Generar Confidence Brief", use_container_width=False):
+        st.subheader("Informe de Confianza")
+        if st.button("Generar Informe de Confianza", use_container_width=False):
             generate_brief(record, is_preview, state_key)
 
         if st.session_state.get(generated_key):
             st.caption(f"Guardado en: {st.session_state[path_key]}")
             st.markdown(st.session_state[markdown_key])
         else:
-            st.caption("El brief se genera bajo demanda para mantener trazabilidad explícita.")
+            st.caption("El informe se genera bajo demanda para mantener trazabilidad explícita.")
 
 
 def render_limits() -> None:

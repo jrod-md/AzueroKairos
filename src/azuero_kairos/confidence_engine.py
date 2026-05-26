@@ -23,6 +23,37 @@ RECOMMENDED_ACTIONS = {
     ),
 }
 
+CONFIDENCE_LABELS_ES = {
+    USABLE: "USABLE",
+    LOW_CONFIDENCE: "BAJA CONFIANZA",
+    DO_NOT_INFER: "NO INFERIR",
+}
+
+DECISION_LABELS_ES = {
+    USABLE: "Interpretar con cautela",
+    LOW_CONFIDENCE: "Revisar / verificar",
+    DO_NOT_INFER: "No inferir",
+}
+
+REASONS_ES = {
+    USABLE: "El porcentaje de observación válida supera el umbral mínimo de confianza.",
+    LOW_CONFIDENCE: (
+        "La observación tiene evidencia parcial, pero no suficiente para una inferencia fuerte."
+    ),
+    DO_NOT_INFER: (
+        "La observación no tiene suficiente evidencia válida para una inferencia responsable."
+    ),
+}
+
+RECOMMENDED_ACTIONS_ES = {
+    USABLE: "Usar para lectura hidro-sedimentaria exploratoria con límites explícitos.",
+    LOW_CONFIDENCE: "Revisar con cautela y considerar verificación territorial.",
+    DO_NOT_INFER: (
+        "No usar esta observación para afirmar condiciones del territorio; esperar una nueva "
+        "adquisición o solicitar verificación territorial."
+    ),
+}
+
 DECISIONS = {
     USABLE: "interpret",
     LOW_CONFIDENCE: "review",
@@ -95,6 +126,10 @@ def _build_confidence_result(confidence_class: str, reason: str) -> dict[str, st
         "decision": DECISIONS[confidence_class],
         "reason": reason,
         "recommended_action": RECOMMENDED_ACTIONS[confidence_class],
+        "confidence_label_es": CONFIDENCE_LABELS_ES[confidence_class],
+        "decision_label_es": DECISION_LABELS_ES[confidence_class],
+        "reason_es": REASONS_ES[confidence_class],
+        "recommended_action_es": RECOMMENDED_ACTIONS_ES[confidence_class],
     }
 
 
