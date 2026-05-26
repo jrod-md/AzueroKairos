@@ -2,21 +2,29 @@
 
 Azuero Kairós is a Copernicus-based satellite confidence decision layer for agricultural decision support in Azuero, Panama.
 
-The system does not detect contamination and does not declare water safe. Its purpose is narrower: classify Sentinel observations into confidence states and generate a concise Confidence Brief that tells users whether an observation is usable for cautious decision support.
+The project does not detect contamination and does not declare water safe. It classifies Sentinel-2 observations into confidence states so a user can decide whether a scene is usable for cautious exploratory hydro-sedimentary interpretation, should be reviewed, or should not be used for inference.
 
 ## Decision States
 
 - `usable`: the observation has enough valid evidence to support a limited satellite-based interpretation.
 - `low_confidence`: the observation may contain partial signal, but quality limits require caution.
-- `do_not_infer`: the observation does not support an inference and should not be used for decision support.
+- `do_not_infer`: the observation does not support a responsible satellite-based inference.
 
-## Official Clean-Build Policy
+## Current Official Sentinel-2 Results
 
-This repository is the official hackathon build for Azuero Kairós.
+These are confidence-of-observation results from the official Sentinel-2 Statistical API run. They are not chemical or sanitary measurements.
 
-Pre-hackathon work consisted only of planning and discarded feasibility spikes. The official repository must not copy code, generated results, dashboards, briefs, or processed outputs from those spikes. Official code, official outputs, official dashboard views, and official briefs are produced during the hackathon window from this clean scaffold.
+| Date | AOI | validPercent | confidence_class |
+| --- | --- | ---: | --- |
+| 2025-06-02 | corridor_wide | 49.15 | `usable` |
+| 2025-06-10 | corridor_wide | 2.26 | `do_not_infer` |
+| 2025-06-15 | corridor_wide | 44.22 | `usable` |
+| 2025-06-30 | corridor_wide | 71.06 | `usable` |
+| 2025-07-15 | corridor_wide | 52.22 | `usable` |
 
-## Install
+The important product behavior is the contrast between scenes: Azuero Kairós does not force an alert when evidence is weak. It explicitly marks weak observations as `do_not_infer`.
+
+## Setup
 
 Use Python 3.11 or newer.
 
@@ -27,22 +35,70 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-For local imports without packaging the project yet:
+## Environment Variables
+
+The Sentinel-2 batch runner uses Copernicus Data Space Ecosystem OAuth credentials from environment variables only.
 
 ```powershell
-$env:PYTHONPATH = "src"
+$env:CDSE_CLIENT_ID = "your-client-id"
+$env:CDSE_CLIENT_SECRET = "your-client-secret"
 ```
 
-## Future Run Commands
+Do not commit `.env` files or secrets. The repository is configured to ignore local environment files.
 
-The initial repository contains only the clean scaffold. Future scripts should be reproducible from configuration files in `configs/` and write generated artifacts into `outputs/`.
+## Run the Sentinel-2 Batch
 
-Expected future commands:
+From the repository root:
 
 ```powershell
-python -m azuero_kairos.confidence_engine
-python -m azuero_kairos.brief_generator
+python scripts/run_official_s2_batch.py
+```
+
+Optional flags:
+
+```powershell
+python scripts/run_official_s2_batch.py --force --aoi corridor_wide --resolution 20
+```
+
+The runner writes raw API responses to `outputs/raw_json/` and the processed official CSV to `outputs/processed_csv/sentinel2_stats_confidence.csv`.
+
+## Run the Dashboard
+
+```powershell
 streamlit run dashboard/app.py
 ```
 
-These commands are placeholders for future implementation work. External operational integrations are intentionally not part of this initial scaffold.
+The dashboard loads the newest processed CSV when available. If no official CSV exists, it clearly labels fallback records as UI preview only.
+
+## Generate the Evidence Ledger
+
+```powershell
+python scripts/build_evidence_ledger.py
+```
+
+The ledger is written to `outputs/ledger/evidence_ledger.csv` and links the decision chain:
+
+```text
+raw JSON -> processed CSV -> confidence classification -> generated brief
+```
+
+## Module Demos
+
+```powershell
+python -m src.azuero_kairos.confidence_engine
+python -m src.azuero_kairos.brief_generator
+```
+
+The brief demo writes a Markdown Confidence Brief under `outputs/briefs/`.
+
+## Scientific Limits
+
+Azuero Kairós does not detect pesticides, atrazine, pathogens, heavy metals, dissolved chemical contamination, or safe water. It does not make chemical, sanitary, medical, legal, or regulatory claims. Laboratory or authorized field verification is required for chemical or sanitary claims.
+
+The output is a confidence assessment for satellite observation usability, not proof of contamination, safety, crisis conditions, or operational readiness.
+
+## Official Clean-Build Policy
+
+This repository is the official hackathon build for Azuero Kairós.
+
+Pre-hackathon work consisted only of planning and discarded feasibility spikes. Official code, official outputs, dashboard views, briefs, and ledgers are generated during the hackathon window from this clean repository.
