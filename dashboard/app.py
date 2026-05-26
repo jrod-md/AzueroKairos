@@ -470,6 +470,67 @@ def render_hero_card(record: dict[str, Any]) -> None:
             st.info("Insight de producto: Una mala inferencia también es un riesgo.")
 
 
+def render_demo_comparison(records: list[dict[str, Any]], using_preview: bool) -> None:
+    st.subheader("Comparación de decisión")
+
+    first_record = get_record(records, "2025-06-10", "corridor_wide")
+    second_record = get_record(records, "2025-06-30", "corridor_wide")
+    comparison_available = (
+        not using_preview
+        and first_record is not None
+        and second_record is not None
+        and first_record.get("source") == "official"
+        and second_record.get("source") == "official"
+    )
+
+    if not comparison_available:
+        with st.container(border=True):
+            st.caption(
+                "Comparación disponible cuando el CSV oficial contiene "
+                "2025-06-10 y 2025-06-30."
+            )
+        return
+
+    left, right = st.columns(2, gap="small")
+    with left:
+        render_comparison_card(
+            normalize_record(first_record),
+            state_label="NO INFERIR",
+            message=(
+                "La observación no tiene suficiente evidencia válida para una "
+                "inferencia responsable."
+            ),
+        )
+    with right:
+        render_comparison_card(
+            normalize_record(second_record),
+            state_label="USABLE",
+            message=(
+                "La observación tiene suficiente evidencia para una lectura "
+                "exploratoria con límites explícitos."
+            ),
+        )
+
+    st.caption(
+        "El valor del sistema no es forzar alertas, sino decidir cuándo la "
+        "evidencia Copernicus puede usarse y cuándo no."
+    )
+
+
+def render_comparison_card(record: dict[str, Any], *, state_label: str, message: str) -> None:
+    with st.container(border=True):
+        st.caption(f"Fecha: {record.get('date')}")
+        st.markdown(f"**Estado: {state_label}**")
+        metric_cols = st.columns(3, gap="small")
+        metric_cols[0].metric(
+            "Porcentaje válido",
+            display_value(record.get("validPercent"), suffix="%"),
+        )
+        metric_cols[1].metric("Muestras", display_value(record.get("sampleCount")))
+        metric_cols[2].metric("Sin datos", display_value(record.get("noDataCount")))
+        st.caption(f"Mensaje: {message}")
+
+
 def render_metrics(record: dict[str, Any]) -> None:
     st.subheader("Métricas críticas")
     row_one = st.columns(4)
@@ -615,6 +676,7 @@ def main() -> None:
     brief_generated = bool(st.session_state.get(f"brief_generated_{state_key}", False))
 
     render_hero_card(record)
+    render_demo_comparison(records, using_preview)
     render_what_now(record)
     render_metrics(record)
     render_workflow(record, brief_generated)
