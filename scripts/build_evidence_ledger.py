@@ -1,0 +1,261 @@
+"""Build the official Azuero Kairos evidence ledger CSV."""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import subprocess
+import sys
+from pathlib import Path
+from uuid import uuid4
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+SRC_DIR = PROJECT_ROOT / "src"
+if str(SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(SRC_DIR))
+
+from azuero_kairos.confidence_engine import ConfidenceDecision  # noqa: E402
+from azuero_kairos.evidence_ledger import build_ledger_record  # noqa: E402
+
+
+DEFAULT_PROCESSED_CSV = PROJECT_ROOT / "outputs/processed_csv/sentinel2_stats_confidence.csv"
+DEFAULT_RAW_JSON_DIR = PROJECT_ROOT / "outputs/raw_json"
+DEFAULT_BRIEFS_DIR = PROJECT_ROOT / "outputs/briefs"
+DEFAULT_LEDGER_PATH = PROJECT_ROOT / "outputs/ledger/evidence_ledger.csv"
+
+LEDGER_FIELDNAMES = [
+    "run_id",
+    "generated_at_utc",
+    "git_commit",
+    "date",
+    "aoi",
+    "resolution_m",
+    "confidence_class",
+    "decision",
+    "validPercent",
+    "sampleCount",
+    "noDataCount",
+    "mndwi_mean",
+    "ndti_mean",
+    "api_status",
+    "api_error",
+    "raw_json_path",
+    "processed_csv_path",
+    "brief_path",
+    "evidence_status",
+]
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Build the Azuero Kairos evidence ledger from processed Sentinel-2 CSV output."
+    )
+    parser.add_argument("--processed-csv", default=str(DEFAULT_PROCESSED_CSV))
+    parser.add_argument("--raw-json-dir", default=str(DEFAULT_RAW_JSON_DIR))
+    parser.add_argument("--briefs-dir", default=str(DEFAULT_BRIEFS_DIR))
+    parser.add_argument("--output", default=str(DEFAULT_LEDGER_PATH))
+    args = parser.parse_args(argv)
+
+    processed_csv_path = Path(args.processed_csv)
+    raw_json_dir = Path(args.raw_json_dir)
+    briefs_dir = Path(args.briefs_dir)
+    output_path = Path(args.output)
+
+    if not processed_csv_path.exists():
+        print(f"Processed CSV not found: {as_display_path(processed_csv_path)}", file=sys.stderr)
+        return 1
+
+    rows = build_rows(
+        processed_csv_path=processed_csv_path,
+        raw_json_dir=raw_json_dir,
+        briefs_dir=briefs_dir,
+    )
+    write_csv(rows, output_path)
+    print_summary(rows, output_path)
+    return 0
+
+
+def build_rows(
+    *,
+    processed_csv_path: Path,
+    raw_json_dir: Path,
+    briefs_dir: Path,
+) -> list[dict[str, str]]:
+    run_id = str(uuid4())
+    git_commit = get_git_commit_hash()
+    processed_csv_display = as_display_path(processed_csv_path)
+    rows: list[dict[str, str]] = []
+
+    with processed_csv_path.open("r", encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        for source_row in reader:
+            confidence_class = clean(source_row.get("confidence_class"))
+            decision = clean(source_row.get("decision"))
+            reason = clean(source_row.get("reason"))
+            api_status = clean(source_row.get("api_status"))
+            api_error = clean(source_row.get("api_error"))
+            raw_json_path = resolve_raw_json_path(source_row, raw_json_dir)
+            brief_path = resolve_brief_path(source_row, briefs_dir)
+
+            trace_record = build_ledger_record(
+                observation_id=observation_id(source_row),
+                decision=ConfidenceDecision(confidence_class, reason),
+                evidence={
+                    "date": clean(source_row.get("date")),
+                    "aoi": clean(source_row.get("aoi")),
+                    "processed_csv_path": processed_csv_display,
+                    "raw_json_path": as_display_path(raw_json_path),
+                    "brief_path": as_display_path(brief_path),
+                    "api_status": api_status,
+                },
+            )
+
+            rows.append(
+                {
+                    "run_id": run_id,
+                    "generated_at_utc": clean(trace_record.get("created_at_utc")),
+                    "git_commit": git_commit,
+                    "date": clean(source_row.get("date")),
+                    "aoi": clean(source_row.get("aoi")),
+                    "resolution_m": clean(source_row.get("resolution_m")),
+                    "confidence_class": confidence_class,
+                    "decision": decision,
+                    "validPercent": clean(source_row.get("validPercent")),
+                    "sampleCount": clean(source_row.get("sampleCount")),
+                    "noDataCount": clean(source_row.get("noDataCount")),
+                    "mndwi_mean": clean(source_row.get("mndwi_mean")),
+                    "ndti_mean": clean(source_row.get("ndti_mean")),
+                    "api_status": api_status,
+                    "api_error": api_error,
+                    "raw_json_path": as_display_path(raw_json_path),
+                    "processed_csv_path": processed_csv_display,
+                    "brief_path": as_display_path(brief_path),
+                    "evidence_status": evidence_status(
+                        api_status=api_status,
+                        api_error=api_error,
+                        raw_json_path=raw_json_path,
+                        brief_path=brief_path,
+                    ),
+                }
+            )
+
+    return rows
+
+
+def write_csv(rows: list[dict[str, str]], output_path: Path) -> Path:
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=LEDGER_FIELDNAMES)
+        writer.writeheader()
+        writer.writerows(rows)
+    return output_path
+
+
+def print_summary(rows: list[dict[str, str]], output_path: Path) -> None:
+    api_ok_count = sum(
+        1
+        for row in rows
+        if row["api_status"].upper() == "OK" and row["api_error"].strip() == ""
+    )
+    missing_brief_count = sum(
+        1 for row in rows if "brief_missing" in row["evidence_status"].split(";")
+    )
+    api_error_count = sum(
+        1
+        for row in rows
+        if row["api_error"].strip() or row["api_status"].upper() == "ERROR"
+    )
+
+    print(f"Ledger path: {as_display_path(output_path)}")
+    print(f"Total rows: {len(rows)}")
+    print(f"Rows API OK: {api_ok_count}")
+    print(f"Rows with missing briefs: {missing_brief_count}")
+    print(f"Rows with API errors: {api_error_count}")
+
+
+def get_git_commit_hash() -> str:
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            cwd=PROJECT_ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return "unknown"
+
+    return result.stdout.strip() or "unknown"
+
+
+def resolve_raw_json_path(source_row: dict[str, str], raw_json_dir: Path) -> Path:
+    raw_json_value = clean(source_row.get("raw_json_path"))
+    if raw_json_value:
+        return resolve_project_path(raw_json_value)
+
+    date = clean(source_row.get("date"))
+    aoi = clean(source_row.get("aoi"))
+    resolution = clean(source_row.get("resolution_m"))
+    return raw_json_dir / f"{date}_{aoi}_mndwi_ndti_{resolution}m_s2_stats.json"
+
+
+def resolve_brief_path(source_row: dict[str, str], briefs_dir: Path) -> Path:
+    date = clean(source_row.get("date"))
+    aoi = clean(source_row.get("aoi"))
+    return briefs_dir / f"{date}_{aoi}_confidence_brief.md"
+
+
+def resolve_project_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path
+    return PROJECT_ROOT / path
+
+
+def evidence_status(
+    *,
+    api_status: str,
+    api_error: str,
+    raw_json_path: Path,
+    brief_path: Path,
+) -> str:
+    statuses: list[str] = []
+    if api_status.upper() == "OK" and api_error.strip() == "":
+        statuses.append("official_api_ok")
+    if api_error.strip():
+        statuses.append("api_error")
+    if not raw_json_path.exists():
+        statuses.append("raw_json_missing")
+    if not brief_path.exists():
+        statuses.append("brief_missing")
+    return ";".join(statuses) if statuses else "status_unknown"
+
+
+def observation_id(source_row: dict[str, str]) -> str:
+    return "_".join(
+        value
+        for value in (
+            clean(source_row.get("date")),
+            clean(source_row.get("aoi")),
+            clean(source_row.get("resolution_m")),
+        )
+        if value
+    )
+
+
+def clean(value: object) -> str:
+    if value is None:
+        return ""
+    return str(value).strip()
+
+
+def as_display_path(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(PROJECT_ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
