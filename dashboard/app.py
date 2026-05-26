@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+from html import escape
 import math
 from pathlib import Path
 import sys
@@ -31,17 +32,12 @@ DEFAULT_DATE = "2025-06-10"
 DEFAULT_AOI = "corridor_wide"
 PROCESSED_DIR = PROJECT_ROOT / "outputs" / "processed_csv"
 BRIEF_DIR = PROJECT_ROOT / "outputs" / "briefs"
+LEDGER_PATH = PROJECT_ROOT / "outputs" / "ledger" / "evidence_ledger.csv"
 
 CONFIDENCE_DISPLAY = {
     "usable": "USABLE",
     "low_confidence": "BAJA CONFIANZA",
     "do_not_infer": "NO INFERIR",
-}
-
-DECISION_DISPLAY = {
-    "interpret": "Interpretar con cautela",
-    "review": "Revisar / verificar",
-    "do_not_infer": "No inferir",
 }
 
 WHAT_NOW = {
@@ -55,19 +51,19 @@ WHAT_NOW = {
 
 STATE_STYLE = {
     "usable": {
-        "streamlit_state": "success",
+        "class": "usable",
         "label": "USABLE",
-        "decision": "Interpretar con cautela",
+        "tone": "usable",
     },
     "low_confidence": {
-        "streamlit_state": "warning",
+        "class": "low-confidence",
         "label": "BAJA CONFIANZA",
-        "decision": "Revisar / verificar",
+        "tone": "low_confidence",
     },
     "do_not_infer": {
-        "streamlit_state": "error",
+        "class": "do-not-infer",
         "label": "NO INFERIR",
-        "decision": "No inferir",
+        "tone": "do_not_infer",
     },
 }
 
@@ -84,9 +80,7 @@ PREVIEW_RECORDS = [
         "confidence_class": "usable",
         "decision": "interpret",
         "reason": "La observación tiene suficiente porcentaje válido para interpretación exploratoria.",
-        "recommended_action": (
-            "Usar para lectura hidro-sedimentaria exploratoria con límites explícitos."
-        ),
+        "recommended_action": "Usar para lectura hidro-sedimentaria exploratoria con límites explícitos.",
         "raw_json_path": "pending official run",
         "source": "preview",
     },
@@ -134,9 +128,7 @@ PREVIEW_RECORDS = [
         "confidence_class": "usable",
         "decision": "interpret",
         "reason": "La observación tiene suficiente porcentaje válido para interpretación exploratoria.",
-        "recommended_action": (
-            "Usar para lectura hidro-sedimentaria exploratoria con límites explícitos."
-        ),
+        "recommended_action": "Usar para lectura hidro-sedimentaria exploratoria con límites explícitos.",
         "raw_json_path": "pending official run",
         "source": "preview",
     },
@@ -152,9 +144,7 @@ PREVIEW_RECORDS = [
         "confidence_class": "usable",
         "decision": "interpret",
         "reason": "La observación tiene suficiente porcentaje válido para interpretación exploratoria.",
-        "recommended_action": (
-            "Usar para lectura hidro-sedimentaria exploratoria con límites explícitos."
-        ),
+        "recommended_action": "Usar para lectura hidro-sedimentaria exploratoria con límites explícitos.",
         "raw_json_path": "pending official run",
         "source": "preview",
     },
@@ -162,9 +152,8 @@ PREVIEW_RECORDS = [
 
 SCIENTIFIC_LIMITS = (
     "Azuero Kairós no detecta pesticidas, atrazina, patógenos, metales pesados, "
-    "contaminación química disuelta ni agua segura. La salida es una evaluación "
-    "de confianza satelital para lectura hidro-sedimentaria exploratoria. "
-    "Las afirmaciones químicas o sanitarias requieren laboratorio o verificación autorizada."
+    "contaminación química disuelta ni agua segura. Las afirmaciones químicas o "
+    "sanitarias requieren laboratorio o verificación autorizada."
 )
 
 
@@ -176,55 +165,52 @@ def inject_css() -> None:
         """
         <style>
         :root {
-          --ak-bg: #f4ecde;
-          --ak-surface: #fffaf1;
-          --ak-surface-2: #f8efe0;
-          --ak-text: #17232e;
-          --ak-muted: #66727e;
-          --ak-river: #0d4666;
-          --ak-river-2: #176c84;
-          --ak-amber: #b97824;
-          --ak-red-muted: #8a3f3b;
-          --ak-green: #1f7a62;
-          --ak-border: rgba(23, 35, 46, 0.14);
-          --ak-border-strong: rgba(13, 70, 102, 0.22);
-          --ak-shadow: 0 18px 46px rgba(38, 43, 47, 0.10);
+          --ak-bg: #f5ecdc;
+          --ak-bg-soft: #fbf6ec;
+          --ak-surface: #fffaf0;
+          --ak-surface-strong: #fff6e6;
+          --ak-text: #122d3d;
+          --ak-muted: #6d7780;
+          --ak-border: rgba(18, 45, 61, 0.13);
+          --ak-border-strong: rgba(18, 45, 61, 0.22);
+          --ak-river: #0c4868;
+          --ak-river-soft: #d7e9ec;
+          --ak-terracotta: #9b443d;
+          --ak-terracotta-soft: #f2ded7;
+          --ak-amber: #b97721;
+          --ak-amber-soft: #f5e4c8;
+          --ak-green: #24775e;
+          --ak-green-soft: #dcebe1;
+          --ak-shadow: 0 18px 46px rgba(42, 39, 34, 0.10);
         }
 
         .stApp {
           background:
-            radial-gradient(circle at 8% 0%, rgba(23, 108, 132, 0.10), transparent 28%),
-            linear-gradient(135deg, var(--ak-bg) 0%, #f8f2e8 56%, #eadcc8 100%);
+            radial-gradient(circle at 9% -10%, rgba(12, 72, 104, 0.12), transparent 24rem),
+            radial-gradient(circle at 88% 4%, rgba(155, 68, 61, 0.10), transparent 22rem),
+            linear-gradient(135deg, var(--ak-bg) 0%, var(--ak-bg-soft) 53%, #ecdec8 100%);
           color: var(--ak-text);
         }
 
         .block-container {
-          max-width: 1180px;
-          padding: 1.1rem 1.55rem 2.2rem;
+          max-width: 1340px;
+          padding: 1.05rem 1.55rem 2.3rem;
         }
 
-        h1, h2, h3, p, li, div, label {
+        h1, h2, h3, p, li, div, label, span {
           letter-spacing: 0;
         }
 
-        h1 {
+        h1, h2, h3 {
           color: var(--ak-river);
-          font-size: 2.65rem;
-          line-height: 0.98;
-          margin-bottom: 0.15rem;
         }
 
         h2, h3 {
-          color: var(--ak-river);
-        }
-
-        h3 {
-          margin-top: 0.15rem;
-          margin-bottom: 0.35rem;
+          margin-top: 0;
         }
 
         p {
-          margin-bottom: 0.45rem;
+          margin-bottom: 0.35rem;
         }
 
         div[data-testid="stVerticalBlock"] {
@@ -232,79 +218,488 @@ def inject_css() -> None:
         }
 
         div[data-testid="stVerticalBlockBorderWrapper"] {
-          border-color: var(--ak-border);
-          background: rgba(255, 250, 241, 0.90);
+          border: 1px solid var(--ak-border);
+          background: rgba(255, 250, 240, 0.92);
           border-radius: 8px;
           box-shadow: var(--ak-shadow);
         }
 
         div[data-testid="stVerticalBlockBorderWrapper"] > div {
-          padding: 0.82rem 0.95rem;
-        }
-
-        div[data-testid="stMetric"] {
-          background: var(--ak-surface);
-          border: 1px solid var(--ak-border);
-          border-radius: 8px;
-          padding: 0.74rem 0.85rem;
-          min-height: 82px;
-          box-shadow: 0 8px 24px rgba(38, 43, 47, 0.06);
-        }
-
-        div[data-testid="stMetricLabel"] p {
-          color: #40505c;
-          font-size: 0.78rem;
-          font-weight: 780;
-          text-transform: uppercase;
-        }
-
-        div[data-testid="stMetricValue"] {
-          color: var(--ak-text);
-          font-size: 1.18rem;
-          font-weight: 820;
-        }
-
-        div[data-testid="stAlert"] {
-          border-radius: 8px;
-          padding: 0.6rem 0.75rem;
-          border: 1px solid var(--ak-border);
+          padding: 0.72rem 0.82rem;
         }
 
         div[data-testid="stButton"] button {
           border: 0;
           border-radius: 8px;
           background: var(--ak-river);
-          color: #fffaf1;
-          font-weight: 780;
-          padding: 0.72rem 1rem;
+          color: #fffaf0;
+          font-weight: 760;
+          padding: 0.68rem 1rem;
+          box-shadow: 0 10px 22px rgba(12, 72, 104, 0.18);
         }
 
         div[data-testid="stButton"] button:hover {
-          background: #0f5578;
-          color: #fffaf1;
+          background: #0f5878;
+          color: #fffaf0;
         }
 
         div[data-baseweb="select"] > div {
-          border-radius: 8px;
+          background: #fffaf0;
           border-color: var(--ak-border-strong);
-          background-color: #fffaf1;
+          border-radius: 8px;
+          min-height: 2.4rem;
+        }
+
+        div[data-testid="stMetric"] {
+          background: transparent;
+          border: 0;
+          padding: 0;
+          min-height: auto;
+        }
+
+        div[data-testid="stMetricLabel"] p {
+          color: var(--ak-muted);
+          font-size: 0.72rem;
+          font-weight: 760;
+          text-transform: uppercase;
+        }
+
+        div[data-testid="stMetricValue"] {
+          color: var(--ak-text);
+          font-size: 1.05rem;
+          font-weight: 820;
         }
 
         label, div[data-testid="stCaptionContainer"] {
-          color: #5f6a72;
+          color: var(--ak-muted);
+        }
+
+        .ak-header {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 1rem;
+          margin-bottom: 0.55rem;
+        }
+
+        .ak-kicker {
+          color: var(--ak-muted);
+          font-size: 0.74rem;
+          font-weight: 800;
+          text-transform: uppercase;
+        }
+
+        .ak-title {
+          margin: 0.05rem 0 0.2rem;
+          color: var(--ak-river);
+          font-size: 2.45rem;
+          line-height: 0.96;
+          font-weight: 860;
+        }
+
+        .ak-subtitle {
+          margin: 0;
+          color: #25495b;
+          font-size: 1.03rem;
+          font-weight: 680;
+        }
+
+        .ak-risk {
+          align-self: center;
+          max-width: 24rem;
+          border: 1px solid rgba(155, 68, 61, 0.22);
+          background: var(--ak-terracotta-soft);
+          color: var(--ak-terracotta);
+          border-radius: 8px;
+          padding: 0.68rem 0.82rem;
+          font-size: 0.92rem;
+          font-weight: 760;
+        }
+
+        .ak-control-label {
+          color: var(--ak-muted);
+          font-size: 0.72rem;
+          font-weight: 800;
+          text-transform: uppercase;
+          margin-bottom: 0.15rem;
+        }
+
+        .ak-source-value {
+          color: var(--ak-text);
+          font-size: 0.9rem;
+          font-weight: 740;
+          overflow-wrap: anywhere;
+        }
+
+        .ak-source-note {
+          color: var(--ak-muted);
+          font-size: 0.76rem;
+          margin-top: 0.1rem;
+        }
+
+        .ak-hero {
+          min-height: 19.2rem;
+          border: 1px solid var(--ak-border);
+          border-radius: 8px;
+          padding: 1.15rem;
+          background:
+            linear-gradient(160deg, rgba(255, 250, 240, 0.98), rgba(255, 246, 230, 0.96)),
+            var(--ak-surface);
+          box-shadow: var(--ak-shadow);
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        }
+
+        .ak-hero-top {
+          display: flex;
+          justify-content: space-between;
+          gap: 0.75rem;
+          color: var(--ak-muted);
+          font-size: 0.8rem;
+          font-weight: 760;
+        }
+
+        .ak-state {
+          margin-top: 0.55rem;
+          font-size: 3.4rem;
+          line-height: 0.92;
+          font-weight: 900;
+        }
+
+        .ak-state.do-not-infer {
+          color: var(--ak-terracotta);
+        }
+
+        .ak-state.low-confidence {
+          color: var(--ak-amber);
+        }
+
+        .ak-state.usable {
+          color: var(--ak-green);
+        }
+
+        .ak-evidence {
+          display: inline-flex;
+          align-items: baseline;
+          gap: 0.42rem;
+          margin-top: 0.55rem;
+          color: var(--ak-river);
+        }
+
+        .ak-evidence strong {
+          font-size: 2.05rem;
+          line-height: 1;
+          font-weight: 880;
+        }
+
+        .ak-evidence span {
+          color: var(--ak-muted);
+          font-size: 0.96rem;
+          font-weight: 720;
+        }
+
+        .ak-hero-action {
+          margin: 0.9rem 0 0;
+          max-width: 42rem;
+          color: var(--ak-text);
+          font-size: 1.07rem;
+          font-weight: 760;
+        }
+
+        .ak-hero-next {
+          margin-top: 0.32rem;
+          color: #41515c;
+          font-size: 0.94rem;
+        }
+
+        .ak-side-panel,
+        .ak-visual-card,
+        .ak-compare-card,
+        .ak-metric-card,
+        .ak-flow-card,
+        .ak-limits-card {
+          border: 1px solid var(--ak-border);
+          background: rgba(255, 250, 240, 0.94);
+          border-radius: 8px;
+          box-shadow: 0 12px 30px rgba(42, 39, 34, 0.08);
+        }
+
+        .ak-side-panel {
+          padding: 1rem;
+        }
+
+        .ak-side-panel h3,
+        .ak-visual-card h3,
+        .ak-section-title {
+          margin: 0;
+          color: var(--ak-river);
+          font-size: 1.02rem;
+          font-weight: 840;
+        }
+
+        .ak-side-panel p {
+          color: #3b4b55;
+          font-size: 0.94rem;
+          line-height: 1.48;
+        }
+
+        .ak-next-action {
+          margin-top: 0.75rem;
+          border: 1px solid rgba(12, 72, 104, 0.15);
+          background: var(--ak-river-soft);
+          border-radius: 8px;
+          padding: 0.72rem;
+          color: #17384a;
+          font-weight: 720;
+        }
+
+        .ak-visual-card {
+          padding: 1rem;
+        }
+
+        .ak-river-visual {
+          position: relative;
+          min-height: 8.5rem;
+          margin-top: 0.75rem;
+          border: 1px solid rgba(12, 72, 104, 0.16);
+          border-radius: 8px;
+          background:
+            linear-gradient(135deg, rgba(215, 233, 236, 0.78), rgba(255, 246, 230, 0.95)),
+            repeating-linear-gradient(90deg, rgba(18, 45, 61, 0.04) 0 1px, transparent 1px 18px);
+          overflow: hidden;
+        }
+
+        .ak-river-visual svg {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+        }
+
+        .ak-river-label {
+          position: absolute;
+          left: 0.75rem;
+          top: 0.65rem;
+          color: var(--ak-river);
+          font-size: 0.78rem;
+          font-weight: 820;
+        }
+
+        .ak-river-badge {
+          position: absolute;
+          right: 0.75rem;
+          bottom: 0.65rem;
+          border: 1px solid rgba(12, 72, 104, 0.16);
+          background: rgba(255, 250, 240, 0.88);
+          border-radius: 8px;
+          padding: 0.4rem 0.55rem;
+          color: #314754;
+          font-size: 0.74rem;
+          font-weight: 760;
+        }
+
+        .ak-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.38rem;
+          margin-top: 0.72rem;
+        }
+
+        .ak-tag {
+          border: 1px solid rgba(18, 45, 61, 0.13);
+          background: rgba(255, 246, 230, 0.72);
+          color: #39505e;
+          border-radius: 999px;
+          padding: 0.32rem 0.55rem;
+          font-size: 0.74rem;
+          font-weight: 760;
+        }
+
+        .ak-status-chip {
+          border-radius: 999px;
+          padding: 0.34rem 0.58rem;
+          font-size: 0.74rem;
+          font-weight: 860;
+        }
+
+        .ak-status-chip.do-not-infer {
+          background: var(--ak-terracotta-soft);
+          color: var(--ak-terracotta);
+        }
+
+        .ak-status-chip.low-confidence {
+          background: var(--ak-amber-soft);
+          color: #80500c;
+        }
+
+        .ak-status-chip.usable {
+          background: var(--ak-green-soft);
+          color: var(--ak-green);
+        }
+
+        .ak-section-title {
+          margin: 0.2rem 0 0.45rem;
+        }
+
+        .ak-compare-card {
+          padding: 0.82rem;
+          min-height: 10.4rem;
+        }
+
+        .ak-compare-top {
+          display: flex;
+          justify-content: space-between;
+          gap: 0.7rem;
+          align-items: center;
+        }
+
+        .ak-date {
+          color: var(--ak-muted);
+          font-size: 0.78rem;
+          font-weight: 820;
+        }
+
+        .ak-compare-value {
+          margin-top: 0.72rem;
+          color: var(--ak-river);
+          font-size: 1.65rem;
+          line-height: 1;
+          font-weight: 880;
+        }
+
+        .ak-compare-label,
+        .ak-mini-label {
+          color: var(--ak-muted);
+          font-size: 0.72rem;
+          font-weight: 780;
+          text-transform: uppercase;
+        }
+
+        .ak-compare-message {
+          margin-top: 0.66rem;
+          color: #3c4b55;
+          font-size: 0.86rem;
+          line-height: 1.42;
+        }
+
+        .ak-compare-mini {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0.45rem;
+          margin-top: 0.65rem;
+        }
+
+        .ak-mini-value {
+          color: var(--ak-text);
+          font-weight: 820;
+          font-size: 0.88rem;
+        }
+
+        .ak-insight {
+          margin-top: 0.55rem;
+          border: 1px solid rgba(12, 72, 104, 0.14);
+          background: rgba(215, 233, 236, 0.58);
+          color: #17384a;
+          border-radius: 8px;
+          padding: 0.64rem 0.76rem;
+          font-size: 0.9rem;
+          font-weight: 740;
+        }
+
+        .ak-metric-grid {
+          display: grid;
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+          gap: 0.55rem;
+          margin-top: 0.4rem;
+        }
+
+        .ak-metric-card {
+          padding: 0.72rem;
+          min-height: 5rem;
+        }
+
+        .ak-metric-value {
+          color: var(--ak-text);
+          font-size: 1.1rem;
+          font-weight: 850;
+          margin-top: 0.26rem;
+          overflow-wrap: anywhere;
+        }
+
+        .ak-flow-card {
+          padding: 0.8rem;
+        }
+
+        .ak-flow {
+          display: flex;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 0.42rem;
+          margin-top: 0.35rem;
+        }
+
+        .ak-flow span {
+          color: #31505f;
+          font-size: 0.84rem;
+          font-weight: 790;
+        }
+
+        .ak-flow-step {
+          border: 1px solid rgba(18, 45, 61, 0.13);
+          background: #fffaf0;
+          border-radius: 999px;
+          padding: 0.38rem 0.58rem;
+        }
+
+        .ak-flow-arrow {
+          color: rgba(12, 72, 104, 0.52) !important;
+        }
+
+        .ak-limits-card {
+          padding: 0.82rem;
+          color: #4b5860;
+          font-size: 0.86rem;
+          line-height: 1.45;
+        }
+
+        .ak-preview-note {
+          border: 1px solid rgba(185, 119, 33, 0.24);
+          background: var(--ak-amber-soft);
+          color: #6f470e;
+          border-radius: 8px;
+          padding: 0.66rem 0.78rem;
+          font-size: 0.88rem;
+          font-weight: 700;
         }
 
         .stMarkdown p {
-          line-height: 1.58;
+          line-height: 1.52;
         }
 
-        @media (max-width: 900px) {
+        @media (max-width: 980px) {
           .block-container {
-            padding: 0.8rem 0.85rem 1.8rem;
+            padding: 0.8rem 0.78rem 1.8rem;
           }
 
-          h1 {
-            font-size: 2.15rem;
+          .ak-header {
+            display: block;
+          }
+
+          .ak-risk {
+            margin-top: 0.6rem;
+          }
+
+          .ak-title {
+            font-size: 2.1rem;
+          }
+
+          .ak-state {
+            font-size: 2.7rem;
+          }
+
+          .ak-metric-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
           }
         }
         </style>
@@ -347,19 +742,47 @@ def value_is_missing(value: Any) -> bool:
         return True
     if isinstance(value, float) and math.isnan(value):
         return True
-    if str(value).strip() == "":
-        return True
-    return False
+    value_text = str(value).strip()
+    return value_text == "" or value_text.lower() in {"none", "nan", "pending official run"}
+
+
+def parse_float(value: Any) -> float | None:
+    if value_is_missing(value):
+        return None
+    try:
+        return float(str(value).replace(",", ""))
+    except ValueError:
+        return None
 
 
 def display_value(value: Any, *, suffix: str = "", missing: str = "pendiente") -> str:
     if value_is_missing(value):
         return missing
-    if isinstance(value, float):
-        rendered = f"{value:.2f}"
-    else:
-        rendered = str(value)
-    return f"{rendered}{suffix}"
+    parsed = parse_float(value)
+    if parsed is not None and suffix == "%":
+        return f"{parsed:.2f}{suffix}"
+    return f"{value}{suffix}"
+
+
+def display_percent(value: Any) -> str:
+    parsed = parse_float(value)
+    if parsed is None:
+        return "pendiente"
+    return f"{parsed:.2f}%"
+
+
+def display_count(value: Any) -> str:
+    parsed = parse_float(value)
+    if parsed is None:
+        return "pendiente"
+    return f"{int(parsed):,}"
+
+
+def display_decimal(value: Any) -> str:
+    parsed = parse_float(value)
+    if parsed is None:
+        return "pendiente"
+    return f"{parsed:.2f}"
 
 
 def normalize_record(record: dict[str, Any]) -> dict[str, Any]:
@@ -400,79 +823,202 @@ def localized_value(record: dict[str, Any], localized_key: str, fallback_key: st
     return "no proporcionado"
 
 
+def safe(value: Any) -> str:
+    return escape(str(value), quote=True)
+
+
+def relative_path(path_value: str | Path | None) -> str:
+    if path_value is None:
+        return "No disponible"
+    path = Path(path_value)
+    try:
+        return path.resolve().relative_to(PROJECT_ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+def render_html(markup: str) -> None:
+    st.markdown(markup, unsafe_allow_html=True)
+
+
+def state_style(record: dict[str, Any]) -> dict[str, str]:
+    confidence = str(record.get("confidence_class", "do_not_infer"))
+    return STATE_STYLE.get(confidence, STATE_STYLE["do_not_infer"])
+
+
+def state_label(record: dict[str, Any]) -> str:
+    return localized_value(record, "confidence_label_es", "confidence_class")
+
+
+def hero_action_text(record: dict[str, Any]) -> tuple[str, str]:
+    confidence = str(record.get("confidence_class", "do_not_infer"))
+    if confidence == "do_not_infer":
+        return (
+            "No usar esta observación para afirmar condiciones del territorio.",
+            "Siguiente acción: esperar nueva adquisición o solicitar verificación territorial.",
+        )
+    if confidence == "low_confidence":
+        return (
+            "Revisar esta observación con cautela antes de cualquier lectura territorial.",
+            "Siguiente acción: considerar verificación territorial o una nueva adquisición.",
+        )
+    return (
+        "Usar esta observación para lectura exploratoria con límites explícitos.",
+        "Siguiente acción: interpretar con cautela y conservar la trazabilidad.",
+    )
+
+
 def render_header() -> None:
-    st.title("Azuero Kairós")
-    st.markdown("#### Semáforo de confianza satelital para decisiones agrícolas")
-    st.write(
-        "Azuero Kairós evalúa si una observación Sentinel tiene evidencia suficiente "
-        "para interpretar, revisar o no inferir."
+    render_html(
+        """
+        <div class="ak-header">
+          <div>
+            <div class="ak-kicker">Consola de decisión territorial</div>
+            <h1 class="ak-title">Azuero Kairós</h1>
+            <p class="ak-subtitle">Semáforo de confianza satelital para decisiones agrícolas</p>
+          </div>
+          <div class="ak-risk">Una mala inferencia también es un riesgo.</div>
+        </div>
+        """
     )
 
 
 def render_input_panel(selected_date: str, selected_aoi: str, source_path: str | None) -> tuple[str, str]:
+    ledger_status = (
+        f"Ledger activo: {relative_path(LEDGER_PATH)}"
+        if LEDGER_PATH.exists()
+        else "Ledger pendiente"
+    )
+    source_label = relative_path(source_path) if source_path else "UI preview only, not official evidence"
+
     with st.container(border=True):
-        st.caption("Panel de control")
-        col_date, col_aoi, col_source = st.columns([0.9, 0.75, 1.45], vertical_alignment="bottom")
+        col_date, col_aoi, col_source, col_ledger = st.columns(
+            [0.92, 0.78, 1.6, 1.08],
+            vertical_alignment="bottom",
+            gap="small",
+        )
         with col_date:
             next_date = st.selectbox(
-                "Fecha de observación",
+                "Fecha",
                 DATES,
                 index=DATES.index(selected_date),
             )
         with col_aoi:
             next_aoi = st.selectbox(
-                "Área de interés",
+                "AOI",
                 AOIS,
                 index=AOIS.index(selected_aoi),
             )
         with col_source:
-            st.markdown("**Fuente de datos**")
-            st.caption(source_path or "Vista previa hasta ejecutar el batch oficial Sentinel-2")
+            render_html(
+                f"""
+                <div class="ak-control-label">Fuente de datos</div>
+                <div class="ak-source-value">{safe(source_label)}</div>
+                <div class="ak-source-note">CSV oficial cuando está disponible</div>
+                """
+            )
+        with col_ledger:
+            render_html(
+                f"""
+                <div class="ak-control-label">Estado ledger</div>
+                <div class="ak-source-value">{safe(ledger_status)}</div>
+                <div class="ak-source-note">Trazabilidad de evidencia</div>
+                """
+            )
     return next_date, next_aoi
 
 
 def render_preview_notice(using_preview: bool) -> None:
     if not using_preview:
         return
-    with st.container(border=True):
-        col_status, col_action = st.columns([1.0, 1.9], vertical_alignment="center")
-        with col_status:
-            st.markdown("**Vista previa de interfaz**")
-            st.caption("UI preview only, not official evidence.")
-        with col_action:
-            st.write("No official processed CSV found yet. Showing UI preview data only.")
-            st.caption("Ejecuta el batch oficial Sentinel-2 para reemplazar esta vista previa con evidencia oficial.")
+    render_html(
+        """
+        <div class="ak-preview-note">
+          No official processed CSV found yet. Showing UI preview data only.
+          Ejecuta el batch oficial Sentinel-2 para reemplazar esta vista previa con evidencia oficial.
+        </div>
+        """
+    )
 
 
 def render_hero_card(record: dict[str, Any]) -> None:
-    confidence = str(record.get("confidence_class", "do_not_infer"))
-    style = STATE_STYLE.get(confidence, STATE_STYLE["do_not_infer"])
-    state_label = localized_value(record, "confidence_label_es", "confidence_class")
-    decision_label = localized_value(record, "decision_label_es", "decision")
+    style = state_style(record)
+    primary_action, next_action = hero_action_text(record)
+    valid_percent = display_percent(record.get("validPercent"))
+    label = state_label(record)
+
+    render_html(
+        f"""
+        <section class="ak-hero">
+          <div>
+            <div class="ak-hero-top">
+              <span>Decisión actual</span>
+              <span>{safe(record.get("date"))} · {safe(record.get("aoi"))}</span>
+            </div>
+            <div class="ak-state {safe(style["class"])}">{safe(label)}</div>
+            <div class="ak-evidence">
+              <strong>{safe(valid_percent)}</strong>
+              <span>evidencia válida</span>
+            </div>
+          </div>
+          <div>
+            <p class="ak-hero-action">{safe(primary_action)}</p>
+            <p class="ak-hero-next">{safe(next_action)}</p>
+          </div>
+        </section>
+        """
+    )
+
+
+def render_meaning_panel(record: dict[str, Any]) -> None:
     reason = localized_value(record, "reason_es", "reason")
     action = localized_value(record, "recommended_action_es", "recommended_action")
+    if action == "no proporcionado":
+        action = WHAT_NOW.get(str(record.get("confidence_class")), WHAT_NOW["do_not_infer"])
 
-    with st.container(border=True):
-        top_left, top_right = st.columns([0.85, 1.55], vertical_alignment="center")
-        with top_left:
-            st.caption(f"{record.get('date')} · {record.get('aoi')}")
-            st.markdown(f"## {state_label}")
-            if style["streamlit_state"] == "success":
-                st.success(decision_label)
-            elif style["streamlit_state"] == "warning":
-                st.warning(decision_label)
-            else:
-                st.error(decision_label)
-        with top_right:
-            st.caption("Decisión responsable")
-            st.markdown(f"**{reason}**")
-            st.write(f"**Siguiente acción:** {action}")
-            st.info("Insight de producto: Una mala inferencia también es un riesgo.")
+    render_html(
+        f"""
+        <section class="ak-side-panel">
+          <h3>Qué significa esto</h3>
+          <p>{safe(reason)}</p>
+          <div class="ak-next-action">
+            <div class="ak-mini-label">Siguiente acción</div>
+            <div>{safe(action)}</div>
+          </div>
+        </section>
+        """
+    )
+
+
+def render_territory_card(record: dict[str, Any]) -> None:
+    style = state_style(record)
+    label = state_label(record)
+    render_html(
+        f"""
+        <section class="ak-visual-card">
+          <h3>Corredor Río La Villa</h3>
+          <div class="ak-river-visual" aria-label="Visual abstracto del corredor Río La Villa">
+            <div class="ak-river-label">Corredor agrícola-ripario</div>
+            <svg viewBox="0 0 360 150" role="img" aria-label="Línea abstracta tipo río">
+              <path d="M-8 102 C 44 58, 82 132, 132 82 S 221 36, 270 77 S 329 120, 370 63"
+                    fill="none" stroke="#0c4868" stroke-width="14" stroke-linecap="round" opacity="0.24" />
+              <path d="M-8 102 C 44 58, 82 132, 132 82 S 221 36, 270 77 S 329 120, 370 63"
+                    fill="none" stroke="#176c84" stroke-width="5" stroke-linecap="round" opacity="0.82" />
+            </svg>
+            <div class="ak-river-badge">{safe(label)}</div>
+          </div>
+          <div class="ak-tags">
+            <span class="ak-tag">AOI corridor_wide</span>
+            <span class="ak-tag">Sentinel-2</span>
+            <span class="ak-tag">{safe(display_value(record.get("resolution_m"), suffix=" m"))}</span>
+            <span class="ak-status-chip {safe(style["class"])}">{safe(label)}</span>
+          </div>
+        </section>
+        """
+    )
 
 
 def render_demo_comparison(records: list[dict[str, Any]], using_preview: bool) -> None:
-    st.subheader("Comparación de decisión")
-
     first_record = get_record(records, "2025-06-10", "corridor_wide")
     second_record = get_record(records, "2025-06-30", "corridor_wide")
     comparison_available = (
@@ -483,110 +1029,108 @@ def render_demo_comparison(records: list[dict[str, Any]], using_preview: bool) -
         and second_record.get("source") == "official"
     )
 
+    render_html('<h3 class="ak-section-title">Comparación de decisión</h3>')
+
     if not comparison_available:
-        with st.container(border=True):
-            st.caption(
-                "Comparación disponible cuando el CSV oficial contiene "
-                "2025-06-10 y 2025-06-30."
-            )
+        render_html(
+            """
+            <div class="ak-compare-card">
+              Comparación disponible cuando el CSV oficial contiene 2025-06-10 y 2025-06-30.
+            </div>
+            """
+        )
         return
 
     left, right = st.columns(2, gap="small")
     with left:
         render_comparison_card(
             normalize_record(first_record),
-            state_label="NO INFERIR",
-            message=(
-                "La observación no tiene suficiente evidencia válida para una "
-                "inferencia responsable."
-            ),
+            message="Evidencia insuficiente para inferencia responsable.",
         )
     with right:
         render_comparison_card(
             normalize_record(second_record),
-            state_label="USABLE",
-            message=(
-                "La observación tiene suficiente evidencia para una lectura "
-                "exploratoria con límites explícitos."
-            ),
+            message="Evidencia suficiente para lectura exploratoria con límites explícitos.",
         )
 
-    st.caption(
-        "El valor del sistema no es forzar alertas, sino decidir cuándo la "
-        "evidencia Copernicus puede usarse y cuándo no."
+    render_html(
+        """
+        <div class="ak-insight">
+          El valor del sistema no es forzar alertas, sino decidir cuándo la evidencia Copernicus puede usarse y cuándo no.
+        </div>
+        """
     )
 
 
-def render_comparison_card(record: dict[str, Any], *, state_label: str, message: str) -> None:
-    with st.container(border=True):
-        st.caption(f"Fecha: {record.get('date')}")
-        st.markdown(f"**Estado: {state_label}**")
-        metric_cols = st.columns(3, gap="small")
-        metric_cols[0].metric(
-            "Porcentaje válido",
-            display_value(record.get("validPercent"), suffix="%"),
-        )
-        metric_cols[1].metric("Muestras", display_value(record.get("sampleCount")))
-        metric_cols[2].metric("Sin datos", display_value(record.get("noDataCount")))
-        st.caption(f"Mensaje: {message}")
+def render_comparison_card(record: dict[str, Any], *, message: str) -> None:
+    style = state_style(record)
+    label = state_label(record)
+    render_html(
+        f"""
+        <article class="ak-compare-card">
+          <div class="ak-compare-top">
+            <span class="ak-date">{safe(record.get("date"))}</span>
+            <span class="ak-status-chip {safe(style["class"])}">{safe(label)}</span>
+          </div>
+          <div class="ak-compare-value">{safe(display_percent(record.get("validPercent")))}</div>
+          <div class="ak-compare-label">validPercent</div>
+          <div class="ak-compare-mini">
+            <div>
+              <div class="ak-mini-label">sampleCount</div>
+              <div class="ak-mini-value">{safe(display_count(record.get("sampleCount")))}</div>
+            </div>
+            <div>
+              <div class="ak-mini-label">noDataCount</div>
+              <div class="ak-mini-value">{safe(display_count(record.get("noDataCount")))}</div>
+            </div>
+          </div>
+          <div class="ak-compare-message">Mensaje: {safe(message)}</div>
+        </article>
+        """
+    )
 
 
 def render_metrics(record: dict[str, Any]) -> None:
-    st.subheader("Métricas críticas")
-    row_one = st.columns(4)
-    row_one[0].metric("Porcentaje válido", display_value(record.get("validPercent"), suffix="%"))
-    row_one[1].metric("Muestras", display_value(record.get("sampleCount")))
-    row_one[2].metric("Sin datos", display_value(record.get("noDataCount")))
-    row_one[3].metric("Resolución", display_value(record.get("resolution_m"), suffix=" m"))
-
-    row_two = st.columns(2)
-    row_two[0].metric("Promedio MNDWI", display_value(record.get("mndwi_mean")))
-    row_two[1].metric("Promedio NDTI", display_value(record.get("ndti_mean")))
-
-
-def render_what_now(record: dict[str, Any]) -> None:
-    confidence = str(record.get("confidence_class", "do_not_infer"))
-    action = localized_value(record, "recommended_action_es", "recommended_action")
-    if action == "no proporcionado":
-        action = WHAT_NOW.get(confidence, WHAT_NOW["do_not_infer"])
-    with st.container(border=True):
-        col_label, col_action = st.columns([0.72, 2.1], vertical_alignment="center")
-        with col_label:
-            st.subheader("Qué hacer ahora")
-        with col_action:
-            st.markdown(f"**{action}**")
-
-
-def workflow_steps(record_exists: bool, confidence_class: str, brief_generated: bool) -> list[tuple[str, str]]:
-    needs_human_review = confidence_class in {"low_confidence", "do_not_infer"}
-    first_status = "completo" if record_exists else "pendiente"
-    brief_status = "completo" if brief_generated else "pendiente"
-    verification_status = "pendiente" if needs_human_review else "pendiente"
-    human_status = "requiere decisión humana" if needs_human_review else "pendiente"
-    final_status = "completo" if brief_generated else "pendiente"
-
-    return [
-        ("Adquisición Sentinel", first_status),
-        ("Estadísticas del AOI", first_status),
-        ("Clasificación de confianza", first_status),
-        ("Informe generado", brief_status),
-        ("Verificación territorial si aplica", verification_status),
-        ("Confirmación humana", human_status),
-        ("Informe final", final_status),
+    metrics = [
+        ("validPercent", display_percent(record.get("validPercent"))),
+        ("sampleCount", display_count(record.get("sampleCount"))),
+        ("noDataCount", display_count(record.get("noDataCount"))),
+        ("MNDWI", display_decimal(record.get("mndwi_mean"))),
+        ("NDTI", display_decimal(record.get("ndti_mean"))),
+        ("resolution_m", display_value(record.get("resolution_m"), suffix=" m")),
     ]
+    cards = "\n".join(
+        f"""
+        <div class="ak-metric-card">
+          <div class="ak-mini-label">{safe(label)}</div>
+          <div class="ak-metric-value">{safe(value)}</div>
+        </div>
+        """
+        for label, value in metrics
+    )
+    render_html(
+        f"""
+        <h3 class="ak-section-title">Métricas críticas</h3>
+        <div class="ak-metric-grid">{cards}</div>
+        """
+    )
 
 
-def render_workflow(record: dict[str, Any] | None, brief_generated: bool) -> None:
-    confidence = str(record.get("confidence_class", "do_not_infer")) if record else "do_not_infer"
-    steps = workflow_steps(record is not None, confidence, brief_generated)
-
-    with st.container(border=True):
-        st.subheader("Flujo de evidencia")
-        columns = st.columns(7, gap="small")
-        for index, ((name, status), column) in enumerate(zip(steps, columns), start=1):
-            with column:
-                st.caption(f"{index}. {name}")
-                st.markdown(f"**{status}**")
+def render_workflow() -> None:
+    steps = ["CDSE", "JSON", "CSV", "Confianza", "Brief", "Ledger"]
+    pieces: list[str] = []
+    for index, step in enumerate(steps):
+        if index:
+            pieces.append('<span class="ak-flow-arrow">&rarr;</span>')
+        pieces.append(f'<span class="ak-flow-step">{safe(step)}</span>')
+    render_html(
+        f"""
+        <section class="ak-flow-card">
+          <h3 class="ak-section-title">Flujo de evidencia</h3>
+          <div class="ak-flow">{"".join(pieces)}</div>
+        </section>
+        """
+    )
 
 
 def brief_output_path(record: dict[str, Any]) -> Path:
@@ -641,16 +1185,25 @@ def render_brief_panel(record: dict[str, Any], is_preview: bool, state_key: str)
 
 
 def render_limits() -> None:
-    with st.container(border=True):
-        st.subheader("Límites científicos")
-        st.caption(SCIENTIFIC_LIMITS)
+    render_html(
+        f"""
+        <section class="ak-limits-card">
+          <strong>Límites científicos.</strong> {safe(SCIENTIFIC_LIMITS)}
+        </section>
+        """
+    )
 
 
 def render_no_record(selected_date: str, selected_aoi: str) -> None:
-    with st.container(border=True):
-        st.subheader("Sin registro para la selección")
-        st.write(f"No hay registro para {selected_date} / {selected_aoi}. No se inventa evidencia oficial.")
-    render_workflow(None, brief_generated=False)
+    render_html(
+        f"""
+        <section class="ak-side-panel">
+          <h3>Sin registro para la selección</h3>
+          <p>No hay registro para {safe(selected_date)} / {safe(selected_aoi)}. No se inventa evidencia oficial.</p>
+        </section>
+        """
+    )
+    render_workflow()
     render_limits()
 
 
@@ -673,13 +1226,17 @@ def main() -> None:
     record = normalize_record(raw_record)
     is_preview = record.get("source") == "preview"
     state_key = f"{record.get('source')}_{selected_date}_{selected_aoi}"
-    brief_generated = bool(st.session_state.get(f"brief_generated_{state_key}", False))
 
-    render_hero_card(record)
-    render_demo_comparison(records, using_preview)
-    render_what_now(record)
+    main_col, side_col = st.columns([1.45, 0.88], gap="medium")
+    with main_col:
+        render_hero_card(record)
+        render_demo_comparison(records, using_preview)
+    with side_col:
+        render_meaning_panel(record)
+        render_territory_card(record)
+
     render_metrics(record)
-    render_workflow(record, brief_generated)
+    render_workflow()
     render_limits()
     render_brief_panel(record, is_preview, state_key)
 
