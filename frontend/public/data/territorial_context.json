@@ -1,39 +1,24 @@
 {
-  "country": "Panama",
+  "country": "Panamá",
   "region": "Azuero",
   "corridor_name": "Río La Villa",
   "aoi_name": "corridor_wide",
-  "note": "Contextual geography only. Approximate public pilot locator, not cartography of precision.",
-  "coordinate_order": "lat_lng",
-  "panama_center": [8.538, -80.7821],
-  "azuero_center": [7.7605, -80.565],
-  "corridor_center": [7.884, -80.588],
-  "extent": {
-    "south": 7.49,
-    "west": -80.86,
-    "north": 8.03,
-    "east": -80.34
-  },
-  "corridor_path": [
-    [7.7112, -80.7633],
-    [7.758, -80.714],
-    [7.806, -80.66],
-    [7.858, -80.602],
-    [7.905, -80.535],
-    [7.94, -80.472],
-    [7.965, -80.425]
+  "source": "Copernicus CDSE Statistical API",
+  "sensor": "Sentinel-2 L2A",
+  "resolution_m": 20,
+  "note": "Contexto territorial del caso piloto. La geometría oficial se procesa desde el AOI del pipeline.",
+  "bbox": [
+    -80.61,
+    7.82,
+    -80.36,
+    8.1
   ],
-  "labels": {
-    "country": "Panamá",
-    "region": "Azuero",
-    "corridor": "Corredor Río La Villa",
-    "aoi": "AOI: corridor_wide",
-    "precision_note": "Ubicación contextual, no cartografía de precisión."
-  },
-  "metadata": {
-    "public_safe": true,
-    "contains_secrets": false,
-    "intended_use": "Frontend contextual map for the Azuero Kairós public demo.",
-    "precision": "approximate_contextual"
-  }
+  "centroid": [
+    -80.485,
+    7.96
+  ],
+  "geometry_file": "/data/aoi_corridor_wide.geojson",
+  "coordinate_reference_system": "EPSG:4326",
+  "coordinate_order": "lon_lat_geojson",
+  "public_safe": true
 }
