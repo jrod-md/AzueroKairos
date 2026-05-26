@@ -123,7 +123,7 @@ button {
 
 .decision-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.52fr) minmax(340px, 0.62fr);
+  grid-template-columns: minmax(0, 1.18fr) minmax(420px, 0.82fr);
   gap: 18px;
   min-height: min(760px, calc(100vh - 94px));
   align-items: stretch;
@@ -237,6 +237,7 @@ select {
   font-weight: 900;
   letter-spacing: 0;
   line-height: 0.82;
+  white-space: nowrap;
 }
 
 .tone-usable .decision-word,
@@ -345,6 +346,11 @@ select {
   overflow-wrap: anywhere;
 }
 
+.decision-content {
+  position: relative;
+  z-index: 1;
+}
+
 .why-panel {
   display: flex;
   flex-direction: column;
@@ -354,12 +360,36 @@ select {
   padding: clamp(26px, 4vw, 42px);
 }
 
+.instrument-panel {
+  justify-content: start;
+  gap: 12px;
+  padding: clamp(22px, 3vw, 30px);
+}
+
 .why-panel h2 {
   max-width: 360px;
   margin: 10px 0 26px;
   color: var(--river);
   font-size: clamp(2.25rem, 3.6vw, 3.55rem);
   line-height: 0.98;
+}
+
+.instrument-panel h2 {
+  max-width: 520px;
+  margin-bottom: 14px;
+  font-size: clamp(1.9rem, 2.6vw, 2.75rem);
+}
+
+.instrument-panel .compact-compare {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.instrument-panel .mini-decision {
+  padding: 14px;
+}
+
+.instrument-panel .mini-decision b {
+  font-size: clamp(1.25rem, 2vw, 1.8rem);
 }
 
 .compact-compare {
@@ -406,7 +436,7 @@ select {
 }
 
 .insight-text {
-  margin: 24px 0 0;
+  margin: 14px 0 0;
   color: var(--river);
   font-size: 1.05rem;
   font-weight: 760;
@@ -415,6 +445,341 @@ select {
 
 .compact-missing {
   color: var(--river-soft);
+  font-weight: 720;
+}
+
+.threshold-visual,
+.observation-timeline,
+.territorial-motif {
+  position: relative;
+  border: 1px solid color-mix(in oklch, var(--river) 10%, transparent);
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, color-mix(in oklch, var(--paper) 82%, transparent), color-mix(in oklch, var(--paper-soft) 72%, transparent)),
+    var(--paper);
+}
+
+.threshold-visual {
+  padding: 16px;
+}
+
+.threshold-visual.compact {
+  margin-top: 12px;
+  padding: 18px;
+  box-shadow: var(--shadow-soft);
+}
+
+.threshold-heading,
+.timeline-heading,
+.motif-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.threshold-heading h3,
+.motif-heading h3 {
+  margin: 5px 0 0;
+  color: var(--river);
+  font-size: clamp(1.2rem, 2vw, 1.65rem);
+  line-height: 1;
+}
+
+.threshold-heading strong {
+  color: var(--stop);
+  font-size: 0.9rem;
+  font-weight: 900;
+  letter-spacing: 0.035em;
+  text-align: right;
+}
+
+.threshold-visual.tone-usable .threshold-heading strong,
+.territorial-motif.tone-usable .motif-heading h3 {
+  color: var(--usable);
+}
+
+.threshold-visual.tone-review .threshold-heading strong,
+.territorial-motif.tone-review .motif-heading h3 {
+  color: var(--review);
+}
+
+.threshold-track-wrap {
+  margin-top: 16px;
+}
+
+.threshold-track {
+  position: relative;
+  display: flex;
+  height: 16px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--river) 6%, transparent);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in oklch, var(--river) 11%, transparent),
+    inset 0 6px 14px color-mix(in oklch, var(--river) 8%, transparent);
+}
+
+.threshold-zone {
+  height: 100%;
+}
+
+.zone-stop {
+  border-radius: 999px 0 0 999px;
+  background: linear-gradient(90deg, var(--stop-soft), var(--stop));
+}
+
+.zone-review {
+  background: linear-gradient(90deg, var(--review-soft), var(--review));
+}
+
+.zone-usable {
+  border-radius: 0 999px 999px 0;
+  background: linear-gradient(90deg, var(--usable-soft), var(--usable));
+}
+
+.threshold-marker {
+  position: absolute;
+  top: 50%;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 2px solid color-mix(in oklch, var(--paper) 92%, var(--cream));
+  border-radius: 999px;
+  background: var(--stop);
+  box-shadow:
+    0 12px 26px color-mix(in oklch, var(--river) 18%, transparent),
+    0 0 0 7px color-mix(in oklch, var(--stop) 17%, transparent);
+  transform: translate(-50%, -50%);
+  transition:
+    left 620ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 240ms ease-out,
+    box-shadow 240ms ease-out;
+}
+
+.threshold-marker i {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--paper) 94%, transparent);
+}
+
+.threshold-visual.tone-usable .threshold-marker {
+  background: var(--usable);
+  box-shadow:
+    0 12px 26px color-mix(in oklch, var(--river) 18%, transparent),
+    0 0 0 7px color-mix(in oklch, var(--usable) 17%, transparent);
+}
+
+.threshold-visual.tone-review .threshold-marker {
+  background: var(--review);
+  box-shadow:
+    0 12px 26px color-mix(in oklch, var(--river) 18%, transparent),
+    0 0 0 7px color-mix(in oklch, var(--review) 20%, transparent);
+}
+
+.threshold-boundaries {
+  position: relative;
+  height: 20px;
+  margin-top: 7px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 760;
+}
+
+.threshold-boundaries span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+}
+
+.threshold-boundaries span:nth-child(1) {
+  left: 0;
+  transform: translateX(0);
+}
+
+.threshold-boundaries span:nth-child(2) {
+  left: 10%;
+}
+
+.threshold-boundaries span:nth-child(3) {
+  left: 30%;
+}
+
+.threshold-boundaries span:nth-child(4) {
+  right: 0;
+  transform: translateX(0);
+}
+
+.threshold-labels {
+  display: grid;
+  grid-template-columns: minmax(76px, 0.5fr) minmax(86px, 0.72fr) minmax(0, 2.4fr);
+  gap: 8px;
+  margin-top: 3px;
+}
+
+.threshold-labels span {
+  color: var(--river);
+  font-size: 0.79rem;
+  font-weight: 820;
+}
+
+.threshold-note {
+  margin: 12px 0 0;
+  color: var(--river-soft);
+  font-size: 0.9rem;
+  line-height: 1.38;
+}
+
+.observation-timeline {
+  padding: 14px;
+}
+
+.timeline-heading span,
+.motif-heading > span {
+  color: var(--river-soft);
+  font-size: 0.82rem;
+  font-weight: 760;
+}
+
+.timeline-rail {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.timeline-rail::before {
+  content: "";
+  position: absolute;
+  top: 15px;
+  right: 9%;
+  left: 9%;
+  height: 1px;
+  background: color-mix(in oklch, var(--river) 16%, transparent);
+}
+
+.timeline-point {
+  position: relative;
+  display: grid;
+  justify-items: start;
+  gap: 5px;
+  min-height: 82px;
+  border: 1px solid transparent;
+  border-radius: 17px;
+  background: transparent;
+  color: var(--river-soft);
+  padding: 1px 8px 10px;
+  text-align: left;
+}
+
+.timeline-dot {
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  border: 2px solid color-mix(in oklch, var(--paper) 90%, transparent);
+  border-radius: 999px;
+  background: var(--stop);
+  box-shadow: 0 0 0 5px color-mix(in oklch, var(--stop) 12%, transparent);
+}
+
+.timeline-point.tone-usable .timeline-dot {
+  background: var(--usable);
+  box-shadow: 0 0 0 5px color-mix(in oklch, var(--usable) 12%, transparent);
+}
+
+.timeline-point.tone-review .timeline-dot {
+  background: var(--review);
+  box-shadow: 0 0 0 5px color-mix(in oklch, var(--review) 15%, transparent);
+}
+
+.timeline-date {
+  color: var(--river);
+  font-size: 0.75rem;
+  font-weight: 860;
+}
+
+.timeline-point strong {
+  color: var(--river-soft);
+  font-size: 0.82rem;
+  font-weight: 780;
+}
+
+.timeline-point.active {
+  border-color: color-mix(in oklch, var(--river) 12%, transparent);
+  background: color-mix(in oklch, var(--paper) 78%, transparent);
+  color: var(--river);
+  box-shadow: var(--shadow-soft);
+}
+
+.timeline-point.active strong {
+  color: var(--river);
+}
+
+.territorial-motif {
+  overflow: hidden;
+  padding: 14px 14px 10px;
+  color: var(--turquoise);
+  background:
+    radial-gradient(circle at 18% 30%, color-mix(in oklch, var(--stop) 10%, transparent), transparent 36%),
+    radial-gradient(circle at 82% 10%, color-mix(in oklch, var(--turquoise) 16%, transparent), transparent 42%),
+    linear-gradient(135deg, color-mix(in oklch, var(--paper) 86%, transparent), color-mix(in oklch, var(--review-soft) 44%, var(--paper)));
+}
+
+.territorial-motif.tone-stop .motif-heading h3 {
+  color: var(--stop);
+}
+
+.territorial-motif svg {
+  display: block;
+  width: 100%;
+  height: 122px;
+  margin: 2px 0 0;
+}
+
+.motif-corridor,
+.motif-river {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.motif-corridor {
+  stroke: color-mix(in oklch, var(--review) 22%, transparent);
+  stroke-width: 24;
+}
+
+.motif-river {
+  stroke: url("#motif-river");
+  stroke-width: 8;
+}
+
+.motif-marker-halo {
+  fill: var(--stop);
+  opacity: 0.16;
+}
+
+.motif-marker {
+  fill: var(--stop);
+  stroke: color-mix(in oklch, var(--paper) 92%, var(--cream));
+  stroke-width: 3;
+}
+
+.territorial-motif.tone-usable .motif-marker,
+.territorial-motif.tone-usable .motif-marker-halo {
+  fill: var(--usable);
+}
+
+.territorial-motif.tone-review .motif-marker,
+.territorial-motif.tone-review .motif-marker-halo {
+  fill: var(--review);
+}
+
+.territorial-motif p {
+  margin: 0;
+  color: var(--river-soft);
+  font-size: 0.82rem;
   font-weight: 720;
 }
 
@@ -688,6 +1053,7 @@ select {
 .comparison-section,
 .metrics-section,
 .technical-trace-section,
+.threshold-visual.compact,
 .pipeline-section,
 .brief-section,
 .limits-card {
@@ -993,6 +1359,16 @@ select {
     min-height: 0;
   }
 
+  .instrument-panel {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .why-copy,
+  .territorial-motif {
+    grid-column: 1 / -1;
+  }
+
   .summary-layout,
   .metric-grid,
   .detail-grid,
@@ -1044,7 +1420,8 @@ select {
 
   .decision-word {
     margin-top: 18px;
-    font-size: clamp(3.6rem, 17vw, 4.7rem);
+    font-size: clamp(3rem, 13vw, 3.8rem);
+    white-space: normal;
   }
 
   .risk-note {
@@ -1074,6 +1451,33 @@ select {
 
   .why-panel {
     border-radius: 28px;
+  }
+
+  .instrument-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .instrument-panel .compact-compare {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline-rail {
+    grid-template-columns: 1fr;
+  }
+
+  .timeline-rail::before {
+    top: 12px;
+    bottom: 14px;
+    left: 7px;
+    width: 1px;
+    height: auto;
+  }
+
+  .timeline-point {
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    min-height: 48px;
+    padding: 8px 10px;
   }
 
   .summary-layout,
@@ -1109,26 +1513,63 @@ select {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .decision-content {
+    animation: none;
+  }
+
+  .threshold-marker,
+  .timeline-point,
+  .threshold-visual,
+  .territorial-motif {
+    transition: none;
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .view-nav button,
   .tab-list button,
+  .report-panel,
+  .why-panel,
   .summary-card,
   .metric-card,
   .comparison-card,
   .brief-item,
-  .trace-item {
+  .trace-item,
+  .threshold-visual,
+  .timeline-point,
+  .territorial-motif {
     transition:
       transform 180ms ease-out,
       box-shadow 180ms ease-out,
       background-color 180ms ease-out;
   }
 
+  .decision-content {
+    animation: decision-enter 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
   .summary-card:hover,
   .metric-card:hover,
   .comparison-card:hover,
   .brief-item:hover,
-  .trace-item:hover {
+  .trace-item:hover,
+  .timeline-point:hover,
+  .threshold-visual:hover,
+  .territorial-motif:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-soft);
+  }
+}
+
+@keyframes decision-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

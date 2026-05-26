@@ -198,6 +198,7 @@ export default function App() {
       {activePage === "decision" ? (
         <DecisionLanding
           availableDates={availableDates}
+          observations={observations}
           comparisonRecords={comparisonRecords}
           record={selectedRecord}
           ledger={selectedLedger}
@@ -271,6 +272,7 @@ function Header({ activePage, setActivePage, statusText }) {
 
 function DecisionLanding({
   availableDates,
+  observations,
   comparisonRecords,
   record,
   ledger,
@@ -304,34 +306,44 @@ function DecisionLanding({
 
           <p className="risk-note">Una mala inferencia también es un riesgo.</p>
 
-          <div className="decision-word">{state.label}</div>
-          <div className="evidence-percent">
-            <strong>{formatPercent(record.validPercent)}</strong>
-            <span>evidencia válida</span>
+          <div className="decision-content" key={record.date}>
+            <div className="decision-word">{state.label}</div>
+            <div className="evidence-percent">
+              <strong>{formatPercent(record.validPercent)}</strong>
+              <span>evidencia válida</span>
+            </div>
+
+            <div className="record-facts" aria-label="Metadatos de la observación">
+              <span>Fecha: {record.date}</span>
+              <span>AOI: {record.aoi}</span>
+            </div>
+
+            <p className="plain-explanation">{state.explanation}</p>
+
+            <div className="next-step-box">
+              <span>Qué debe pasar ahora</span>
+              <p>{state.nextAction}</p>
+            </div>
           </div>
-
-          <div className="record-facts" aria-label="Metadatos de la observación">
-            <span>Fecha: {record.date}</span>
-            <span>AOI: {record.aoi}</span>
-          </div>
-
-          <p className="plain-explanation">{state.explanation}</p>
-
-          <div className="next-step-box">
-            <span>Qué debe pasar ahora</span>
-            <p>{state.nextAction}</p>
-          </div>
-
         </article>
 
-        <aside className="why-panel">
-          <p className="small-label">Por qué importa</p>
-          <h2>La confianza cambia la decisión.</h2>
-          <CompactComparison records={comparisonRecords} />
-          <p className="insight-text">
-            El sistema no fuerza alertas. Decide cuándo Copernicus puede usarse y
-            cuándo no.
-          </p>
+        <aside className="why-panel instrument-panel">
+          <div className="why-copy">
+            <p className="small-label">Por qué importa</p>
+            <h2>La confianza cambia la decisión.</h2>
+            <CompactComparison records={comparisonRecords} />
+            <p className="insight-text">
+              El sistema no fuerza alertas. Decide cuándo Copernicus puede usarse y
+              cuándo no.
+            </p>
+          </div>
+          <ConfidenceThresholdVisual record={record} />
+          <ObservationTimeline
+            records={observations}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+          />
+          <TerritorialEvidenceMotif record={record} />
         </aside>
       </section>
 
@@ -366,6 +378,137 @@ function DecisionLanding({
       <DecisionLimitsNotice />
       <ModulesStrip />
     </>
+  );
+}
+
+function ConfidenceThresholdVisual({ record, compact = false }) {
+  const state = getStateMeta(record);
+  const markerPosition = clampPercentage(record.validPercent);
+
+  return (
+    <section
+      className={`threshold-visual tone-${state.tone} ${compact ? "compact" : ""}`}
+      aria-label="Escala de umbral de confianza"
+    >
+      <div className="threshold-heading">
+        <div>
+          <p className="small-label">Umbral de confianza</p>
+          <h3>{formatPercent(record.validPercent)} evidencia válida</h3>
+        </div>
+        <strong>{state.label}</strong>
+      </div>
+
+      <div className="threshold-track-wrap">
+        <div className="threshold-track" aria-hidden="true">
+          <span className="threshold-zone zone-stop" style={{ width: "10%" }} />
+          <span className="threshold-zone zone-review" style={{ width: "20%" }} />
+          <span className="threshold-zone zone-usable" style={{ width: "70%" }} />
+          <span
+            className="threshold-marker"
+            style={{ left: `${markerPosition}%` }}
+          >
+            <i />
+          </span>
+        </div>
+        <div className="threshold-boundaries" aria-hidden="true">
+          <span>0%</span>
+          <span>10%</span>
+          <span>30%</span>
+          <span>100%</span>
+        </div>
+        <div className="threshold-labels">
+          <span>No inferir</span>
+          <span>Revisar</span>
+          <span>Usable</span>
+        </div>
+      </div>
+
+      <p className="threshold-note">
+        El umbral no mide contaminación; mide si la observación tiene suficiente
+        evidencia válida para interpretarse.
+      </p>
+    </section>
+  );
+}
+
+function ObservationTimeline({ records, selectedDate, setSelectedDate }) {
+  const sortedRecords = [...records].sort((left, right) =>
+    left.date.localeCompare(right.date),
+  );
+
+  return (
+    <section className="observation-timeline" aria-label="Línea temporal oficial">
+      <div className="timeline-heading">
+        <p className="small-label">Observaciones oficiales</p>
+        <span>5 fechas Sentinel-2</span>
+      </div>
+      <div className="timeline-rail">
+        {sortedRecords.map((record) => {
+          const state = getStateMeta(record);
+          const isSelected = record.date === selectedDate;
+
+          return (
+            <button
+              className={`timeline-point tone-${state.tone} ${
+                isSelected ? "active" : ""
+              }`}
+              key={record.date}
+              type="button"
+              onClick={() => setSelectedDate(record.date)}
+              aria-label={`${record.date}, ${state.label}, ${formatPercent(
+                record.validPercent,
+              )}`}
+            >
+              <span className="timeline-dot" aria-hidden="true" />
+              <span className="timeline-date">{record.date}</span>
+              <strong>{formatPercent(record.validPercent)}</strong>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function TerritorialEvidenceMotif({ record }) {
+  const state = getStateMeta(record);
+  const markerPosition = clampPercentage(record.validPercent);
+  const markerX = 24 + (markerPosition / 100) * 252;
+  const markerY = 118 - (markerPosition / 100) * 55;
+
+  return (
+    <section
+      className={`territorial-motif tone-${state.tone}`}
+      aria-label="Esquema visual del corredor"
+    >
+      <div className="motif-heading">
+        <div>
+          <p className="small-label">Corredor Río La Villa</p>
+          <h3>{state.label}</h3>
+        </div>
+        <span>{record.date}</span>
+      </div>
+      <svg viewBox="0 0 320 150" role="img" aria-label="Motivo abstracto del corredor">
+        <defs>
+          <linearGradient id="motif-river" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="currentColor" stopOpacity="0.2" />
+            <stop offset="55%" stopColor="currentColor" stopOpacity="0.72" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0.24" />
+          </linearGradient>
+        </defs>
+        <path
+          className="motif-corridor"
+          d="M18 116 C70 74 101 90 137 68 C185 39 219 62 303 30"
+        />
+        <path
+          className="motif-river"
+          d="M16 119 C72 78 102 93 139 70 C187 41 219 64 304 34"
+        />
+        <circle className="motif-marker-halo" cx={markerX} cy={markerY} r="14" />
+        <circle className="motif-marker" cx={markerX} cy={markerY} r="5.5" />
+      </svg>
+      <p>Esquema visual del corredor, no mapa geográfico.</p>
+    </section>
   );
 }
 
@@ -543,6 +686,7 @@ function TechnicalDashboard({
         <MeaningPanel record={record} ledger={ledger} state={state} />
       </div>
 
+      <ConfidenceThresholdVisual record={record} compact />
       <ComparisonSection records={comparisonRecords} />
       <MetricsSection record={record} />
       <EvidencePipeline />
@@ -955,4 +1099,10 @@ function formatDecimal(value) {
 function formatNumber(value, options) {
   if (value === undefined || value === null || value === "") return "pendiente";
   return new Intl.NumberFormat("es-PA", options).format(Number(value));
+}
+
+function clampPercentage(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 0;
+  return Math.min(100, Math.max(0, numeric));
 }
