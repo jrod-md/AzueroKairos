@@ -18,7 +18,7 @@ const STATE_META = {
       "Evidencia suficiente para lectura exploratoria con límites explícitos.",
   },
   low_confidence: {
-    label: "BAJA CONFIANZA",
+    label: "REVISAR",
     tone: "review",
     decision: "Revisar / verificar",
     explanation:
@@ -58,6 +58,29 @@ const DETAIL_TABS = [
   { id: "evidencia", label: "Evidencia" },
   { id: "trazabilidad", label: "Trazabilidad" },
   { id: "limites", label: "Límites" },
+];
+
+const SYSTEM_MODULES = [
+  {
+    name: "Kairós Signal",
+    text: "Clasifica la confianza de cada observación Sentinel.",
+  },
+  {
+    name: "Kairós Brief",
+    text: "Traduce la decisión en un informe legible.",
+  },
+  {
+    name: "Kairós Ledger",
+    text: "Conserva la cadena auditable de evidencia.",
+  },
+  {
+    name: "Kairós Field",
+    text: "Futuro flujo de verificación territorial.",
+  },
+  {
+    name: "Kairós Watch",
+    text: "Futuro seguimiento temporal de observaciones.",
+  },
 ];
 
 export default function App() {
@@ -339,6 +362,9 @@ function DecisionLanding({
           {activeDetailTab === "limites" ? <LimitsTab /> : null}
         </div>
       </section>
+
+      <DecisionLimitsNotice />
+      <ModulesStrip />
     </>
   );
 }
@@ -375,7 +401,7 @@ function SummaryTab({ record, comparisonRecords }) {
 
   return (
     <div className="summary-layout">
-      <article className="summary-card">
+      <article className={`summary-card tone-${state.tone}`}>
         <span className="small-label">Decisión seleccionada</span>
         <h3>{state.label}</h3>
         <p>{state.explanation}</p>
@@ -442,6 +468,34 @@ function LimitsTab() {
   );
 }
 
+function DecisionLimitsNotice() {
+  return (
+    <section className="decision-limits" aria-label="Límites científicos">
+      <span>Límites científicos</span>
+      <p>{SCIENTIFIC_LIMITS}</p>
+    </section>
+  );
+}
+
+function ModulesStrip() {
+  return (
+    <section className="modules-strip" aria-label="Módulos del sistema">
+      <div>
+        <p className="small-label">Sistema modular</p>
+        <h2>Atlas de decisión territorial</h2>
+      </div>
+      <div className="module-list">
+        {SYSTEM_MODULES.map((module) => (
+          <article className="module-chip" key={module.name}>
+            <strong>{module.name}</strong>
+            <span>{module.text}</span>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function TechnicalDashboard({
   availableDates,
   comparisonRecords,
@@ -492,8 +546,10 @@ function TechnicalDashboard({
       <ComparisonSection records={comparisonRecords} />
       <MetricsSection record={record} />
       <EvidencePipeline />
+      <TechnicalTraceability record={record} ledger={ledger} />
       <BriefPreview record={record} ledger={ledger} state={state} />
       <ScientificLimits />
+      <ModulesStrip />
     </section>
   );
 }
@@ -619,6 +675,34 @@ function MetricsSection({ record }) {
             <p>{metric.help}</p>
           </article>
         ))}
+      </div>
+    </section>
+  );
+}
+
+function TechnicalTraceability({ record, ledger }) {
+  return (
+    <section className="technical-trace-section" aria-label="Trazabilidad técnica">
+      <div className="section-heading compact">
+        <div>
+          <p className="small-label">Trazabilidad</p>
+          <h2>Rutas oficiales del artifact</h2>
+        </div>
+      </div>
+      <div className="trace-grid">
+        <TraceItem label="raw JSON path" value={record.raw_json_path || "pendiente"} />
+        <TraceItem
+          label="processed CSV"
+          value={ledger?.processed_csv_path ?? "outputs/processed_csv/sentinel2_stats_confidence.csv"}
+        />
+        <TraceItem
+          label="brief path"
+          value={record.brief_path || ledger?.brief_path || "no generado"}
+        />
+        <TraceItem
+          label="ledger status"
+          value={ledger?.evidence_status ?? "sin registro"}
+        />
       </div>
     </section>
   );
@@ -790,7 +874,7 @@ function getStateMeta(record) {
   const base = STATE_META[record.confidence_class] ?? STATE_META.do_not_infer;
   return {
     ...base,
-    label: record.confidence_label_es || base.label,
+    label: base.label,
     decision: record.decision_label_es || base.decision,
     action: record.recommended_action_es || base.action,
   };

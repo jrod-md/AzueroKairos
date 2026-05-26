@@ -27,6 +27,7 @@ Thumbs.db
 
 # Non-official Markdown drafts and generated notes.
 # Keep the official hackathon docs trackable.
+DESIGN.md
 *.md
 !README.md
 !COMPLIANCE_AND_ORIGINALITY.md

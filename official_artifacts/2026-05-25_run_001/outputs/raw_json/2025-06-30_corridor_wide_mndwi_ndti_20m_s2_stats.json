@@ -1,0 +1,38 @@
+{
+  "data": [
+    {
+      "interval": {
+        "from": "2025-06-30T00:00:00Z",
+        "to": "2025-07-01T00:00:00Z"
+      },
+      "outputs": {
+        "indices": {
+          "bands": {
+            "mndwi": {
+              "stats": {
+                "max": 0.8171571493148804,
+                "mean": -0.2965791062554406,
+                "min": -1.0,
+                "noDataCount": 616753,
+                "sampleCount": 2131424,
+                "stDev": 0.42506727809191724
+              }
+            },
+            "ndti": {
+              "stats": {
+                "max": 1.0,
+                "mean": -0.20379738337677053,
+                "min": -1.0,
+                "noDataCount": 616753,
+                "sampleCount": 2131424,
+                "stDev": 0.1533887389169425
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "geometryPixelCount": 1964045,
+  "status": "OK"
+}

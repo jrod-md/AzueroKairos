@@ -324,6 +324,29 @@ def inject_css() -> None:
           font-weight: 760;
         }
 
+        .ak-explain-card {
+          border: 1px solid rgba(12, 72, 104, 0.16);
+          background: rgba(215, 233, 236, 0.46);
+          border-radius: 8px;
+          padding: 0.72rem 0.82rem;
+          color: #17384a;
+          box-shadow: 0 10px 24px rgba(42, 39, 34, 0.06);
+        }
+
+        .ak-question {
+          font-size: 0.92rem;
+          font-weight: 790;
+          line-height: 1.38;
+          margin: 0;
+        }
+
+        .ak-answer {
+          color: #334b57;
+          font-size: 0.9rem;
+          line-height: 1.42;
+          margin: 0.32rem 0 0;
+        }
+
         .ak-control-label {
           color: var(--ak-muted);
           font-size: 0.72rem;
@@ -482,6 +505,40 @@ def inject_css() -> None:
           background: transparent;
         }
 
+        .ak-evidence-card {
+          margin-top: 0.52rem;
+          border: 1px solid rgba(12, 72, 104, 0.15);
+          background: linear-gradient(145deg, rgba(215, 233, 236, 0.56), rgba(255, 250, 240, 0.92));
+          border-radius: 8px;
+          padding: 0.66rem;
+        }
+
+        .ak-identity-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 0.7rem;
+          padding: 0.34rem 0;
+          border-bottom: 1px solid rgba(18, 45, 61, 0.08);
+        }
+
+        .ak-identity-row:last-child {
+          border-bottom: 0;
+        }
+
+        .ak-identity-row span:first-child {
+          color: var(--ak-muted);
+          font-size: 0.75rem;
+          font-weight: 800;
+          text-transform: uppercase;
+        }
+
+        .ak-identity-row span:last-child {
+          color: var(--ak-text);
+          font-size: 0.82rem;
+          font-weight: 780;
+          text-align: right;
+        }
+
         .ak-river-visual {
           position: relative;
           min-height: 7.45rem;
@@ -566,6 +623,13 @@ def inject_css() -> None:
           margin: 0.08rem 0 0.38rem;
         }
 
+        .ak-section-subtitle {
+          color: #4d606a;
+          font-size: 0.88rem;
+          line-height: 1.38;
+          margin: -0.16rem 0 0.48rem;
+        }
+
         .ak-compare-card {
           padding: 0.78rem;
           min-height: 9.35rem;
@@ -631,6 +695,17 @@ def inject_css() -> None:
           font-weight: 740;
         }
 
+        .ak-quick-read {
+          margin-top: 0.48rem;
+          border: 1px solid rgba(155, 68, 61, 0.14);
+          background: rgba(255, 250, 240, 0.90);
+          color: #334b57;
+          border-radius: 8px;
+          padding: 0.62rem 0.72rem;
+          font-size: 0.88rem;
+          line-height: 1.4;
+        }
+
         .ak-metric-grid {
           display: grid;
           grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -649,6 +724,13 @@ def inject_css() -> None:
           font-weight: 850;
           margin-top: 0.26rem;
           overflow-wrap: anywhere;
+        }
+
+        .ak-metric-help {
+          color: #5f6f78;
+          font-size: 0.76rem;
+          line-height: 1.28;
+          margin-top: 0.28rem;
         }
 
         .ak-flow-card {
@@ -923,6 +1005,35 @@ def hero_action_text(record: dict[str, Any]) -> tuple[str, str]:
     )
 
 
+def plain_language_answer(record: dict[str, Any]) -> str:
+    confidence = str(record.get("confidence_class", "do_not_infer"))
+    if confidence == "do_not_infer":
+        return (
+            "Respuesta: no. La cobertura válida es insuficiente, por eso no debe "
+            "hacerse una inferencia satelital responsable."
+        )
+    if confidence == "low_confidence":
+        return (
+            "Respuesta: parcialmente. Hay evidencia limitada y se requiere revisión "
+            "o verificación territorial."
+        )
+    return (
+        "Respuesta: sí, con cautela. La observación tiene suficiente evidencia para "
+        "una lectura exploratoria con límites explícitos."
+    )
+
+
+def render_plain_language_explanation(record: dict[str, Any]) -> None:
+    render_html(
+        f"""
+        <section class="ak-explain-card">
+          <p class="ak-question">Esta pantalla responde una pregunta: ¿esta observación Sentinel tiene suficiente evidencia válida para apoyar una decisión agrícola?</p>
+          <p class="ak-answer">{safe(plain_language_answer(record))}</p>
+        </section>
+        """
+    )
+
+
 def render_header() -> None:
     render_html(
         """
@@ -1027,7 +1138,6 @@ def render_hero_card(record: dict[str, Any]) -> None:
 
 
 def render_decision_context_card(record: dict[str, Any]) -> None:
-    style = state_style(record)
     label = state_label(record)
     reason = localized_value(record, "reason_es", "reason")
     action = localized_value(record, "recommended_action_es", "recommended_action")
@@ -1046,20 +1156,14 @@ def render_decision_context_card(record: dict[str, Any]) -> None:
             </div>
           </section>
           <section class="ak-visual-card">
-            <h3>Corredor Río La Villa</h3>
-            <div class="ak-river-visual" aria-label="Visual abstracto del corredor Río La Villa">
-              <div class="ak-river-label">AOI corridor_wide · Sentinel-2 · {safe(display_value(record.get("resolution_m"), suffix=" m"))}</div>
-              <svg viewBox="0 0 360 150" role="img" aria-label="Línea abstracta tipo río">
-                <path d="M-8 102 C 44 58, 82 132, 132 82 S 221 36, 270 77 S 329 120, 370 63"
-                      fill="none" stroke="#0c4868" stroke-width="14" stroke-linecap="round" opacity="0.20" />
-                <path d="M-8 102 C 44 58, 82 132, 132 82 S 221 36, 270 77 S 329 120, 370 63"
-                      fill="none" stroke="#176c84" stroke-width="5" stroke-linecap="round" opacity="0.82" />
-              </svg>
-              <div class="ak-river-badge">{safe(label)}</div>
-            </div>
-            <div class="ak-tags">
-              <span class="ak-status-chip {safe(style["class"])}">{safe(label)}</span>
-              <span class="ak-tag">Observación {safe(record.get("date"))}</span>
+            <h3>Identidad de evidencia</h3>
+            <div class="ak-evidence-card">
+              <div class="ak-identity-row"><span>AOI</span><span>{safe(record.get("aoi"))}</span></div>
+              <div class="ak-identity-row"><span>Sensor</span><span>Sentinel-2 L2A</span></div>
+              <div class="ak-identity-row"><span>Resolución</span><span>{safe(display_value(record.get("resolution_m"), suffix=" m"))}</span></div>
+              <div class="ak-identity-row"><span>Fecha</span><span>{safe(record.get("date"))}</span></div>
+              <div class="ak-identity-row"><span>Estado</span><span>{safe(label)}</span></div>
+              <div class="ak-identity-row"><span>Fuente</span><span>Copernicus CDSE Statistical API</span></div>
             </div>
           </section>
         </aside>
@@ -1078,7 +1182,12 @@ def render_demo_comparison(records: list[dict[str, Any]], using_preview: bool) -
         and second_record.get("source") == "official"
     )
 
-    render_html('<h3 class="ak-section-title">Comparación de decisión</h3>')
+    render_html(
+        """
+        <h3 class="ak-section-title">Por qué esto importa</h3>
+        <p class="ak-section-subtitle">El mismo sistema puede decir NO INFERIR en una fecha y USABLE en otra. Esa diferencia evita conclusiones falsas.</p>
+        """
+    )
 
     if not comparison_available:
         render_html(
@@ -1106,6 +1215,9 @@ def render_demo_comparison(records: list[dict[str, Any]], using_preview: bool) -
         """
         <div class="ak-insight">
           El valor del sistema no es forzar alertas, sino decidir cuándo la evidencia Copernicus puede usarse y cuándo no.
+        </div>
+        <div class="ak-quick-read">
+          <strong>Lectura rápida.</strong> 2025-06-10 no es un fallo del sistema. Es una decisión responsable: Copernicus no entregó suficiente evidencia válida para esa fecha. En cambio, 2025-06-30 sí tiene cobertura suficiente para una lectura exploratoria.
         </div>
         """
     )
@@ -1141,25 +1253,50 @@ def render_comparison_card(record: dict[str, Any], *, message: str) -> None:
 
 def render_metrics(record: dict[str, Any]) -> None:
     metrics = [
-        ("Porcentaje válido", display_percent(record.get("validPercent"))),
-        ("Muestras evaluadas", display_count(record.get("sampleCount"))),
-        ("Muestras sin datos", display_count(record.get("noDataCount"))),
-        ("MNDWI", display_decimal(record.get("mndwi_mean"))),
-        ("NDTI", display_decimal(record.get("ndti_mean"))),
-        ("Resolución", display_value(record.get("resolution_m"), suffix=" m")),
+        (
+            "Porcentaje válido",
+            display_percent(record.get("validPercent")),
+            "parte de la observación que sí puede usarse",
+        ),
+        (
+            "Muestras evaluadas",
+            display_count(record.get("sampleCount")),
+            "píxeles o muestras consideradas",
+        ),
+        (
+            "Muestras sin datos",
+            display_count(record.get("noDataCount")),
+            "muestras descartadas por nube/no-data",
+        ),
+        (
+            "MNDWI",
+            display_decimal(record.get("mndwi_mean")),
+            "índice óptico de agua/humedad superficial",
+        ),
+        (
+            "NDTI",
+            display_decimal(record.get("ndti_mean")),
+            "proxy exploratorio hidro-sedimentario",
+        ),
+        (
+            "Resolución",
+            display_value(record.get("resolution_m"), suffix=" m"),
+            "tamaño de análisis satelital",
+        ),
     ]
     cards = "\n".join(
         f"""
         <div class="ak-metric-card">
           <div class="ak-mini-label">{safe(label)}</div>
           <div class="ak-metric-value">{safe(value)}</div>
+          <div class="ak-metric-help">{safe(helper)}</div>
         </div>
         """
-        for label, value in metrics
+        for label, value, helper in metrics
     )
     render_html(
         f"""
-        <h3 class="ak-section-title">Métricas críticas</h3>
+        <h3 class="ak-section-title">Métricas que explican la decisión</h3>
         <div class="ak-metric-grid">{cards}</div>
         """
     )
@@ -1297,6 +1434,7 @@ def main() -> None:
 
     main_col, side_col = st.columns([1.45, 0.88], gap="medium")
     with main_col:
+        render_plain_language_explanation(record)
         render_hero_card(record)
         render_demo_comparison(records, using_preview)
     with side_col:
