@@ -1,6 +1,10 @@
 # Azuero Kairós - Data Layers
 
-This document defines the allowed purpose of each data layer. A layer is useful only when it changes a decision, changes a priority, or explains uncertainty.
+This document defines the allowed purpose of each data layer. A layer is useful
+only when it changes a decision, changes a priority, or explains uncertainty.
+
+No layer is allowed to turn Azuero Kairós into a contamination detector. The
+system remains a decision and evidence-triage product.
 
 ## Kairós Signal
 
@@ -31,6 +35,7 @@ This document defines the allowed purpose of each data layer. A layer is useful 
 - "La observación no tiene suficiente evidencia válida."
 - "No inferir."
 - "Esperar nueva adquisición o solicitar verificación territorial."
+- "Sentinel-2 usable/revisar/no inferir."
 
 **Forbidden claims:**
 
@@ -51,6 +56,7 @@ This document defines the allowed purpose of each data layer. A layer is useful 
 - regional confidence matrix
 - identifying where confidence drops
 - prioritizing review across time
+- showing the territorial overview before workflow actions
 
 **Does not support:**
 
@@ -83,6 +89,7 @@ This document defines the allowed purpose of each data layer. A layer is useful 
 - documenting visible field conditions
 - prioritizing human review when satellite confidence is low
 - recommending possible laboratory escalation
+- keeping field action separate from satellite inference
 
 **Does not support:**
 
@@ -165,6 +172,7 @@ This document defines the allowed purpose of each data layer. A layer is useful 
 - "Capa auxiliar Sentinel-1."
 - "Contexto físico/SAR."
 - "No reemplaza la confianza Sentinel-2."
+- "Capa auxiliar para continuidad física bajo nubosidad."
 
 **Forbidden claims:**
 
@@ -175,9 +183,9 @@ This document defines the allowed purpose of each data layer. A layer is useful 
 
 ## Kairós HydroClimate
 
-**Source:** CHIRPS daily rainfall via ClimateSERV; future optional ERA5-Land context.
+**Source:** CHIRPS daily rainfall via ClimateSERV when available; future optional ERA5-Land context.
 
-**Current status:** partial.
+**Current status:** partial; next real data layer for rainfall and antecedent context.
 
 **Supports:**
 
@@ -185,6 +193,7 @@ This document defines the allowed purpose of each data layer. A layer is useful 
 - review priority when satellite evidence is low
 - explaining possible runoff or sediment movement context
 - field verification prioritization
+- turning rainfall into a conservative context signal, not a hazard claim
 
 **Does not support:**
 
@@ -199,7 +208,8 @@ This document defines the allowed purpose of each data layer. A layer is useful 
 - "Contexto de lluvia antecedente."
 - "Revisar contexto territorial."
 - "La lluvia antecedente puede elevar prioridad de verificación."
-- "MVP contextual thresholds, not regulatory thresholds."
+- "Umbrales contextuales MVP, no umbrales regulatorios."
+- "Próxima capa real de contexto."
 
 **Forbidden claims:**
 

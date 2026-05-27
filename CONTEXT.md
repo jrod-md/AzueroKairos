@@ -12,6 +12,9 @@ It evaluates whether Copernicus evidence is sufficient to support one of three d
 
 The product is a decision system, not a data scraper.
 
+It exists to turn evidence into a responsible next step: interpret with limits,
+review with caution, or do not infer.
+
 ## What It Is Not
 
 Azuero Kairós does not detect:
@@ -25,6 +28,27 @@ Azuero Kairós does not detect:
 - validated crises
 
 It does not replace laboratory analysis, authorized inspection, or human territorial judgment.
+
+## Local Context
+
+Azuero Kairós operates in a territory where Río La Villa and nearby agricultural
+landscapes carry historical public concern. That context includes references to
+atrazine and other agrochemical incidents, concerns around pig farm waste, and
+research or institutional attention related to heavy metals.
+
+This local history explains why evidence triage matters. It does not expand what
+the system can claim.
+
+Azuero Kairós only supports:
+
+- evidence sufficiency decisions
+- review prioritization
+- field verification prioritization
+- traceable decision briefs
+
+It must not present historical concern as current contamination evidence. Any
+claim about atrazine, pesticides, pathogens, heavy metals, water safety, or
+chemical conditions requires laboratory analysis or competent authority review.
 
 ## Who It Supports
 

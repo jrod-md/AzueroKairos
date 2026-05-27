@@ -12,6 +12,9 @@ Azuero Kairós is not a generic agricultural dashboard. It is a decision system 
 
 The product should feel like an editorial atlas, a living technical file, and a premium institutional startup tool. It must be warm, rigorous, and territorial, not decorative.
 
+The interface must make restraint feel deliberate. "No inferir" is a product
+strength because it prevents false certainty.
+
 ## Product Posture
 
 Decision first, evidence second.
@@ -19,6 +22,9 @@ Decision first, evidence second.
 The first screen must answer whether the observation is usable for a cautious interpretation. Technical data belongs behind the decision or in supporting sections. More data is not better unless it changes a decision, changes a priority, or explains uncertainty.
 
 Azuero Kairós must never look like a data scraper, an agricultural stock template, a generic SaaS dashboard, or a pile of charts searching for a conclusion.
+
+Data appears only after it has a job: change the decision, change the priority,
+or explain uncertainty.
 
 ## Audience
 
@@ -148,6 +154,29 @@ Auxiliary layers may appear here only as context:
 
 They must not override the main Sentinel-2 confidence classification.
 
+### Kairós Cases
+
+Purpose: turn evidence layers into operational decision cases.
+
+Cases are the workflow/action view. They should show:
+
+- node
+- date
+- decision label
+- priority
+- recommended workflow
+- evidence gaps
+- verification status
+- lab escalation status
+
+Action buttons may preview evidence, generate a static brief preview, or prepare
+a verification request. They must not persist data, create backend state, invoke
+AI, or imply chemical confirmation.
+
+Lab escalation must remain disabled by default unless an authorized workflow
+exists. The copy should say that it requires territorial verification or
+competent authority.
+
 ## Component Principles
 
 ### Decision Card
@@ -209,6 +238,8 @@ Avoid:
 - "IA detectó"
 - "confirmado por satélite"
 - "sensor fusion validated model"
+- "riesgo químico estimado"
+- "probabilidad de contaminación"
 
 ## Scientific Limits
 

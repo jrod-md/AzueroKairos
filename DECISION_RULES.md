@@ -1,6 +1,24 @@
 # Azuero Kairós - Decision Rules
 
-This document defines how layers combine into actions. The Sentinel-2 confidence engine remains the main decision source. Auxiliary layers may add context, priority, or uncertainty, but they must not create unsupported claims.
+This document defines how layers combine into actions. The Sentinel-2 confidence
+engine remains the main decision source. Auxiliary layers may add context,
+priority, or uncertainty, but they must not create unsupported claims.
+
+The system always answers one operational question first:
+
+**What is the responsible next action given the evidence quality?**
+
+## Claim Firewall
+
+Every decision case must preserve this firewall:
+
+> No detecta pesticidas, metales pesados, patógenos, contaminación química
+> disuelta ni agua segura.
+
+Local concern around Río La Villa can explain why review matters, but it is not
+itself evidence of current contamination. Kairós must not convert context,
+rainfall, SAR, land cover, visible field notes, or ledger traceability into a
+chemical conclusion.
 
 ## Primary Decision States
 
@@ -14,6 +32,7 @@ Allowed decision language:
 
 - "Usar para interpretación exploratoria con límites explícitos."
 - "Evidencia suficiente para lectura cautelosa."
+- "Interpretar, preservando límites y trazabilidad."
 
 ### Sentinel-2 `low_confidence`
 
@@ -25,6 +44,7 @@ Allowed decision language:
 
 - "Revisar antes de interpretar."
 - "Considerar verificación territorial."
+- "Revisar con cautela y comparar contexto."
 
 ### Sentinel-2 `do_not_infer`
 
@@ -37,6 +57,7 @@ Allowed decision language:
 - "No inferir."
 - "Verificación territorial recomendada."
 - "Esperar nueva adquisición."
+- "No usar esta observación para afirmar condiciones del territorio."
 
 ## Auxiliary Context Rules
 
@@ -57,6 +78,7 @@ Forbidden effect:
 - changing `do_not_infer` to `usable`
 - claiming validated sensor fusion
 - claiming contamination detection
+- creating a new risk category
 
 ### Exposure `data_pending`
 
@@ -69,6 +91,7 @@ Allowed effect:
 - show pending status
 - note missing land-cover context
 - preserve uncertainty
+- add an evidence gap to decision cases
 
 Forbidden effect:
 
@@ -88,6 +111,7 @@ Allowed effect:
 - "Lluvia antecedente: revisar contexto territorial."
 - increase field verification priority
 - explain uncertainty around runoff or sediment context
+- raise priority for `low_confidence` or `do_not_infer` without changing the primary class
 
 Forbidden effect:
 
@@ -132,6 +156,23 @@ Forbidden effect:
 - automatic contamination conclusion
 - chemical validation without results
 - safe-water declaration
+
+## Priority Rules
+
+Priority is an operational queue, not a risk score.
+
+- `do_not_infer` starts as high review concern because the evidence is
+  insufficient.
+- `low_confidence` starts as medium review concern because interpretation is
+  uncertain.
+- `usable` starts as normal priority because it can be interpreted with limits.
+- HydroClimate antecedent rain or heavy rain may raise review priority when the
+  primary Sentinel-2 class is `low_confidence` or `do_not_infer`.
+- SAR availability may explain physical context, but it does not raise or lower
+  confidence by itself.
+- Exposure `data_pending` is an evidence gap, not a risk signal.
+- Field visible condition may justify stronger review or lab recommendation, but
+  it remains visible-condition documentation only.
 
 ## Decision Combination Examples
 
