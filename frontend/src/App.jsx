@@ -1828,6 +1828,8 @@ function TechnicalDashboard({
         />
       </div>
 
+      <TechnicalAuditReceipt record={record} ledger={ledger} state={state} />
+
       <div className="technical-hero-grid">
         <DecisionCard record={record} state={state} />
         <MeaningPanel record={record} ledger={ledger} state={state} />
@@ -1843,6 +1845,65 @@ function TechnicalDashboard({
       <BriefPreview record={record} ledger={ledger} state={state} />
       <ScientificLimits />
       <ModulesStrip />
+    </section>
+  );
+}
+
+function TechnicalAuditReceipt({ record, ledger, state }) {
+  const decisionMessage =
+    record.confidence_class === "usable"
+      ? "La observación permite interpretación hidro-sedimentaria exploratoria con límites explícitos."
+      : "La observación no tiene evidencia válida suficiente para una inferencia responsable.";
+
+  const receiptItems = [
+    ["Fecha", record.date],
+    ["AOI / corredor", record.aoi],
+    ["Fuente", EVIDENCE_SOURCE],
+    ["API status", record.api_status || ledger?.api_status],
+    ["Ledger status", ledger?.evidence_status],
+    ["Evidencia válida", formatPassportPercent(record.validPercent)],
+    ["sampleCount", formatPassportInteger(record.sampleCount)],
+    ["noDataCount", formatPassportInteger(record.noDataCount)],
+    ["MNDWI", formatPassportDecimal(record.mndwi_mean)],
+    ["NDTI", formatPassportDecimal(record.ndti_mean)],
+    ["confidence class", record.confidence_class],
+    ["decision status", record.decision],
+    ["Decisión pública", `${state.label}: ${state.decision}`],
+    ["raw JSON path", record.raw_json_path || ledger?.raw_json_path],
+    ["processed CSV path", ledger?.processed_csv_path],
+    ["brief path", record.brief_path || ledger?.brief_path],
+    ["run_id", ledger?.run_id],
+    ["commit hash", ledger?.git_commit],
+    ["generated_at", ledger?.generated_at_utc],
+  ];
+
+  return (
+    <section className="technical-audit-receipt" aria-label="Recibo de trazabilidad">
+      <div className="section-heading compact">
+        <div>
+          <p className="small-label">Recibo de trazabilidad</p>
+          <h2>Cadena de evidencia verificable</h2>
+        </div>
+        <p>
+          Este recibo conecta adquisición, estadística, clasificación, brief y
+          ledger. La trazabilidad permite revisar por qué una observación fue
+          marcada como USABLE o NO INFERIR.
+        </p>
+      </div>
+
+      <div className="audit-receipt-messages">
+        <p>API OK confirma ejecución técnica; no confirma evidencia suficiente para inferir.</p>
+        <p>{decisionMessage}</p>
+      </div>
+
+      <dl className="audit-receipt-grid">
+        {receiptItems.map(([label, value]) => (
+          <div className="audit-receipt-item" key={label}>
+            <dt>{label}</dt>
+            <dd>{displayValue(value)}</dd>
+          </div>
+        ))}
+      </dl>
     </section>
   );
 }
@@ -2478,6 +2539,11 @@ function formatPassportPercent(value) {
 function formatPassportInteger(value) {
   if (value === undefined || value === null || value === "") return null;
   return formatInteger(value);
+}
+
+function formatPassportDecimal(value) {
+  if (value === undefined || value === null || value === "") return null;
+  return formatDecimal(value);
 }
 
 function clampPercentage(value) {

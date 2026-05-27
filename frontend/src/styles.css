@@ -2620,6 +2620,7 @@ select {
 
 .decision-card,
 .meaning-panel,
+.technical-audit-receipt,
 .comparison-section,
 .metrics-section,
 .technical-trace-section,
@@ -2631,6 +2632,64 @@ select {
   border: 1px solid var(--line);
   background: color-mix(in oklch, var(--paper) 78%, transparent);
   box-shadow: var(--shadow-soft);
+}
+
+.technical-audit-receipt {
+  margin-bottom: 14px;
+  border-radius: 28px;
+  padding: 18px;
+}
+
+.audit-receipt-messages {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.audit-receipt-messages p {
+  margin: 0;
+  border: 1px solid color-mix(in oklch, var(--river) 8%, transparent);
+  border-radius: 16px;
+  padding: 11px 12px;
+  background: color-mix(in oklch, var(--paper-soft) 62%, transparent);
+  color: var(--river);
+  font-size: 0.9rem;
+  font-weight: 780;
+  line-height: 1.36;
+}
+
+.audit-receipt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(156px, 1fr));
+  gap: 9px;
+  margin: 14px 0 0;
+}
+
+.audit-receipt-item {
+  min-width: 0;
+  border: 1px solid color-mix(in oklch, var(--river) 8%, transparent);
+  border-radius: 16px;
+  padding: 10px 11px;
+  background: color-mix(in oklch, var(--paper) 62%, transparent);
+}
+
+.audit-receipt-item dt {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 840;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.audit-receipt-item dd {
+  min-width: 0;
+  margin: 6px 0 0;
+  color: var(--river);
+  font-size: 0.82rem;
+  font-weight: 760;
+  line-height: 1.32;
+  overflow-wrap: anywhere;
 }
 
 .decision-card {
