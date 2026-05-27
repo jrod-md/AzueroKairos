@@ -1309,7 +1309,7 @@ function KairosCases({
           <div className="section-heading compact">
             <div>
               <p className="small-label">Case board</p>
-              <h2>Acciones operativas por nodo y fecha</h2>
+              <h2>Acciones recomendadas por nodo y fecha</h2>
             </div>
             <p>Kairós Watch sigue siendo el panorama regional. Este tablero organiza la acción.</p>
           </div>
@@ -1407,14 +1407,14 @@ function CaseActionPanel({ caseItem, mode }) {
     return (
       <aside className="case-action-panel">
         <span>Seleccione un caso</span>
-        <p>No hay casos operativos disponibles.</p>
+        <p>No hay casos de decisión disponibles.</p>
       </aside>
     );
   }
 
   if (mode === "brief") {
     return (
-      <aside className="case-action-panel" aria-label="Vista de brief operativo">
+      <aside className="case-action-panel" aria-label="Vista de brief de confianza">
         <span>Brief compacto</span>
         <h3>{caseItem.decision_label}: {caseItem.node_display_name}</h3>
         <div className="case-brief-preview">
