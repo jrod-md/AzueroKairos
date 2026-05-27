@@ -5,7 +5,7 @@
   "public_safe": true,
   "data_status": "data_pending",
   "schema_note": "Kairós Exposure is designed to summarize approximate agricultural and riparian land-cover context around AOI nodes once an official CLMS/CDSE raster pull is connected. Current rows remain data_pending when no official land-cover composition has been obtained.",
-  "claim_limit": "This layer does not identify crop types, exact farm boundaries, private producers, contamination, water safety, or chemical exposure.",
+  "claim_limit": "Capa de exposición preparada en esquema. Valores territoriales pendientes; no se usa como evidencia principal en la demo.",
   "nodes": [
     {
       "node_id": "la_villa_central",
@@ -34,7 +34,7 @@
       "exposure_confidence": "data_pending",
       "api_status": "PENDING_OFFICIAL_CLMS_PULL",
       "api_error": "",
-      "notes": "Kairós Exposure schema is prepared for official CLMS land-cover composition around each node. Values remain data_pending until a CLMS/CDSE raster pull and zonal summary are completed. No crop types, farm boundaries, private producers, contamination, or water-safety claims are inferred."
+      "notes": "Kairós Exposure mantiene el esquema preparado para composición territorial oficial por nodo. Valores territoriales pendientes hasta completar un resumen zonal CLMS/CDSE; no sustituye verificación territorial, laboratorio ni autoridad competente."
     },
     {
       "node_id": "la_villa_central",
@@ -46,7 +46,7 @@
       "exposure_confidence": "data_pending",
       "api_status": "PENDING_OFFICIAL_CLMS_PULL",
       "api_error": "",
-      "notes": "Kairós Exposure schema is prepared for official CLMS land-cover composition around each node. Values remain data_pending until a CLMS/CDSE raster pull and zonal summary are completed. No crop types, farm boundaries, private producers, contamination, or water-safety claims are inferred."
+      "notes": "Kairós Exposure mantiene el esquema preparado para composición territorial oficial por nodo. Valores territoriales pendientes hasta completar un resumen zonal CLMS/CDSE; no sustituye verificación territorial, laboratorio ni autoridad competente."
     },
     {
       "node_id": "la_villa_este",
@@ -58,7 +58,7 @@
       "exposure_confidence": "data_pending",
       "api_status": "PENDING_OFFICIAL_CLMS_PULL",
       "api_error": "",
-      "notes": "Kairós Exposure schema is prepared for official CLMS land-cover composition around each node. Values remain data_pending until a CLMS/CDSE raster pull and zonal summary are completed. No crop types, farm boundaries, private producers, contamination, or water-safety claims are inferred."
+      "notes": "Kairós Exposure mantiene el esquema preparado para composición territorial oficial por nodo. Valores territoriales pendientes hasta completar un resumen zonal CLMS/CDSE; no sustituye verificación territorial, laboratorio ni autoridad competente."
     }
   ],
   "summary_by_node": [

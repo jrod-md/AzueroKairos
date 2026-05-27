@@ -8,7 +8,7 @@
     "antecedent_rain": "rain_7d_mm >= 75",
     "note": "MVP contextual thresholds only; not regulatory thresholds."
   },
-  "claim_limit": "This layer does not detect contamination, crop loss, or water safety. It only provides rainfall context that may help explain runoff or field verification priority.",
+  "claim_limit": "Contexto hidroclimático auxiliar. No determina la decisión por sí solo; la decisión pública se basa en confianza Sentinel-2 y trazabilidad.",
   "nodes": [
     {
       "node_id": "la_villa_central",
