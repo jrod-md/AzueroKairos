@@ -414,6 +414,88 @@ select {
   font-weight: 740;
 }
 
+.official-contrast-strip {
+  margin-top: 12px;
+}
+
+.official-contrast-strip > span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 840;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.official-contrast-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 7px;
+}
+
+.official-contrast-card {
+  min-width: 0;
+  border: 1px solid color-mix(in oklch, var(--river) 8%, transparent);
+  border-radius: 16px;
+  padding: 10px;
+  background: color-mix(in oklch, var(--paper-soft) 62%, transparent);
+}
+
+.official-contrast-card.tone-stop {
+  border-color: color-mix(in oklch, var(--stop) 26%, transparent);
+  background: color-mix(in oklch, var(--stop) 9%, var(--paper));
+}
+
+.official-contrast-card.tone-usable {
+  border-color: color-mix(in oklch, var(--usable) 24%, transparent);
+  background: color-mix(in oklch, var(--usable) 9%, var(--paper));
+}
+
+.official-contrast-card div {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.official-contrast-card strong {
+  color: var(--river);
+  font-size: 0.82rem;
+  font-weight: 880;
+}
+
+.official-contrast-card b {
+  color: var(--review);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.035em;
+}
+
+.official-contrast-card.tone-stop b {
+  color: var(--stop);
+}
+
+.official-contrast-card.tone-usable b {
+  color: var(--usable);
+}
+
+.official-contrast-card p {
+  margin: 8px 0 0;
+  color: var(--river-soft);
+  font-size: 0.78rem;
+  font-weight: 740;
+  line-height: 1.32;
+}
+
+.official-contrast-card em {
+  display: block;
+  margin-top: 7px;
+  color: var(--river);
+  font-size: 0.74rem;
+  font-style: normal;
+  font-weight: 840;
+}
+
 .evidence-passport-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));

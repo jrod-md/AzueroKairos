@@ -607,7 +607,12 @@ function DecisionLanding({
               <p>{state.nextAction}</p>
             </div>
 
-            <EvidencePassport record={record} ledger={ledger} state={state} />
+            <EvidencePassport
+              comparisonRecords={comparisonRecords}
+              ledger={ledger}
+              record={record}
+              state={state}
+            />
           </div>
         </article>
 
@@ -677,7 +682,7 @@ function DecisionLanding({
   );
 }
 
-function EvidencePassport({ record, ledger, state }) {
+function EvidencePassport({ comparisonRecords, record, ledger, state }) {
   const decisionMessage =
     record.confidence_class === "usable"
       ? "La observación permite interpretación hidro-sedimentaria exploratoria con límites explícitos."
@@ -713,6 +718,8 @@ function EvidencePassport({ record, ledger, state }) {
       </p>
       <p className="evidence-passport-message secondary">{decisionMessage}</p>
 
+      <OfficialContrastStrip records={comparisonRecords} />
+
       <dl className="evidence-passport-grid">
         {items.map(([label, value]) => (
           <div className="evidence-passport-item" key={label}>
@@ -722,6 +729,41 @@ function EvidencePassport({ record, ledger, state }) {
         ))}
       </dl>
     </section>
+  );
+}
+
+function OfficialContrastStrip({ records }) {
+  const availableRecords = (records ?? []).filter(Boolean);
+  if (availableRecords.length < 2) return null;
+
+  const contrastCopy = {
+    "2025-06-10": "2025-06-10 muestra por qué el sistema no debe inferir.",
+    "2025-06-30":
+      "2025-06-30 muestra una observación usable para interpretación hidro-sedimentaria exploratoria.",
+  };
+
+  return (
+    <div className="official-contrast-strip" aria-label="Contraste oficial de evidencia">
+      <span>Contraste oficial</span>
+      <div className="official-contrast-cards">
+        {availableRecords.map((contrastRecord) => {
+          const contrastState = getStateMeta(contrastRecord);
+          return (
+            <article
+              className={`official-contrast-card tone-${contrastState.tone}`}
+              key={contrastRecord.date}
+            >
+              <div>
+                <strong>{contrastRecord.date}</strong>
+                <b>{contrastState.label}</b>
+              </div>
+              <p>{contrastCopy[contrastRecord.date] || contrastState.comparison}</p>
+              <em>{formatPercent(contrastRecord.validPercent)} evidencia válida</em>
+            </article>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -1624,7 +1666,7 @@ function DecisionCaseCard({ caseItem, isActive, onSelect }) {
           Ver evidencia
         </button>
         <button type="button" onClick={() => onSelect(caseItem, "brief")}>
-          Generar brief
+          Ver brief compacto
         </button>
         <button
           type="button"
