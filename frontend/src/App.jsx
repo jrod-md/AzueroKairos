@@ -74,6 +74,9 @@ const CASES_INSIGHT =
 const LAB_ESCALATION_COPY =
   "Requiere verificación territorial o autoridad competente.";
 
+const EVIDENCE_SOURCE = "Sentinel-2 / CDSE Statistical API";
+const THRESHOLD_RULE = "NO INFERIR <10%; REVISAR 10-30%; USABLE >=30%.";
+
 const DETAIL_TABS = [
   { id: "resumen", label: "Resumen" },
   { id: "evidencia", label: "Evidencia" },
@@ -603,6 +606,8 @@ function DecisionLanding({
               <span>Qué debe pasar ahora</span>
               <p>{state.nextAction}</p>
             </div>
+
+            <EvidencePassport record={record} ledger={ledger} state={state} />
           </div>
         </article>
 
@@ -669,6 +674,54 @@ function DecisionLanding({
         <ModulesStrip />
       </div>
     </>
+  );
+}
+
+function EvidencePassport({ record, ledger, state }) {
+  const decisionMessage =
+    record.confidence_class === "usable"
+      ? "La observación permite interpretación hidro-sedimentaria exploratoria con límites explícitos."
+      : "La observación no tiene evidencia válida suficiente para una inferencia responsable.";
+
+  const items = [
+    ["Fecha", record.date],
+    ["AOI", record.aoi],
+    ["Fuente", EVIDENCE_SOURCE],
+    ["API status", record.api_status || ledger?.api_status],
+    ["Evidencia válida", formatPassportPercent(record.validPercent)],
+    ["sampleCount", formatPassportInteger(record.sampleCount)],
+    ["noDataCount", formatPassportInteger(record.noDataCount)],
+    ["Decisión", `${state.label}: ${state.decision}`],
+    ["Regla de umbral", THRESHOLD_RULE],
+    ["raw JSON", record.raw_json_path || ledger?.raw_json_path],
+    ["processed CSV", ledger?.processed_csv_path],
+    ["brief", record.brief_path || ledger?.brief_path],
+    ["Ledger", ledger?.evidence_status],
+    ["run_id", ledger?.run_id],
+    ["commit", ledger?.git_commit],
+  ];
+
+  return (
+    <section className="evidence-passport" aria-label="Pasaporte de evidencia">
+      <div className="evidence-passport-title">
+        <span>Pasaporte de evidencia</span>
+        <strong>{state.label}</strong>
+      </div>
+
+      <p className="evidence-passport-message">
+        API OK confirma ejecución técnica; no confirma evidencia suficiente para inferir.
+      </p>
+      <p className="evidence-passport-message secondary">{decisionMessage}</p>
+
+      <dl className="evidence-passport-grid">
+        {items.map(([label, value]) => (
+          <div className="evidence-passport-item" key={label}>
+            <dt>{label}</dt>
+            <dd>{displayValue(value)}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }
 
@@ -2368,6 +2421,21 @@ function formatCasePercent(value) {
 function formatNumber(value, options) {
   if (value === undefined || value === null || value === "") return "pendiente";
   return new Intl.NumberFormat("es-PA", options).format(Number(value));
+}
+
+function displayValue(value) {
+  if (value === undefined || value === null || value === "") return "no disponible";
+  return String(value);
+}
+
+function formatPassportPercent(value) {
+  if (value === undefined || value === null || value === "") return null;
+  return formatPercent(value);
+}
+
+function formatPassportInteger(value) {
+  if (value === undefined || value === null || value === "") return null;
+  return formatInteger(value);
 }
 
 function clampPercentage(value) {
