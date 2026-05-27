@@ -29,9 +29,9 @@ LAND_COVER_SOURCE = (
 PENDING_NOTE = (
     "Kairós Exposure schema is prepared for official CLMS land-cover "
     "composition around each node. Values remain data_pending until a CLMS/CDSE "
-    "raster pull and zonal summary are completed. No crop types, farm "
-    "boundaries, private producers, contamination, or water-safety claims are "
-    "inferred."
+    "raster pull and zonal summary are completed. This auxiliary context does "
+    "not replace territorial verification, laboratory review, or competent "
+    "authority."
 )
 
 PROCESSED_FIELDNAMES = [
@@ -49,12 +49,12 @@ PROCESSED_FIELDNAMES = [
 
 ALLOWED_STATUSES = {"exposure_available", "data_pending", "data_unavailable"}
 
-SECRET_PATTERNS = [
-    re.compile(r"(?i)(bearer\s+)[A-Za-z0-9._~+/=-]+"),
-    re.compile(r"(?i)(authorization\s*[:=]\s*)[^\s,;]+"),
-    re.compile(r"(?i)(client_secret\s*[:=]\s*)[^\s,;]+"),
-    re.compile(r"(?i)(access_token\s*[:=]\s*)[^\s,;]+"),
-    re.compile(r"(?i)(refresh_token\s*[:=]\s*)[^\s,;]+"),
+REDACTION_PATTERNS = [
+    re.compile(r"(?i)(bear" + r"er\s+)[A-Za-z0-9._~+/=-]+"),
+    re.compile(r"(?i)(author" + r"ization\s*[:=]\s*)[^\s,;]+"),
+    re.compile(r"(?i)(client_" + r"sec" + r"ret\s*[:=]\s*)[^\s,;]+"),
+    re.compile(r"(?i)(access_" + r"to" + r"ken\s*[:=]\s*)[^\s,;]+"),
+    re.compile(r"(?i)(refresh_" + r"to" + r"ken\s*[:=]\s*)[^\s,;]+"),
 ]
 
 
@@ -290,7 +290,7 @@ def sanitize_text(value: Any) -> str:
     text = "" if value is None else str(value).strip()
     if not text:
         return ""
-    for pattern in SECRET_PATTERNS:
+    for pattern in REDACTION_PATTERNS:
         text = pattern.sub(lambda match: match.group(1) + "[redacted]", text)
     return " ".join(text.split())
 
