@@ -392,7 +392,8 @@ select {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   grid-template-areas:
     "why why"
-    "threshold map";
+    "threshold map"
+    "corridor corridor";
   justify-content: stretch;
   align-content: start;
   gap: 14px;
@@ -441,6 +442,10 @@ select {
 
 .instrument-panel > .territorial-map {
   grid-area: map;
+}
+
+.instrument-panel > .corridor-evidence-view {
+  grid-area: corridor;
 }
 
 .compact-compare {
@@ -921,6 +926,219 @@ select {
   color: var(--river-soft);
   font-size: 0.82rem;
   font-weight: 720;
+}
+
+.corridor-evidence-view {
+  min-width: 0;
+  border: 1px solid color-mix(in oklch, var(--river) 10%, transparent);
+  border-radius: 24px;
+  padding: 18px;
+  background:
+    linear-gradient(135deg, color-mix(in oklch, var(--paper) 82%, transparent), color-mix(in oklch, var(--paper-soft) 74%, transparent)),
+    var(--paper);
+  color: var(--river);
+}
+
+.corridor-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.corridor-heading h3 {
+  margin: 5px 0 0;
+  color: var(--river);
+  font-size: clamp(1.12rem, 1.55vw, 1.45rem);
+  line-height: 1.08;
+}
+
+.corridor-heading > span {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border: 1px solid color-mix(in oklch, var(--river) 10%, transparent);
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--paper) 74%, transparent);
+  color: var(--river-soft);
+  font-size: 0.72rem;
+  font-weight: 820;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+.corridor-strip-wrap {
+  margin-top: 14px;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklch, var(--river) 10%, transparent);
+  border-radius: 22px;
+  background:
+    linear-gradient(color-mix(in oklch, var(--river) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklch, var(--river) 5%, transparent) 1px, transparent 1px),
+    color-mix(in oklch, var(--paper) 74%, transparent);
+  background-size: 42px 42px;
+}
+
+.corridor-strip {
+  display: block;
+  width: 100%;
+  min-height: 210px;
+}
+
+.corridor-paper {
+  fill: color-mix(in oklch, var(--paper) 58%, transparent);
+}
+
+.corridor-river-line,
+.corridor-aoi-band {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.corridor-river-line {
+  stroke: color-mix(in oklch, var(--turquoise) 62%, var(--river));
+  stroke-width: 12;
+  opacity: 0.32;
+}
+
+.corridor-aoi-band {
+  stroke: color-mix(in oklch, var(--river) 16%, transparent);
+  stroke-dasharray: 4 8;
+  stroke-width: 2;
+}
+
+.corridor-node-stem {
+  stroke: color-mix(in oklch, var(--river) 16%, transparent);
+  stroke-width: 1.4;
+}
+
+.corridor-node-halo {
+  fill: var(--stop);
+  opacity: 0.15;
+}
+
+.corridor-node-dot {
+  fill: var(--stop);
+  stroke: color-mix(in oklch, var(--paper) 94%, transparent);
+  stroke-width: 4;
+}
+
+.corridor-node.tone-usable .corridor-node-halo,
+.corridor-node.tone-usable .corridor-node-dot {
+  fill: var(--usable);
+}
+
+.corridor-node.tone-review .corridor-node-halo,
+.corridor-node.tone-review .corridor-node-dot {
+  fill: var(--review);
+}
+
+.corridor-node-name,
+.corridor-node-status,
+.corridor-node-percent,
+.corridor-axis-label {
+  fill: var(--river);
+  font-family: inherit;
+  text-anchor: middle;
+}
+
+.corridor-node-name {
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.corridor-node-status {
+  fill: var(--river-soft);
+  font-size: 11px;
+  font-weight: 860;
+  letter-spacing: 0.035em;
+}
+
+.corridor-node-percent {
+  fill: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.corridor-axis-label {
+  fill: var(--muted);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.corridor-evidence-facts,
+.corridor-contrast-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.corridor-evidence-facts span,
+.corridor-evidence-facts strong,
+.corridor-contrast-card {
+  min-width: 0;
+  border: 1px solid color-mix(in oklch, var(--river) 9%, transparent);
+  border-radius: 16px;
+  padding: 10px 11px;
+  background: color-mix(in oklch, var(--paper-soft) 62%, transparent);
+}
+
+.corridor-evidence-facts span,
+.corridor-evidence-facts strong {
+  color: var(--river-soft);
+  font-size: 0.82rem;
+  font-weight: 760;
+  line-height: 1.32;
+}
+
+.corridor-evidence-facts strong {
+  color: var(--river);
+}
+
+.corridor-contrast-card.active {
+  border-color: color-mix(in oklch, var(--river) 25%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--river) 7%, transparent);
+}
+
+.corridor-contrast-card span {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.corridor-contrast-card strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--review);
+  font-size: 0.88rem;
+  font-weight: 900;
+}
+
+.corridor-contrast-card.tone-stop strong {
+  color: var(--stop);
+}
+
+.corridor-contrast-card.tone-usable strong {
+  color: var(--usable);
+}
+
+.corridor-contrast-card p,
+.corridor-note,
+.corridor-empty-message {
+  margin: 7px 0 0;
+  color: var(--river-soft);
+  font-size: 0.82rem;
+  font-weight: 720;
+  line-height: 1.38;
+}
+
+.corridor-note {
+  max-width: 78ch;
+  margin-top: 12px;
 }
 
 .decision-timeline-row {
@@ -2702,11 +2920,13 @@ select {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-areas:
       "why why"
-      "threshold map";
+      "threshold map"
+      "corridor corridor";
   }
 
   .why-copy,
-  .territorial-map {
+  .territorial-map,
+  .corridor-evidence-view {
     grid-column: 1 / -1;
   }
 
@@ -2830,7 +3050,8 @@ select {
     grid-template-areas:
       "why"
       "threshold"
-      "map";
+      "map"
+      "corridor";
   }
 
   .instrument-panel .why-copy {
@@ -2884,7 +3105,9 @@ select {
   .watch-summary-grid,
   .watch-summary-stats,
   .sar-overview-row,
-  .sar-summary-strip {
+  .sar-summary-strip,
+  .corridor-evidence-facts,
+  .corridor-contrast-row {
     grid-template-columns: 1fr;
   }
 

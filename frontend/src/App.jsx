@@ -3,6 +3,11 @@ import TerritorialMap from "./components/TerritorialMap.jsx";
 
 const DEFAULT_DATE = "2025-06-10";
 const COMPARISON_DATES = ["2025-06-10", "2025-06-30"];
+const CORRIDOR_NODE_ORDER = [
+  "la_villa_oeste",
+  "la_villa_central",
+  "la_villa_este",
+];
 
 const STATE_META = {
   usable: {
@@ -311,6 +316,8 @@ export default function App() {
           record={selectedRecord}
           ledger={selectedLedger}
           hydroClimateContext={selectedHydroClimateContext}
+          watchData={watchData}
+          watchLoadState={watchLoadState}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
           activeDetailTab={activeDetailTab}
@@ -537,6 +544,8 @@ function DecisionLanding({
   record,
   ledger,
   hydroClimateContext,
+  watchData,
+  watchLoadState,
   selectedDate,
   setSelectedDate,
   activeDetailTab,
@@ -611,6 +620,11 @@ function DecisionLanding({
           </div>
           <ConfidenceThresholdVisual record={record} />
           <TerritorialMap record={record} state={state} />
+          <AzueroCorridorEvidenceView
+            data={watchData}
+            loadState={watchLoadState}
+            selectedDate={selectedDate}
+          />
         </aside>
       </section>
 
@@ -657,6 +671,193 @@ function DecisionLanding({
         <ModulesStrip />
       </div>
     </>
+  );
+}
+
+function AzueroCorridorEvidenceView({ data, loadState, selectedDate }) {
+  const ready = loadState.status === "ready" && data;
+  const observations = ready ? data.observations ?? [] : [];
+  const nodes = useMemo(
+    () => orderCorridorNodes(data?.nodes ?? [], observations),
+    [data?.nodes, observations],
+  );
+  const observationMap = useMemo(
+    () =>
+      new Map(
+        observations.map((observation) => [
+          `${observation.node_id}|${observation.date}`,
+          observation,
+        ]),
+      ),
+    [observations],
+  );
+  const activeDate = selectedDate || DEFAULT_DATE;
+  const selectedRows = nodes
+    .map((node) => observationMap.get(`${node.node_id}|${activeDate}`))
+    .filter(Boolean);
+  const apiOkCount = selectedRows.filter((row) => row.api_status === "OK").length;
+  const noInferCount = selectedRows.filter(
+    (row) => row.confidence_class === "do_not_infer",
+  ).length;
+  const evidenceNodeCount = Math.max(selectedRows.length, nodes.length);
+  const selectedLabel =
+    noInferCount === nodes.length && nodes.length
+      ? "NO INFERIR en todo el corredor"
+      : noInferCount > 0
+        ? "Revisar nodos sin evidencia suficiente"
+        : "Contraste usable para lectura exploratoria";
+  const apiEvidenceCopy = evidenceNodeCount
+    ? `API OK en ${apiOkCount}/${evidenceNodeCount} nodos; eso no basta si la evidencia valida es insuficiente.`
+    : "Sin nodos disponibles para resumir la confianza del corredor.";
+
+  if (!ready) {
+    return (
+      <section className="corridor-evidence-view empty" aria-label="Vista de evidencia del corredor">
+        <div className="corridor-heading">
+          <div>
+            <p className="small-label">Corredor Rio La Villa</p>
+            <h3>Azuero corridor evidence view</h3>
+          </div>
+          <span>representacion esquematica</span>
+        </div>
+        <p className="corridor-empty-message">
+          {loadState.message ||
+            "La vista de corredor estara disponible cuando exista kairos_watch.json."}
+        </p>
+      </section>
+    );
+  }
+
+  return (
+    <section className="corridor-evidence-view" aria-label="Vista de evidencia del corredor Rio La Villa">
+      <div className="corridor-heading">
+        <div>
+          <p className="small-label">Corredor Rio La Villa</p>
+          <h3>Azuero corridor evidence view</h3>
+        </div>
+        <span>representacion esquematica</span>
+      </div>
+
+      <div className="corridor-strip-wrap">
+        <svg
+          className="corridor-strip"
+          viewBox="0 0 680 210"
+          role="img"
+          aria-label={`Representacion esquematica oeste a este del corredor para ${activeDate}`}
+        >
+          <rect className="corridor-paper" x="1" y="1" width="678" height="208" rx="22" />
+          <path
+            className="corridor-river-line"
+            d="M54 126 C146 74 222 157 330 108 C444 56 514 131 628 82"
+          />
+          <path
+            className="corridor-aoi-band"
+            d="M54 145 C151 95 218 174 332 128 C442 85 514 151 628 104"
+          />
+          {nodes.map((node, index) => {
+            const observation = observationMap.get(`${node.node_id}|${activeDate}`);
+            const state = getStateMeta(observation);
+            const x = 92 + index * 248;
+            const y = index === 1 ? 102 : 124;
+            return (
+              <g className={`corridor-node tone-${state.tone}`} key={node.node_id}>
+                <line className="corridor-node-stem" x1={x} x2={x} y1={y + 9} y2="166" />
+                <circle className="corridor-node-halo" cx={x} cy={y} r="22" />
+                <circle className="corridor-node-dot" cx={x} cy={y} r="8" />
+                <text className="corridor-node-name" x={x} y="32">
+                  {node.display_name || node.node_id}
+                </text>
+                <text className="corridor-node-status" x={x} y="57">
+                  {observation?.confidence_label_es || state.label}
+                </text>
+                <text className="corridor-node-percent" x={x} y="186">
+                  {observation ? `${formatPercent(observation.validPercent)} valido` : "sin dato"}
+                </text>
+              </g>
+            );
+          })}
+          <text className="corridor-axis-label west" x="48" y="198">
+            oeste
+          </text>
+          <text className="corridor-axis-label east" x="600" y="198">
+            este
+          </text>
+        </svg>
+      </div>
+
+      <div className="corridor-evidence-facts">
+        <span>Fecha activa: {activeDate}</span>
+        <strong>{selectedLabel}</strong>
+        <span>{apiEvidenceCopy}</span>
+      </div>
+
+      <div className="corridor-contrast-row" aria-label="Contraste de fechas del corredor">
+        {COMPARISON_DATES.map((date) => (
+          <CorridorDateContrast
+            date={date}
+            isActive={date === activeDate}
+            key={date}
+            nodes={nodes}
+            observationMap={observationMap}
+          />
+        ))}
+      </div>
+
+      <p className="corridor-note">
+        Esta vista resume confianza de observacion y brechas de evidencia. No es un
+        mapa satelital ni una lectura geoespacial exacta.
+      </p>
+    </section>
+  );
+}
+
+function CorridorDateContrast({ date, isActive, nodes, observationMap }) {
+  const rows = nodes
+    .map((node) => observationMap.get(`${node.node_id}|${date}`))
+    .filter(Boolean);
+  const noInferCount = rows.filter((row) => row.confidence_class === "do_not_infer").length;
+  const usableCount = rows.filter((row) => row.confidence_class === "usable").length;
+  const tone =
+    noInferCount === nodes.length && nodes.length
+      ? "stop"
+      : usableCount === nodes.length && nodes.length
+        ? "usable"
+        : "review";
+
+  return (
+    <article className={`corridor-contrast-card tone-${tone} ${isActive ? "active" : ""}`}>
+      <span>{date}</span>
+      <strong>
+        {noInferCount === nodes.length && nodes.length
+          ? "NO INFERIR"
+          : usableCount === nodes.length && nodes.length
+            ? "USABLE"
+            : "MIXTO"}
+      </strong>
+      <p>
+        {noInferCount ? `${noInferCount} sin evidencia suficiente` : `${usableCount} usables`}
+      </p>
+    </article>
+  );
+}
+
+function orderCorridorNodes(nodes, observations) {
+  const nodeMap = new Map();
+  nodes.forEach((node) => {
+    if (node?.node_id) nodeMap.set(node.node_id, node);
+  });
+  observations.forEach((observation) => {
+    if (!observation?.node_id || nodeMap.has(observation.node_id)) return;
+    nodeMap.set(observation.node_id, {
+      node_id: observation.node_id,
+      display_name: observation.node_display_name || observation.node_id,
+    });
+  });
+
+  const ordered = CORRIDOR_NODE_ORDER.map((nodeId) => nodeMap.get(nodeId)).filter(Boolean);
+  if (ordered.length) return ordered;
+  return [...nodeMap.values()].sort((a, b) =>
+    String(a.display_name ?? a.node_id).localeCompare(String(b.display_name ?? b.node_id)),
   );
 }
 
