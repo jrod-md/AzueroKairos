@@ -54,6 +54,21 @@ const METRIC_HELP = {
 const SCIENTIFIC_LIMITS =
   "Azuero Kairós no detecta pesticidas, atrazina, patógenos, metales pesados, contaminación química disuelta ni agua segura. Las afirmaciones químicas o sanitarias requieren laboratorio o verificación autorizada.";
 
+const SAR_LIMITS =
+  "Sentinel-1 aporta contexto físico/SAR. No confirma contaminación, agua segura, pesticidas, patógenos ni metales pesados.";
+
+const HYDROCLIMATE_LIMITS =
+  "El contexto hidroclimático no mide contaminación química ni agua segura.";
+
+const HYDROCLIMATE_INSIGHT =
+  "La lluvia antecedente no confirma riesgo. Ayuda a priorizar dónde revisar cuando la evidencia satelital es baja.";
+
+const CASES_INSIGHT =
+  "Cada caso traduce capas de evidencia en una acción responsable.";
+
+const LAB_ESCALATION_COPY =
+  "Requiere verificación territorial o autoridad competente.";
+
 const DETAIL_TABS = [
   { id: "resumen", label: "Resumen" },
   { id: "evidencia", label: "Evidencia" },
@@ -106,11 +121,28 @@ export default function App() {
   const [observations, setObservations] = useState([]);
   const [ledgerRows, setLedgerRows] = useState([]);
   const [watchData, setWatchData] = useState(null);
+  const [sarContext, setSarContext] = useState(null);
+  const [hydroClimate, setHydroClimate] = useState(null);
+  const [decisionCases, setDecisionCases] = useState(null);
   const [selectedDate, setSelectedDate] = useState(DEFAULT_DATE);
   const [activePage, setActivePage] = useState(getInitialPage);
   const [activeDetailTab, setActiveDetailTab] = useState("resumen");
+  const [activeCaseId, setActiveCaseId] = useState(null);
+  const [casePanelMode, setCasePanelMode] = useState("evidence");
   const [loadState, setLoadState] = useState({ status: "loading", message: "" });
   const [watchLoadState, setWatchLoadState] = useState({
+    status: "loading",
+    message: "",
+  });
+  const [sarLoadState, setSarLoadState] = useState({
+    status: "loading",
+    message: "",
+  });
+  const [hydroClimateLoadState, setHydroClimateLoadState] = useState({
+    status: "loading",
+    message: "",
+  });
+  const [decisionCasesLoadState, setDecisionCasesLoadState] = useState({
     status: "loading",
     message: "",
   });
@@ -120,10 +152,20 @@ export default function App() {
 
     async function loadData() {
       try {
-        const [observationsResponse, ledgerResponse, watchResult] = await Promise.all([
+        const [
+          observationsResponse,
+          ledgerResponse,
+          watchResult,
+          sarResult,
+          hydroClimateResult,
+          decisionCasesResult,
+        ] = await Promise.all([
           fetch("/data/observations.json"),
           fetch("/data/evidence_ledger.json"),
           loadWatchData(),
+          loadSarContext(),
+          loadHydroClimateContext(),
+          loadDecisionCases(),
         ]);
 
         if (!observationsResponse.ok) {
@@ -144,6 +186,21 @@ export default function App() {
           status: watchResult.status,
           message: watchResult.message,
         });
+        setSarContext(sarResult.payload);
+        setSarLoadState({
+          status: sarResult.status,
+          message: sarResult.message,
+        });
+        setHydroClimate(hydroClimateResult.payload);
+        setHydroClimateLoadState({
+          status: hydroClimateResult.status,
+          message: hydroClimateResult.message,
+        });
+        setDecisionCases(decisionCasesResult.payload);
+        setDecisionCasesLoadState({
+          status: decisionCasesResult.status,
+          message: decisionCasesResult.message,
+        });
         setSelectedDate(
           cleanObservations.some((record) => record.date === DEFAULT_DATE)
             ? DEFAULT_DATE
@@ -162,6 +219,18 @@ export default function App() {
         setWatchLoadState({
           status: "error",
           message: "No se pudo cargar Kairós Watch.",
+        });
+        setSarLoadState({
+          status: "error",
+          message: "No se pudo cargar Kairós SAR Context.",
+        });
+        setHydroClimateLoadState({
+          status: "error",
+          message: "No se pudo cargar Kairós HydroClimate.",
+        });
+        setDecisionCasesLoadState({
+          status: "error",
+          message: "No se pudo cargar Kairós Cases.",
         });
       }
     }
@@ -193,6 +262,11 @@ export default function App() {
     if (!selectedRecord) return null;
     return findLedgerForRecord(ledgerRows, selectedRecord);
   }, [ledgerRows, selectedRecord]);
+
+  const selectedHydroClimateContext = useMemo(() => {
+    if (!selectedRecord) return null;
+    return findHydroContextForRecord(hydroClimate, selectedRecord);
+  }, [hydroClimate, selectedRecord]);
 
   const comparisonRecords = useMemo(() => {
     return COMPARISON_DATES.map((date) =>
@@ -236,6 +310,7 @@ export default function App() {
           comparisonRecords={comparisonRecords}
           record={selectedRecord}
           ledger={selectedLedger}
+          hydroClimateContext={selectedHydroClimateContext}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
           activeDetailTab={activeDetailTab}
@@ -249,9 +324,27 @@ export default function App() {
           ledger={selectedLedger}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
+          sarContext={sarContext}
+          sarLoadState={sarLoadState}
+        />
+      ) : activePage === "cases" ? (
+        <KairosCases
+          data={decisionCases}
+          loadState={decisionCasesLoadState}
+          activeCaseId={activeCaseId}
+          setActiveCaseId={setActiveCaseId}
+          casePanelMode={casePanelMode}
+          setCasePanelMode={setCasePanelMode}
         />
       ) : (
-        <KairosWatch data={watchData} loadState={watchLoadState} />
+        <KairosWatch
+          data={watchData}
+          loadState={watchLoadState}
+          sarContext={sarContext}
+          sarLoadState={sarLoadState}
+          hydroClimate={hydroClimate}
+          hydroClimateLoadState={hydroClimateLoadState}
+        />
       )}
     </main>
   );
@@ -283,13 +376,93 @@ async function loadWatchData() {
   }
 }
 
+async function loadSarContext() {
+  try {
+    const response = await fetch("/data/sar_context.json");
+    if (!response.ok) {
+      return {
+        status: "missing",
+        message:
+          "Kairós SAR Context estará disponible cuando exista /data/sar_context.json.",
+        payload: null,
+      };
+    }
+
+    return {
+      status: "ready",
+      message: "",
+      payload: normalizeSarPayload(await response.json()),
+    };
+  } catch {
+    return {
+      status: "error",
+      message: "No se pudo cargar /data/sar_context.json.",
+      payload: null,
+    };
+  }
+}
+
+async function loadHydroClimateContext() {
+  try {
+    const response = await fetch("/data/hydroclimate_context.json");
+    if (!response.ok) {
+      return {
+        status: "missing",
+        message:
+          "Kairós HydroClimate estará disponible cuando exista /data/hydroclimate_context.json.",
+        payload: null,
+      };
+    }
+
+    return {
+      status: "ready",
+      message: "",
+      payload: normalizeHydroClimatePayload(await response.json()),
+    };
+  } catch {
+    return {
+      status: "error",
+      message: "No se pudo cargar /data/hydroclimate_context.json.",
+      payload: null,
+    };
+  }
+}
+
+async function loadDecisionCases() {
+  try {
+    const response = await fetch("/data/decision_cases.json");
+    if (!response.ok) {
+      return {
+        status: "missing",
+        message:
+          "Kairós Cases estará disponible cuando exista /data/decision_cases.json.",
+        payload: null,
+      };
+    }
+
+    return {
+      status: "ready",
+      message: "",
+      payload: normalizeDecisionCasesPayload(await response.json()),
+    };
+  } catch {
+    return {
+      status: "error",
+      message: "No se pudo cargar /data/decision_cases.json.",
+      payload: null,
+    };
+  }
+}
+
 function setPageAndHash(page) {
   const nextHash =
     page === "technical"
       ? "#datos-tecnicos"
       : page === "watch"
         ? "#kairos-watch"
-        : "#decision";
+        : page === "cases"
+          ? "#kairos-cases"
+          : "#decision";
   if (window.location.hash !== nextHash) {
     window.location.hash = nextHash;
     return;
@@ -302,6 +475,9 @@ function getInitialPage() {
   }
   if (typeof window !== "undefined" && window.location.hash === "#kairos-watch") {
     return "watch";
+  }
+  if (typeof window !== "undefined" && window.location.hash === "#kairos-cases") {
+    return "cases";
   }
   return "decision";
 }
@@ -340,6 +516,13 @@ function Header({ activePage, setActivePage, statusText }) {
         >
           Kairós Watch
         </button>
+        <button
+          className={activePage === "cases" ? "active" : ""}
+          type="button"
+          onClick={() => setActivePage("cases")}
+        >
+          Kairós Cases
+        </button>
       </nav>
 
       <p className="run-status">{statusText}</p>
@@ -353,12 +536,14 @@ function DecisionLanding({
   comparisonRecords,
   record,
   ledger,
+  hydroClimateContext,
   selectedDate,
   setSelectedDate,
   activeDetailTab,
   setActiveDetailTab,
 }) {
   const state = getStateMeta(record);
+  const showHydroBadge = isHydroReviewContext(hydroClimateContext);
 
   return (
     <>
@@ -394,6 +579,16 @@ function DecisionLanding({
               <span>Fecha: {record.date}</span>
               <span>AOI: {record.aoi}</span>
             </div>
+
+            {showHydroBadge ? (
+              <div
+                className={`hydro-decision-badge ${hydroStatusTone(
+                  hydroClimateContext.hydroclimate_status,
+                )}`}
+              >
+                Lluvia antecedente: revisar contexto territorial.
+              </div>
+            ) : null}
 
             <p className="plain-explanation">{state.explanation}</p>
 
@@ -775,8 +970,17 @@ function ModulesStrip() {
   );
 }
 
-function KairosWatch({ data, loadState }) {
+function KairosWatch({
+  data,
+  loadState,
+  sarContext,
+  sarLoadState,
+  hydroClimate,
+  hydroClimateLoadState,
+}) {
   const ready = loadState.status === "ready" && data;
+  const hasSarContext =
+    sarLoadState.status === "ready" && Boolean(sarContext?.observations?.length);
   const nodes = ready ? data.nodes ?? [] : [];
   const dates = ready ? data.dates ?? [] : [];
   const observations = ready ? data.observations ?? [] : [];
@@ -820,6 +1024,9 @@ function KairosWatch({ data, loadState }) {
           <p className="small-label">Kairós Watch</p>
           <h1>Atlas de confianza para Azuero</h1>
           <p>Confianza satelital por subcorredor y fecha.</p>
+          {hasSarContext ? (
+            <span className="sar-context-badge">SAR context available</span>
+          ) : null}
         </div>
         <article className="watch-insight-card">
           <span>Lectura regional</span>
@@ -879,6 +1086,11 @@ function KairosWatch({ data, loadState }) {
         </div>
       </section>
 
+      <HydroClimateWatchSection
+        data={hydroClimate}
+        loadState={hydroClimateLoadState}
+      />
+
       <WatchSummaryCards summaries={summaries} />
 
       <section className="watch-limits" aria-label="Límite científico de Kairós Watch">
@@ -888,6 +1100,69 @@ function KairosWatch({ data, loadState }) {
           agua segura.
         </p>
       </section>
+    </section>
+  );
+}
+
+function HydroClimateWatchSection({ data, loadState }) {
+  const ready = loadState.status === "ready" && data;
+  if (!ready) {
+    return null;
+  }
+
+  const observations = [...(data.observations ?? [])].sort(sortHydroObservation);
+  if (!observations.length) {
+    return null;
+  }
+
+  return (
+    <section className="hydro-context-section" aria-label="Kairós HydroClimate">
+      <div className="section-heading compact">
+        <div>
+          <p className="small-label">Contexto hidroclimático</p>
+          <h2>Kairós HydroClimate</h2>
+        </div>
+        <p>Contexto de lluvia antecedente para priorizar revisión territorial.</p>
+      </div>
+
+      <div className="hydro-context-grid">
+        {observations.map((observation) => (
+          <article
+            className={`hydro-context-card ${hydroStatusTone(
+              observation.hydroclimate_status,
+            )}`}
+            key={`${observation.node_id}-${observation.date}`}
+          >
+            <div className="hydro-card-top">
+              <div>
+                <span>{observation.node_display_name || observation.node_id}</span>
+                <strong>{observation.date}</strong>
+              </div>
+            </div>
+
+            <dl className="hydro-rain-grid">
+              <div>
+                <dt>72h</dt>
+                <dd>{formatRainMm(observation.rain_72h_mm)}</dd>
+              </div>
+              <div>
+                <dt>7d</dt>
+                <dd>{formatRainMm(observation.rain_7d_mm)}</dd>
+              </div>
+            </dl>
+
+            <span className="hydro-status-chip">
+              {observation.hydroclimate_status || "data_unavailable"}
+            </span>
+            <p>{observation.recommended_context_action || "Contexto no disponible."}</p>
+          </article>
+        ))}
+      </div>
+
+      <div className="hydro-context-notes">
+        <p>{HYDROCLIMATE_INSIGHT}</p>
+        <span>{HYDROCLIMATE_LIMITS}</span>
+      </div>
     </section>
   );
 }
@@ -959,6 +1234,270 @@ function WatchStat({ label, value }) {
   );
 }
 
+function KairosCases({
+  data,
+  loadState,
+  activeCaseId,
+  setActiveCaseId,
+  casePanelMode,
+  setCasePanelMode,
+}) {
+  const ready = loadState.status === "ready" && data;
+  const cases = useMemo(() => {
+    if (!ready) return [];
+    return [...(data.cases ?? [])].sort(sortDecisionCase);
+  }, [data, ready]);
+  const summary = ready ? data.summary ?? {} : {};
+  const selectedCase =
+    cases.find((caseItem) => caseItem.case_id === activeCaseId) ?? cases[0] ?? null;
+
+  function selectCase(caseItem, mode) {
+    setActiveCaseId(caseItem.case_id);
+    setCasePanelMode(mode);
+  }
+
+  if (!ready) {
+    return (
+      <section className="cases-screen" aria-label="Kairós Cases">
+        <div className="cases-hero">
+          <div>
+            <p className="small-label">Kairós Cases</p>
+            <h1>Workflow de decisión territorial</h1>
+            <p>{CASES_INSIGHT}</p>
+          </div>
+          <article className="cases-empty-card">
+            <span>Casos no disponibles</span>
+            <p>
+              {loadState.message ||
+                "Kairós Cases estará disponible cuando se exporte decision_cases.json."}
+            </p>
+          </article>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="cases-screen" aria-label="Kairós Cases">
+      <div className="cases-hero">
+        <div>
+          <p className="small-label">Kairós Cases</p>
+          <h1>Workflow de decisión territorial</h1>
+          <p>{CASES_INSIGHT}</p>
+        </div>
+        <article className="cases-insight-card">
+          <span>Decision Engine</span>
+          <dl>
+            <div>
+              <dt>Total casos</dt>
+              <dd>{summary.total_cases ?? cases.length}</dd>
+            </div>
+            <div>
+              <dt>Verificación</dt>
+              <dd>{summary.field_verification_recommended_count ?? 0}</dd>
+            </div>
+            <div>
+              <dt>Brechas</dt>
+              <dd>{summary.evidence_gap_count ?? 0}</dd>
+            </div>
+          </dl>
+        </article>
+      </div>
+
+      <div className="case-board-layout">
+        <section className="case-board-section" aria-label="Tablero de casos">
+          <div className="section-heading compact">
+            <div>
+              <p className="small-label">Case board</p>
+              <h2>Acciones operativas por nodo y fecha</h2>
+            </div>
+            <p>Kairós Watch sigue siendo el panorama regional. Este tablero organiza la acción.</p>
+          </div>
+
+          <div className="case-card-grid">
+            {cases.map((caseItem) => (
+              <DecisionCaseCard
+                caseItem={caseItem}
+                isActive={selectedCase?.case_id === caseItem.case_id}
+                key={caseItem.case_id}
+                onSelect={selectCase}
+              />
+            ))}
+          </div>
+        </section>
+
+        <CaseActionPanel caseItem={selectedCase} mode={casePanelMode} />
+      </div>
+
+      <section className="cases-limit-note" aria-label="Límite científico de Kairós Cases">
+        <span>Firewall de claims</span>
+        <p>
+          {data.claim_firewall ||
+            "No detecta pesticidas, metales pesados, patógenos, contaminación química disuelta ni agua segura."}
+        </p>
+      </section>
+    </section>
+  );
+}
+
+function DecisionCaseCard({ caseItem, isActive, onSelect }) {
+  const tone = decisionCaseTone(caseItem);
+  const verificationEnabled = canRequestVerification(caseItem);
+
+  return (
+    <article className={`case-card tone-${tone} ${isActive ? "active" : ""}`}>
+      <div className="case-card-top">
+        <div>
+          <span>{caseItem.node_display_name || caseItem.node_id}</span>
+          <strong>{caseItem.date}</strong>
+        </div>
+        <b className="case-priority-pill">{caseItem.priority_level || "normal"}</b>
+      </div>
+
+      <div className="case-label-row">
+        <span className={`case-label tone-${tone}`}>{caseItem.decision_label}</span>
+        <span>{formatCasePercent(caseItem.primary_validPercent)} válido</span>
+      </div>
+
+      <div className="case-meta-grid">
+        <CaseFact label="Workflow" value={caseItem.recommended_workflow} />
+        <CaseFact label="Verificación" value={caseItem.field_verification_status} />
+        <CaseFact label="Laboratorio" value={caseItem.lab_escalation_status} />
+      </div>
+
+      <div className="case-gap-box">
+        <span>Brechas de evidencia</span>
+        <ul>
+          {splitEvidenceGaps(caseItem.evidence_gaps).map((gap) => (
+            <li key={gap}>{gap}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="case-actions" aria-label="Acciones del caso">
+        <button type="button" onClick={() => onSelect(caseItem, "evidence")}>
+          Ver evidencia
+        </button>
+        <button type="button" onClick={() => onSelect(caseItem, "brief")}>
+          Generar brief
+        </button>
+        <button
+          type="button"
+          disabled={!verificationEnabled}
+          title={
+            verificationEnabled
+              ? "Abre una vista de solicitud sin guardar datos."
+              : "Disponible solo para NO INFERIR o REVISAR."
+          }
+          onClick={() => onSelect(caseItem, "verification")}
+        >
+          Solicitar verificación
+        </button>
+        <button type="button" disabled title={LAB_ESCALATION_COPY}>
+          Escalar a laboratorio
+        </button>
+      </div>
+      <p className="case-lab-copy">{LAB_ESCALATION_COPY}</p>
+    </article>
+  );
+}
+
+function CaseActionPanel({ caseItem, mode }) {
+  if (!caseItem) {
+    return (
+      <aside className="case-action-panel">
+        <span>Seleccione un caso</span>
+        <p>No hay casos operativos disponibles.</p>
+      </aside>
+    );
+  }
+
+  if (mode === "brief") {
+    return (
+      <aside className="case-action-panel" aria-label="Vista de brief operativo">
+        <span>Brief compacto</span>
+        <h3>{caseItem.decision_label}: {caseItem.node_display_name}</h3>
+        <div className="case-brief-preview">
+          <p>{caseItem.decision_action}</p>
+          <p>{caseItem.recommended_workflow}</p>
+        </div>
+        <dl className="case-panel-facts">
+          <CaseDataPair label="Fecha" value={caseItem.date} />
+          <CaseDataPair label="Prioridad" value={caseItem.priority_level} />
+          <CaseDataPair label="Campo" value={caseItem.field_verification_status} />
+        </dl>
+        <p className="case-panel-limit">{caseItem.claim_firewall}</p>
+      </aside>
+    );
+  }
+
+  if (mode === "verification") {
+    return (
+      <aside className="case-action-panel" aria-label="Solicitud de verificación">
+        <span>Verificación territorial</span>
+        <h3>Solicitud preparada, no persistida</h3>
+        <p>
+          Este flujo documenta que el caso requiere revisión territorial. No guarda
+          datos, no abre backend y no reemplaza la autoridad técnica.
+        </p>
+        <dl className="case-panel-facts">
+          <CaseDataPair label="Nodo" value={caseItem.node_display_name || caseItem.node_id} />
+          <CaseDataPair label="Fecha" value={caseItem.date} />
+          <CaseDataPair label="Estado" value={caseItem.field_verification_status} />
+          <CaseDataPair label="Laboratorio" value={caseItem.lab_escalation_status} />
+        </dl>
+        <p className="case-panel-limit">{LAB_ESCALATION_COPY}</p>
+      </aside>
+    );
+  }
+
+  return (
+    <aside className="case-action-panel" aria-label="Evidencia del caso">
+      <span>Evidencia del caso</span>
+      <h3>{caseItem.node_display_name || caseItem.node_id}</h3>
+      <dl className="case-panel-facts">
+        <CaseDataPair label="Fecha" value={caseItem.date} />
+        <CaseDataPair
+          label="Sentinel-2"
+          value={`${caseItem.primary_confidence_class || "pendiente"} · ${formatCasePercent(
+            caseItem.primary_validPercent,
+          )}`}
+        />
+        <CaseDataPair label="SAR" value={caseItem.sar_context_status} />
+        <CaseDataPair label="Exposure" value={caseItem.exposure_status} />
+        <CaseDataPair label="HydroClimate" value={caseItem.hydroclimate_status} />
+        <CaseDataPair label="Ledger" value={caseItem.ledger_status} />
+      </dl>
+      <div className="case-panel-gaps">
+        <strong>Brechas</strong>
+        <ul>
+          {splitEvidenceGaps(caseItem.evidence_gaps).map((gap) => (
+            <li key={gap}>{gap}</li>
+          ))}
+        </ul>
+      </div>
+    </aside>
+  );
+}
+
+function CaseFact({ label, value }) {
+  return (
+    <div className="case-fact">
+      <span>{label}</span>
+      <strong>{value || "pendiente"}</strong>
+    </div>
+  );
+}
+
+function CaseDataPair({ label, value }) {
+  return (
+    <div>
+      <dt>{label}</dt>
+      <dd>{value || "pendiente"}</dd>
+    </div>
+  );
+}
+
 function TechnicalDashboard({
   availableDates,
   comparisonRecords,
@@ -966,6 +1505,8 @@ function TechnicalDashboard({
   ledger,
   selectedDate,
   setSelectedDate,
+  sarContext,
+  sarLoadState,
 }) {
   const state = getStateMeta(record);
 
@@ -1010,6 +1551,7 @@ function TechnicalDashboard({
       <TerritorialMap record={record} state={state} variant="technical" />
       <ComparisonSection records={comparisonRecords} />
       <MetricsSection record={record} />
+      <SarContextSection data={sarContext} loadState={sarLoadState} />
       <EvidencePipeline />
       <TechnicalTraceability record={record} ledger={ledger} />
       <BriefPreview record={record} ledger={ledger} state={state} />
@@ -1141,6 +1683,108 @@ function MetricsSection({ record }) {
           </article>
         ))}
       </div>
+    </section>
+  );
+}
+
+function SarContextSection({ data, loadState }) {
+  const ready = loadState.status === "ready" && data;
+  const observations = ready ? data.observations ?? [] : [];
+  const summaries = ready ? data.summary_by_node ?? [] : [];
+  const availableCount = observations.filter(
+    (row) => row.context_status === "sar_context_available",
+  ).length;
+  const lowObservationCount = observations.filter(
+    (row) => row.context_status === "sar_low_observation",
+  ).length;
+  const errorCount = observations.filter(
+    (row) => row.context_status === "sar_error",
+  ).length;
+
+  return (
+    <section className="sar-context-section" aria-label="Kairós SAR Context">
+      <div className="section-heading compact">
+        <div>
+          <p className="small-label">Context layer</p>
+          <h2>Kairós SAR Context</h2>
+        </div>
+        <p>Capa auxiliar Sentinel-1 para continuidad física bajo nubosidad.</p>
+      </div>
+
+      {!ready ? (
+        <article className="sar-empty-state">
+          <span>Contexto SAR no disponible</span>
+          <p>
+            {loadState.message ||
+              "La capa SAR se mostrará cuando /data/sar_context.json esté disponible."}
+          </p>
+        </article>
+      ) : (
+        <>
+          <div className="sar-overview-row">
+            <StatusChip label="Sensor" value={data.sensor || "sentinel-1-grd"} />
+            <StatusChip label="Observaciones SAR" value={observations.length} />
+            <StatusChip label="Contexto disponible" value={availableCount} />
+            <StatusChip label="Baja observación" value={lowObservationCount} />
+            <StatusChip label="Errores SAR" value={errorCount} />
+          </div>
+
+          <div className="sar-table-wrap" role="region" aria-label="Matriz SAR por nodo y fecha">
+            <table className="sar-context-table">
+              <thead>
+                <tr>
+                  <th scope="col">Node</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">VV mean</th>
+                  <th scope="col">VH mean</th>
+                  <th scope="col">VV/VH ratio</th>
+                  <th scope="col">validPercent</th>
+                  <th scope="col">context_status</th>
+                  <th scope="col">api_status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {observations.map((row) => (
+                  <tr key={`${row.node_id}-${row.date}`}>
+                    <th scope="row">
+                      <strong>{row.node_display_name || row.node_id}</strong>
+                      <span>{row.aoi || row.node_id}</span>
+                    </th>
+                    <td>{row.date}</td>
+                    <td>{formatSarNumber(row.vv_mean)}</td>
+                    <td>{formatSarNumber(row.vh_mean)}</td>
+                    <td>{formatSarNumber(row.vv_vh_ratio)}</td>
+                    <td>{formatPercent(row.validPercent)}</td>
+                    <td>
+                      <span className={`sar-status ${sarStatusTone(row.context_status)}`}>
+                        {row.context_status || "pendiente"}
+                      </span>
+                    </td>
+                    <td>{row.api_status || "pendiente"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {summaries.length ? (
+            <div className="sar-summary-strip" aria-label="Resumen SAR por nodo">
+              {summaries.map((summary) => (
+                <article className="sar-summary-chip" key={summary.node_id}>
+                  <span>{summary.node_display_name || summary.node_id}</span>
+                  <strong>{formatPercent(summary.mean_validPercent)}</strong>
+                  <p>
+                    {summary.available_observations ?? 0} disponibles /{" "}
+                    {summary.low_observation_count ?? 0} baja observación
+                  </p>
+                </article>
+              ))}
+            </div>
+          ) : null}
+        </>
+      )}
+
+      <p className="sar-limit-note">{SAR_LIMITS}</p>
     </section>
   );
 }
@@ -1354,6 +1998,22 @@ function findLedgerForRecord(rows, record) {
   );
 }
 
+function findHydroContextForRecord(payload, record) {
+  const observations = Array.isArray(payload?.observations)
+    ? payload.observations
+    : [];
+  const sameDateRows = observations.filter((row) => row.date === record.date);
+  const exactNodeRows = sameDateRows.filter(
+    (row) => row.node_id === record.aoi || row.node_display_name === record.aoi,
+  );
+  const candidates = exactNodeRows.length ? exactNodeRows : sameDateRows;
+  return (
+    candidates
+      .filter(isHydroReviewContext)
+      .sort((a, b) => hydroContextScore(b) - hydroContextScore(a))[0] ?? null
+  );
+}
+
 function buildRunStatus(ledgerRows) {
   const hasOkLedger = ledgerRows.some((row) =>
     String(row.evidence_status ?? "").includes("official_api_ok"),
@@ -1393,6 +2053,87 @@ function normalizeWatchPayload(payload) {
     summary_by_node: Array.isArray(payload.summary_by_node)
       ? payload.summary_by_node.map(normalizeRecord)
       : [],
+  };
+}
+
+function normalizeSarPayload(payload) {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  return {
+    ...payload,
+    nodes: Array.isArray(payload.nodes)
+      ? payload.nodes.map(normalizeRecord)
+      : [],
+    dates: Array.isArray(payload.dates)
+      ? payload.dates.map((date) =>
+          typeof date === "string" ? repairMojibake(date) : date,
+        )
+      : [],
+    observations: Array.isArray(payload.observations)
+      ? payload.observations.map(normalizeRecord)
+      : [],
+    summary_by_node: Array.isArray(payload.summary_by_node)
+      ? payload.summary_by_node.map(normalizeRecord)
+      : [],
+  };
+}
+
+function normalizeHydroClimatePayload(payload) {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  return {
+    ...payload,
+    nodes: Array.isArray(payload.nodes)
+      ? payload.nodes.map(normalizeRecord)
+      : [],
+    dates: Array.isArray(payload.dates)
+      ? payload.dates.map((date) =>
+          typeof date === "string" ? repairMojibake(date) : date,
+        )
+      : [],
+    observations: Array.isArray(payload.observations)
+      ? payload.observations.map(normalizeRecord)
+      : [],
+    summary_by_node: Array.isArray(payload.summary_by_node)
+      ? payload.summary_by_node.map(normalizeRecord)
+      : [],
+  };
+}
+
+function normalizeDecisionCasesPayload(payload) {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  return {
+    ...payload,
+    claim_firewall:
+      typeof payload.claim_firewall === "string"
+        ? repairMojibake(payload.claim_firewall)
+        : payload.claim_firewall,
+    decision_principle:
+      typeof payload.decision_principle === "string"
+        ? repairMojibake(payload.decision_principle)
+        : payload.decision_principle,
+    nodes: Array.isArray(payload.nodes)
+      ? payload.nodes.map(normalizeRecord)
+      : [],
+    dates: Array.isArray(payload.dates)
+      ? payload.dates.map((date) =>
+          typeof date === "string" ? repairMojibake(date) : date,
+        )
+      : [],
+    cases: Array.isArray(payload.cases)
+      ? payload.cases.map(normalizeRecord)
+      : [],
+    summary:
+      payload.summary && typeof payload.summary === "object"
+        ? normalizeRecord(payload.summary)
+        : {},
   };
 }
 
@@ -1439,6 +2180,102 @@ function formatDecimal(value) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });
+}
+
+function formatSarNumber(value) {
+  if (value === undefined || value === null || value === "") return "sin dato";
+  return formatNumber(value, {
+    minimumFractionDigits: 4,
+    maximumFractionDigits: 4,
+  });
+}
+
+function formatRainMm(value) {
+  if (value === undefined || value === null || value === "") return "sin dato";
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "sin dato";
+  return `${formatNumber(numeric, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })} mm`;
+}
+
+function sarStatusTone(status) {
+  if (status === "sar_context_available") return "available";
+  if (status === "sar_error") return "error";
+  return "low";
+}
+
+function isHydroReviewContext(row) {
+  const status = row?.hydroclimate_status;
+  return status === "heavy_rain_context" || status === "antecedent_rain";
+}
+
+function hydroContextScore(row) {
+  const status = row?.hydroclimate_status;
+  const severity =
+    status === "heavy_rain_context" ? 3 : status === "antecedent_rain" ? 2 : 0;
+  return severity * 10000 + Number(row?.rain_7d_mm ?? 0);
+}
+
+function hydroStatusTone(status) {
+  if (status === "heavy_rain_context") return "heavy";
+  if (status === "antecedent_rain") return "antecedent";
+  if (status === "data_unavailable") return "unavailable";
+  if (status === "dry_or_low_rain") return "dry";
+  return "normal";
+}
+
+function sortHydroObservation(a, b) {
+  const nodeCompare = String(a.node_id ?? "").localeCompare(String(b.node_id ?? ""));
+  if (nodeCompare !== 0) return nodeCompare;
+  return String(a.date ?? "").localeCompare(String(b.date ?? ""));
+}
+
+function sortDecisionCase(a, b) {
+  const priorityCompare = decisionPriorityRank(a) - decisionPriorityRank(b);
+  if (priorityCompare !== 0) return priorityCompare;
+  const dateCompare = String(a.date ?? "").localeCompare(String(b.date ?? ""));
+  if (dateCompare !== 0) return dateCompare;
+  return String(a.node_id ?? "").localeCompare(String(b.node_id ?? ""));
+}
+
+function decisionPriorityRank(caseItem) {
+  const label = String(caseItem?.decision_label ?? "").toUpperCase();
+  if (label === "NO INFERIR") return 0;
+  if (label === "REVISAR") return 1;
+  const priority = String(caseItem?.priority_level ?? "").toLowerCase();
+  if (priority === "alta") return 2;
+  if (priority === "media-alta") return 3;
+  if (priority === "media") return 4;
+  return 5;
+}
+
+function decisionCaseTone(caseItem) {
+  const label = String(caseItem?.decision_label ?? "").toUpperCase();
+  if (label === "NO INFERIR") return "stop";
+  if (label === "REVISAR") return "review";
+  return "usable";
+}
+
+function canRequestVerification(caseItem) {
+  const label = String(caseItem?.decision_label ?? "").toUpperCase();
+  return label === "NO INFERIR" || label === "REVISAR";
+}
+
+function splitEvidenceGaps(value) {
+  if (!value) return ["Sin brechas registradas."];
+  return String(value)
+    .split("|")
+    .map((gap) => gap.trim())
+    .filter(Boolean);
+}
+
+function formatCasePercent(value) {
+  if (value === undefined || value === null || value === "") return "pendiente";
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return String(value);
+  return formatPercent(numeric);
 }
 
 function formatNumber(value, options) {
