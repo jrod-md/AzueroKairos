@@ -1,8 +1,8 @@
 [
   {
-    "run_id": "d910f9c3-2212-4423-9398-4772a35a65fb",
-    "generated_at_utc": "2026-05-26T02:56:30.324519+00:00",
-    "git_commit": "f8e219c",
+    "run_id": "3785a271-64da-4bd9-9eb5-5cf611499e55",
+    "generated_at_utc": "2026-05-27T18:53:21.567182+00:00",
+    "git_commit": "f888e59",
     "date": "2025-06-02",
     "aoi": "corridor_wide",
     "resolution_m": 20,
@@ -21,9 +21,9 @@
     "evidence_status": "official_api_ok;brief_missing"
   },
   {
-    "run_id": "d910f9c3-2212-4423-9398-4772a35a65fb",
-    "generated_at_utc": "2026-05-26T02:56:30.325426+00:00",
-    "git_commit": "f8e219c",
+    "run_id": "3785a271-64da-4bd9-9eb5-5cf611499e55",
+    "generated_at_utc": "2026-05-27T18:53:21.568183+00:00",
+    "git_commit": "f888e59",
     "date": "2025-06-10",
     "aoi": "corridor_wide",
     "resolution_m": 20,
@@ -42,9 +42,9 @@
     "evidence_status": "official_api_ok"
   },
   {
-    "run_id": "d910f9c3-2212-4423-9398-4772a35a65fb",
-    "generated_at_utc": "2026-05-26T02:56:30.325944+00:00",
-    "git_commit": "f8e219c",
+    "run_id": "3785a271-64da-4bd9-9eb5-5cf611499e55",
+    "generated_at_utc": "2026-05-27T18:53:21.569183+00:00",
+    "git_commit": "f888e59",
     "date": "2025-06-15",
     "aoi": "corridor_wide",
     "resolution_m": 20,
@@ -63,9 +63,9 @@
     "evidence_status": "official_api_ok;brief_missing"
   },
   {
-    "run_id": "d910f9c3-2212-4423-9398-4772a35a65fb",
-    "generated_at_utc": "2026-05-26T02:56:30.326399+00:00",
-    "git_commit": "f8e219c",
+    "run_id": "3785a271-64da-4bd9-9eb5-5cf611499e55",
+    "generated_at_utc": "2026-05-27T18:53:21.569753+00:00",
+    "git_commit": "f888e59",
     "date": "2025-06-30",
     "aoi": "corridor_wide",
     "resolution_m": 20,
@@ -81,12 +81,12 @@
     "raw_json_path": "outputs/raw_json/2025-06-30_corridor_wide_mndwi_ndti_20m_s2_stats.json",
     "processed_csv_path": "outputs/processed_csv/sentinel2_stats_confidence.csv",
     "brief_path": "outputs/briefs/2025-06-30_corridor_wide_confidence_brief.md",
-    "evidence_status": "official_api_ok;brief_missing"
+    "evidence_status": "official_api_ok"
   },
   {
-    "run_id": "d910f9c3-2212-4423-9398-4772a35a65fb",
-    "generated_at_utc": "2026-05-26T02:56:30.327250+00:00",
-    "git_commit": "f8e219c",
+    "run_id": "3785a271-64da-4bd9-9eb5-5cf611499e55",
+    "generated_at_utc": "2026-05-27T18:53:21.569753+00:00",
+    "git_commit": "f888e59",
     "date": "2025-07-15",
     "aoi": "corridor_wide",
     "resolution_m": 20,

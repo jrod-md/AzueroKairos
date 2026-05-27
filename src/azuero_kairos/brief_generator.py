@@ -14,9 +14,9 @@ from .confidence_engine import (
 
 
 SCIENTIFIC_LIMITS_NOTICE = (
-    "Este informe no detecta pesticidas, atrazina, patógenos, metales pesados, "
-    "contaminación química disuelta ni agua segura. Las afirmaciones químicas "
-    "o sanitarias requieren laboratorio o verificación autorizada."
+    "Este informe limita la decisión pública a confianza de observación Sentinel. "
+    "No hace afirmaciones químicas, sanitarias, de aptitud de uso ni de respuesta "
+    "institucional. Cualquier conclusión externa requiere verificación autorizada."
 )
 
 

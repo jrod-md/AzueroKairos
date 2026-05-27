@@ -137,7 +137,7 @@ export default function TerritorialMap({ record, state, variant = "decision" }) 
       </div>
 
       <p className="territorial-map-note">
-        Visualización contextual del AOI oficial, no validación de campo.
+        Visualización contextual del AOI oficial, no verificación de campo.
       </p>
     </section>
   );
