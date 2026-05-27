@@ -17,7 +17,7 @@
     "api_status": "OK",
     "api_error": "",
     "raw_json_path": "outputs/raw_json/2025-06-02_corridor_wide_mndwi_ndti_20m_s2_stats.json",
-    "brief_path": ""
+    "brief_path": "outputs/briefs/2025-06-02_corridor_wide_confidence_brief.md"
   },
   {
     "date": "2025-06-10",
@@ -57,7 +57,7 @@
     "api_status": "OK",
     "api_error": "",
     "raw_json_path": "outputs/raw_json/2025-06-15_corridor_wide_mndwi_ndti_20m_s2_stats.json",
-    "brief_path": ""
+    "brief_path": "outputs/briefs/2025-06-15_corridor_wide_confidence_brief.md"
   },
   {
     "date": "2025-06-30",
@@ -97,6 +97,6 @@
     "api_status": "OK",
     "api_error": "",
     "raw_json_path": "outputs/raw_json/2025-07-15_corridor_wide_mndwi_ndti_20m_s2_stats.json",
-    "brief_path": ""
+    "brief_path": "outputs/briefs/2025-07-15_corridor_wide_confidence_brief.md"
   }
 ]
