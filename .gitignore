@@ -59,6 +59,7 @@ outputs/raw_json/*
 outputs/processed_csv/*
 outputs/briefs/*
 outputs/ledger/*
+outputs/exposure/
 !outputs/raw_json/.gitkeep
 !outputs/processed_csv/.gitkeep
 !outputs/briefs/.gitkeep

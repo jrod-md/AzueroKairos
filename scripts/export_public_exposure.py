@@ -48,20 +48,20 @@ STATUS_ORDER = ("exposure_available", "data_pending", "data_unavailable")
 
 CLAIM_LIMIT = (
     "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia "
-    "principal y no sustituye verificación territorial, laboratorio ni autoridad "
+    "principal y no sustituye verificacion territorial, laboratorio ni autoridad "
     "competente."
 )
 ANALYSIS_NOTE = (
     "Resumen territorial derivado de CLMS Global Dynamic Land Cover 10m Annual "
-    "V1, año de referencia 2020. El análisis usa muestreo estadístico "
-    "adaptativo para mantener la consulta dentro de límites de grilla de la API."
+    "V1, ano de referencia 2020. El analisis usa muestreo estadistico "
+    "adaptativo para mantener la consulta dentro de limites de grilla de la API."
 )
 NODE_NOTE = (
-    "Contexto territorial auxiliar por nodo. No modifica la clasificación "
-    "Sentinel-2 ni la decisión pública de confianza."
+    "Contexto territorial auxiliar por nodo. No modifica la clasificacion "
+    "Sentinel-2 ni la decision publica de confianza."
 )
 PENDING_NOTE = (
-    "Capa de exposición preparada en esquema. Valores territoriales pendientes; "
+    "Capa de exposicion preparada en esquema. Valores territoriales pendientes; "
     "no se usa como evidencia principal."
 )
 

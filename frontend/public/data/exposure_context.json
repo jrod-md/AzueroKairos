@@ -8,9 +8,9 @@
   "collection_id": "828f6b20-8ffd-48f8-a1da-fefd271456db",
   "reference_year": 2020,
   "source_resolution_m": 10,
-  "analysis_note": "Resumen territorial derivado de CLMS Global Dynamic Land Cover 10m Annual V1, año de referencia 2020. El análisis usa muestreo estadístico adaptativo para mantener la consulta dentro de límites de grilla de la API.",
+  "analysis_note": "Resumen territorial derivado de CLMS Global Dynamic Land Cover 10m Annual V1, ano de referencia 2020. El analisis usa muestreo estadistico adaptativo para mantener la consulta dentro de limites de grilla de la API.",
   "resolution_strategy": "adaptive_statistical_sampling",
-  "claim_limit": "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia principal y no sustituye verificación territorial, laboratorio ni autoridad competente.",
+  "claim_limit": "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia principal y no sustituye verificacion territorial, laboratorio ni autoridad competente.",
   "nodes": [
     {
       "node_id": "la_villa_oeste",
@@ -70,8 +70,8 @@
         "95": "mangroves"
       },
       "aoi_or_buffer_source": "configs/aoi_nodes/la_villa_oeste.geojson",
-      "claim_limit": "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia principal y no sustituye verificación territorial, laboratorio ni autoridad competente.",
-      "notes": "Contexto territorial auxiliar por nodo. No modifica la clasificación Sentinel-2 ni la decisión pública de confianza."
+      "claim_limit": "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia principal y no sustituye verificacion territorial, laboratorio ni autoridad competente.",
+      "notes": "Contexto territorial auxiliar por nodo. No modifica la clasificacion Sentinel-2 ni la decision publica de confianza."
     },
     {
       "node_id": "la_villa_central",
@@ -131,8 +131,8 @@
         "95": "mangroves"
       },
       "aoi_or_buffer_source": "configs/aoi_nodes/la_villa_central.geojson",
-      "claim_limit": "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia principal y no sustituye verificación territorial, laboratorio ni autoridad competente.",
-      "notes": "Contexto territorial auxiliar por nodo. No modifica la clasificación Sentinel-2 ni la decisión pública de confianza."
+      "claim_limit": "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia principal y no sustituye verificacion territorial, laboratorio ni autoridad competente.",
+      "notes": "Contexto territorial auxiliar por nodo. No modifica la clasificacion Sentinel-2 ni la decision publica de confianza."
     },
     {
       "node_id": "la_villa_este",
@@ -192,8 +192,8 @@
         "95": "mangroves"
       },
       "aoi_or_buffer_source": "configs/aoi_nodes/la_villa_este.geojson",
-      "claim_limit": "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia principal y no sustituye verificación territorial, laboratorio ni autoridad competente.",
-      "notes": "Contexto territorial auxiliar por nodo. No modifica la clasificación Sentinel-2 ni la decisión pública de confianza."
+      "claim_limit": "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia principal y no sustituye verificacion territorial, laboratorio ni autoridad competente.",
+      "notes": "Contexto territorial auxiliar por nodo. No modifica la clasificacion Sentinel-2 ni la decision publica de confianza."
     }
   ],
   "observations": [
@@ -255,8 +255,8 @@
         "95": "mangroves"
       },
       "aoi_or_buffer_source": "configs/aoi_nodes/la_villa_oeste.geojson",
-      "claim_limit": "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia principal y no sustituye verificación territorial, laboratorio ni autoridad competente.",
-      "notes": "Contexto territorial auxiliar por nodo. No modifica la clasificación Sentinel-2 ni la decisión pública de confianza."
+      "claim_limit": "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia principal y no sustituye verificacion territorial, laboratorio ni autoridad competente.",
+      "notes": "Contexto territorial auxiliar por nodo. No modifica la clasificacion Sentinel-2 ni la decision publica de confianza."
     },
     {
       "node_id": "la_villa_central",
@@ -316,8 +316,8 @@
         "95": "mangroves"
       },
       "aoi_or_buffer_source": "configs/aoi_nodes/la_villa_central.geojson",
-      "claim_limit": "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia principal y no sustituye verificación territorial, laboratorio ni autoridad competente.",
-      "notes": "Contexto territorial auxiliar por nodo. No modifica la clasificación Sentinel-2 ni la decisión pública de confianza."
+      "claim_limit": "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia principal y no sustituye verificacion territorial, laboratorio ni autoridad competente.",
+      "notes": "Contexto territorial auxiliar por nodo. No modifica la clasificacion Sentinel-2 ni la decision publica de confianza."
     },
     {
       "node_id": "la_villa_este",
@@ -377,8 +377,8 @@
         "95": "mangroves"
       },
       "aoi_or_buffer_source": "configs/aoi_nodes/la_villa_este.geojson",
-      "claim_limit": "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia principal y no sustituye verificación territorial, laboratorio ni autoridad competente.",
-      "notes": "Contexto territorial auxiliar por nodo. No modifica la clasificación Sentinel-2 ni la decisión pública de confianza."
+      "claim_limit": "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia principal y no sustituye verificacion territorial, laboratorio ni autoridad competente.",
+      "notes": "Contexto territorial auxiliar por nodo. No modifica la clasificacion Sentinel-2 ni la decision publica de confianza."
     }
   ],
   "summary_by_node": [
