@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
+import TerritorialMap from "./components/TerritorialMap.jsx";
 
 const DEFAULT_DATE = "2025-06-10";
 const COMPARISON_DATES = ["2025-06-10", "2025-06-30"];
@@ -338,45 +339,50 @@ function DecisionLanding({
             </p>
           </div>
           <ConfidenceThresholdVisual record={record} />
-          <ObservationTimeline
-            records={observations}
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-          />
-          <TerritorialContextModule record={record} />
+          <TerritorialMap record={record} state={state} />
         </aside>
       </section>
 
-      <section className="detail-tabs" aria-label="Detalle de la decisión">
-        <div className="tab-list" role="tablist" aria-label="Secciones de detalle">
-          {DETAIL_TABS.map((tab) => (
-            <button
-              key={tab.id}
-              className={activeDetailTab === tab.id ? "active" : ""}
-              type="button"
-              role="tab"
-              aria-selected={activeDetailTab === tab.id}
-              onClick={() => setActiveDetailTab(tab.id)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+      <div className="decision-timeline-row">
+        <ObservationTimeline
+          records={observations}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+        />
+      </div>
 
-        <div className="tab-panel" role="tabpanel">
-          {activeDetailTab === "resumen" ? (
-            <SummaryTab record={record} />
-          ) : null}
-          {activeDetailTab === "evidencia" ? <EvidenceTab record={record} /> : null}
-          {activeDetailTab === "trazabilidad" ? (
-            <TraceabilityTab record={record} ledger={ledger} />
-          ) : null}
-          {activeDetailTab === "limites" ? <LimitsTab /> : null}
-        </div>
-      </section>
+      <div className="decision-below-fold">
+        <section className="detail-tabs" aria-label="Detalle de la decisión">
+          <div className="tab-list" role="tablist" aria-label="Secciones de detalle">
+            {DETAIL_TABS.map((tab) => (
+              <button
+                key={tab.id}
+                className={activeDetailTab === tab.id ? "active" : ""}
+                type="button"
+                role="tab"
+                aria-selected={activeDetailTab === tab.id}
+                onClick={() => setActiveDetailTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-      <DecisionLimitsNotice />
-      <ModulesStrip />
+          <div className="tab-panel" role="tabpanel">
+            {activeDetailTab === "resumen" ? (
+              <SummaryTab record={record} />
+            ) : null}
+            {activeDetailTab === "evidencia" ? <EvidenceTab record={record} /> : null}
+            {activeDetailTab === "trazabilidad" ? (
+              <TraceabilityTab record={record} ledger={ledger} />
+            ) : null}
+            {activeDetailTab === "limites" ? <LimitsTab /> : null}
+          </div>
+        </section>
+
+        <DecisionLimitsNotice />
+        <ModulesStrip />
+      </div>
     </>
   );
 }
@@ -466,85 +472,6 @@ function ObservationTimeline({ records, selectedDate, setSelectedDate }) {
           );
         })}
       </div>
-    </section>
-  );
-}
-
-function TerritorialContextModule({ record, variant = "decision" }) {
-  const state = getStateMeta(record);
-
-  return (
-    <section
-      className={`territorial-context tone-${state.tone} ${variant}`}
-      aria-label="Contexto territorial"
-    >
-      <div className="context-copy">
-        <div>
-          <p className="small-label">Contexto territorial</p>
-          <h3>Azuero, Panamá</h3>
-        </div>
-        <span>{record.date}</span>
-      </div>
-
-      <div className="context-body">
-        <svg
-          className="context-map"
-          viewBox="0 0 360 230"
-          role="img"
-          aria-label="Ubicación contextual de Panamá, Azuero y el Corredor Río La Villa"
-        >
-        <defs>
-          <radialGradient id="context-paper" cx="50%" cy="42%" r="68%">
-            <stop offset="0%" stopColor="currentColor" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
-          </radialGradient>
-          <linearGradient id="context-river" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="currentColor" stopOpacity="0.18" />
-            <stop offset="55%" stopColor="currentColor" stopOpacity="0.72" />
-            <stop offset="100%" stopColor="currentColor" stopOpacity="0.28" />
-          </linearGradient>
-        </defs>
-          <rect className="context-paper" x="18" y="16" width="324" height="188" rx="28" />
-          <circle className="context-globe" cx="102" cy="104" r="62" />
-          <path
-            className="context-america"
-            d="M68 76 C88 58 120 60 139 80 C157 98 148 125 126 136 C105 147 82 135 70 116 C59 98 55 86 68 76"
-          />
-          <path
-            className="context-panama"
-            d="M175 117 C194 106 211 107 228 115 C243 122 257 120 276 110"
-          />
-          <path
-            className="context-azuero"
-            d="M210 126 C219 121 229 124 232 133 C226 143 213 142 208 134 Z"
-          />
-          <path
-            className="context-corridor"
-            d="M211 133 C221 126 232 131 239 122 C246 114 257 119 270 111"
-          />
-          <circle className="context-marker-halo" cx="231" cy="130" r="18" />
-          <circle className="context-marker" cx="231" cy="130" r="6" />
-          <path
-            className="context-route"
-            d="M113 126 C150 149 188 146 231 130"
-          />
-          <text className="context-svg-label label-panama" x="175" y="102">
-            Panamá
-          </text>
-          <text className="context-svg-label label-azuero" x="245" y="148">
-            Azuero
-          </text>
-        </svg>
-
-        <div className="context-facts">
-          <span>Azuero, Panamá</span>
-          <strong>Corredor Río La Villa</strong>
-          <span>AOI: {record.aoi}</span>
-          <span className={`context-state tone-${state.tone}`}>{state.label}</span>
-        </div>
-      </div>
-
-      <p className="context-note">Ubicación contextual, no cartografía de precisión.</p>
     </section>
   );
 }
@@ -727,7 +654,7 @@ function TechnicalDashboard({
       </div>
 
       <ConfidenceThresholdVisual record={record} compact />
-      <TerritorialContextModule record={record} variant="technical" />
+      <TerritorialMap record={record} state={state} variant="technical" />
       <ComparisonSection records={comparisonRecords} />
       <MetricsSection record={record} />
       <EvidencePipeline />

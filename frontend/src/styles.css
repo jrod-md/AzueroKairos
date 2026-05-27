@@ -53,9 +53,9 @@ button {
 }
 
 .app-shell {
-  width: min(1400px, calc(100% - 40px));
+  width: min(1400px, calc(100% - 72px));
   margin: 0 auto;
-  padding: 18px 0 44px;
+  padding: 18px 0 48px;
 }
 
 .top-nav {
@@ -63,8 +63,8 @@ button {
   grid-template-columns: 1fr auto 1fr;
   gap: 18px;
   align-items: center;
-  min-height: 54px;
-  margin-bottom: 16px;
+  min-height: 50px;
+  margin-bottom: 18px;
 }
 
 .brand-button,
@@ -97,11 +97,11 @@ button {
 
 .view-nav button,
 .tab-list button {
-  min-height: 38px;
-  padding: 0 16px;
+  min-height: 34px;
+  padding: 0 14px;
   border-radius: 999px;
   color: var(--river-soft);
-  font-size: 0.9rem;
+  font-size: 0.86rem;
   font-weight: 760;
 }
 
@@ -116,16 +116,16 @@ button {
   max-width: 360px;
   margin: 0;
   color: var(--river-soft);
-  font-size: 0.92rem;
+  font-size: 0.86rem;
   font-weight: 720;
   text-align: right;
 }
 
 .decision-hero {
   display: grid;
-  grid-template-columns: minmax(0, 1.18fr) minmax(420px, 0.82fr);
+  grid-template-columns: minmax(0, 1.02fr) minmax(520px, 0.98fr);
   gap: 18px;
-  min-height: min(760px, calc(100vh - 94px));
+  min-height: min(680px, calc(100vh - 92px));
   align-items: stretch;
 }
 
@@ -146,10 +146,10 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 596px;
+  min-height: 590px;
   overflow: hidden;
-  border-radius: 44px;
-  padding: clamp(36px, 5vw, 72px);
+  border-radius: 38px;
+  padding: clamp(34px, 4.4vw, 62px);
 }
 
 .report-panel::after {
@@ -174,9 +174,9 @@ button {
 
 .report-controls {
   position: absolute;
-  top: 28px;
-  right: 28px;
-  left: 28px;
+  top: 24px;
+  right: 24px;
+  left: 24px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -202,8 +202,8 @@ button {
 .technical-date {
   display: grid;
   gap: 5px;
-  min-width: 168px;
-  padding: 10px 12px;
+  min-width: 154px;
+  padding: 8px 11px;
   border: 1px solid rgba(17, 59, 75, 0.12);
   border-radius: 16px;
   background: color-mix(in oklch, var(--paper) 78%, transparent);
@@ -231,13 +231,15 @@ select {
 .decision-word {
   position: relative;
   z-index: 1;
-  margin-top: 48px;
+  margin-top: 44px;
   color: var(--stop);
-  font-size: clamp(4.4rem, 9.6vw, 9.2rem);
+  max-width: 8.5ch;
+  font-size: clamp(4rem, 7vw, 6.65rem);
   font-weight: 900;
   letter-spacing: 0;
-  line-height: 0.82;
-  white-space: nowrap;
+  line-height: 0.86;
+  text-wrap: balance;
+  white-space: normal;
 }
 
 .tone-usable .decision-word,
@@ -257,13 +259,13 @@ select {
   z-index: 1;
   display: flex;
   align-items: baseline;
-  gap: 14px;
-  margin-top: 24px;
+  gap: 12px;
+  margin-top: 20px;
 }
 
 .evidence-percent strong {
   color: var(--river);
-  font-size: clamp(2.5rem, 5.4vw, 5rem);
+  font-size: clamp(2.5rem, 4.5vw, 4.2rem);
   line-height: 0.94;
 }
 
@@ -277,28 +279,28 @@ select {
   position: relative;
   z-index: 1;
   display: flex;
-  gap: 12px;
+  gap: 8px;
   flex-wrap: wrap;
-  margin-top: 18px;
+  margin-top: 14px;
 }
 
 .record-facts span {
-  padding: 9px 12px;
+  padding: 7px 10px;
   border: 1px solid rgba(17, 59, 75, 0.1);
   border-radius: 999px;
   background: color-mix(in oklch, var(--paper) 74%, transparent);
   color: var(--river-soft);
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   font-weight: 760;
 }
 
 .plain-explanation {
   position: relative;
   z-index: 1;
-  max-width: 760px;
-  margin: 24px 0 0;
+  max-width: 690px;
+  margin: 20px 0 0;
   color: var(--river);
-  font-size: clamp(1.35rem, 2vw, 1.85rem);
+  font-size: clamp(1.22rem, 1.7vw, 1.58rem);
   font-weight: 780;
   line-height: 1.18;
   overflow-wrap: anywhere;
@@ -307,10 +309,10 @@ select {
 .next-step-box {
   position: relative;
   z-index: 1;
-  max-width: 720px;
-  margin-top: 22px;
-  padding: 18px 20px;
-  border-radius: 26px;
+  max-width: 690px;
+  margin-top: 20px;
+  padding: 16px 18px;
+  border-radius: 24px;
   background: color-mix(in oklch, var(--paper) 76%, transparent);
   box-shadow: inset 0 0 0 1px rgba(17, 59, 75, 0.1);
 }
@@ -324,9 +326,9 @@ select {
 }
 
 .next-step-box p {
-  margin: 9px 0 0;
+  margin: 7px 0 0;
   color: var(--river);
-  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
+  font-size: clamp(1rem, 1.25vw, 1.16rem);
   font-weight: 800;
   line-height: 1.34;
   overflow-wrap: anywhere;
@@ -337,11 +339,12 @@ select {
   z-index: 1;
   width: fit-content;
   max-width: 100%;
-  margin: 32px 0 0;
-  padding: 12px 16px;
+  margin: 28px 0 0;
+  padding: 10px 14px;
   border-radius: 999px;
   background: color-mix(in oklch, var(--river) 7%, var(--paper));
   color: var(--river);
+  font-size: 0.92rem;
   font-weight: 820;
   overflow-wrap: anywhere;
 }
@@ -355,15 +358,20 @@ select {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 596px;
-  border-radius: 36px;
-  padding: clamp(26px, 4vw, 42px);
+  min-height: 590px;
+  border-radius: 32px;
+  padding: clamp(18px, 2vw, 24px);
 }
 
 .instrument-panel {
-  justify-content: start;
-  gap: 12px;
-  padding: clamp(22px, 3vw, 30px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "why why"
+    "threshold map";
+  justify-content: stretch;
+  align-content: start;
+  gap: 14px;
 }
 
 .why-panel h2 {
@@ -375,21 +383,40 @@ select {
 }
 
 .instrument-panel h2 {
-  max-width: 520px;
-  margin-bottom: 14px;
-  font-size: clamp(1.9rem, 2.6vw, 2.75rem);
+  max-width: 340px;
+  margin: 8px 0 0;
+  font-size: clamp(1.65rem, 2.2vw, 2.4rem);
+  line-height: 1.03;
 }
 
 .instrument-panel .compact-compare {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .instrument-panel .mini-decision {
-  padding: 14px;
+  padding: 15px;
+  border-radius: 22px;
 }
 
 .instrument-panel .mini-decision b {
-  font-size: clamp(1.25rem, 2vw, 1.8rem);
+  font-size: clamp(1.55rem, 2.05vw, 2.15rem);
+}
+
+.instrument-panel .why-copy {
+  display: grid;
+  grid-template-columns: minmax(210px, 0.8fr) minmax(280px, 1.2fr);
+  grid-area: why;
+  gap: 18px;
+  align-items: end;
+}
+
+.instrument-panel > .threshold-visual {
+  grid-area: threshold;
+}
+
+.instrument-panel > .territorial-map {
+  grid-area: map;
 }
 
 .compact-compare {
@@ -399,9 +426,9 @@ select {
 
 .mini-decision {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 6px 14px;
-  align-items: end;
+  grid-template-columns: 1fr;
+  gap: 7px;
+  align-items: start;
   padding: 18px;
   border-radius: 24px;
   background: color-mix(in oklch, var(--paper) 74%, transparent);
@@ -409,15 +436,14 @@ select {
 }
 
 .mini-decision span {
-  grid-column: 1 / -1;
   color: var(--muted);
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   font-weight: 780;
 }
 
 .mini-decision strong {
   color: var(--stop);
-  font-size: clamp(1.35rem, 2.4vw, 2rem);
+  font-size: clamp(1.22rem, 1.75vw, 1.65rem);
   line-height: 1;
 }
 
@@ -436,9 +462,10 @@ select {
 }
 
 .insight-text {
-  margin: 14px 0 0;
+  grid-column: 2;
+  margin: 0;
   color: var(--river);
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   font-weight: 760;
   line-height: 1.42;
 }
@@ -450,7 +477,7 @@ select {
 
 .threshold-visual,
 .observation-timeline,
-.territorial-context {
+.territorial-map {
   position: relative;
   border: 1px solid color-mix(in oklch, var(--river) 10%, transparent);
   border-radius: 24px;
@@ -460,7 +487,8 @@ select {
 }
 
 .threshold-visual {
-  padding: 16px;
+  min-height: 236px;
+  padding: 18px;
 }
 
 .threshold-visual.compact {
@@ -471,7 +499,7 @@ select {
 
 .threshold-heading,
 .timeline-heading,
-.context-copy {
+.territorial-map-heading {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -479,35 +507,35 @@ select {
 }
 
 .threshold-heading h3,
-.context-copy h3 {
+.territorial-map-heading h3 {
   margin: 5px 0 0;
   color: var(--river);
-  font-size: clamp(1.2rem, 2vw, 1.65rem);
-  line-height: 1;
+  font-size: clamp(1.12rem, 1.55vw, 1.45rem);
+  line-height: 1.08;
 }
 
 .threshold-heading strong {
   color: var(--stop);
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   font-weight: 900;
   letter-spacing: 0.035em;
   text-align: right;
 }
 
 .threshold-visual.tone-usable .threshold-heading strong,
-.territorial-context.tone-usable .context-copy h3,
-.territorial-context.tone-usable .context-state {
+.territorial-map.tone-usable .territorial-map-heading h3,
+.territorial-map.tone-usable .map-state {
   color: var(--usable);
 }
 
 .threshold-visual.tone-review .threshold-heading strong,
-.territorial-context.tone-review .context-copy h3,
-.territorial-context.tone-review .context-state {
+.territorial-map.tone-review .territorial-map-heading h3,
+.territorial-map.tone-review .map-state {
   color: var(--review);
 }
 
 .threshold-track-wrap {
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 .threshold-track {
@@ -543,8 +571,8 @@ select {
   position: absolute;
   top: 50%;
   display: grid;
-  width: 32px;
-  height: 32px;
+  width: 31px;
+  height: 31px;
   place-items: center;
   border: 2px solid color-mix(in oklch, var(--paper) 92%, var(--cream));
   border-radius: 999px;
@@ -583,8 +611,8 @@ select {
 
 .threshold-boundaries {
   position: relative;
-  height: 20px;
-  margin-top: 7px;
+  height: 17px;
+  margin-top: 6px;
   color: var(--muted);
   font-size: 0.72rem;
   font-weight: 760;
@@ -618,28 +646,28 @@ select {
   display: grid;
   grid-template-columns: minmax(76px, 0.5fr) minmax(86px, 0.72fr) minmax(0, 2.4fr);
   gap: 8px;
-  margin-top: 3px;
+  margin-top: 1px;
 }
 
 .threshold-labels span {
   color: var(--river);
-  font-size: 0.79rem;
+  font-size: 0.78rem;
   font-weight: 820;
 }
 
 .threshold-note {
-  margin: 12px 0 0;
+  margin: 14px 0 0;
   color: var(--river-soft);
-  font-size: 0.9rem;
-  line-height: 1.38;
+  font-size: 0.88rem;
+  line-height: 1.42;
 }
 
 .observation-timeline {
-  padding: 14px;
+  padding: 15px 16px;
 }
 
 .timeline-heading span,
-.context-copy > span {
+.territorial-map-heading > span {
   color: var(--river-soft);
   font-size: 0.82rem;
   font-weight: 760;
@@ -649,7 +677,7 @@ select {
   position: relative;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 8px;
+  gap: 10px;
   margin-top: 12px;
 }
 
@@ -668,12 +696,12 @@ select {
   display: grid;
   justify-items: start;
   gap: 5px;
-  min-height: 82px;
+  min-height: 74px;
   border: 1px solid transparent;
-  border-radius: 17px;
+  border-radius: 18px;
   background: transparent;
   color: var(--river-soft);
-  padding: 1px 8px 10px;
+  padding: 2px 9px 10px;
   text-align: left;
 }
 
@@ -699,7 +727,7 @@ select {
 
 .timeline-date {
   color: var(--river);
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   font-weight: 860;
 }
 
@@ -720,154 +748,171 @@ select {
   color: var(--river);
 }
 
-.territorial-context {
+.territorial-map {
   overflow: hidden;
-  padding: 14px;
-  color: var(--turquoise);
+  min-height: 236px;
+  padding: 18px;
+  color: var(--river);
   background:
-    radial-gradient(circle at 18% 30%, color-mix(in oklch, var(--stop) 10%, transparent), transparent 36%),
-    radial-gradient(circle at 82% 10%, color-mix(in oklch, var(--turquoise) 16%, transparent), transparent 42%),
-    linear-gradient(135deg, color-mix(in oklch, var(--paper) 86%, transparent), color-mix(in oklch, var(--review-soft) 44%, var(--paper)));
+    radial-gradient(circle at 82% 10%, color-mix(in oklch, var(--turquoise) 10%, transparent), transparent 44%),
+    linear-gradient(135deg, color-mix(in oklch, var(--paper) 88%, transparent), color-mix(in oklch, var(--paper-soft) 72%, transparent));
 }
 
-.territorial-context.tone-stop .context-copy h3,
-.territorial-context.tone-stop .context-state {
+.territorial-map.tone-stop .territorial-map-heading h3,
+.territorial-map.tone-stop .map-state {
   color: var(--stop);
 }
 
-.context-body {
+.territorial-map-body {
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(138px, 0.8fr);
+  grid-template-columns: 1fr;
   gap: 12px;
   align-items: center;
-  margin-top: 8px;
+  margin-top: 12px;
 }
 
-.territorial-context.technical .context-body {
-  grid-template-columns: minmax(0, 1.1fr) minmax(260px, 0.9fr);
+.territorial-map.technical .territorial-map-body {
+  grid-template-columns: minmax(0, 1.15fr) minmax(260px, 0.85fr);
 }
 
-.context-map {
+.territorial-map-canvas {
+  min-height: 134px;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklch, var(--river) 10%, transparent);
+  border-radius: 20px;
+  background:
+    linear-gradient(color-mix(in oklch, var(--river) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklch, var(--river) 5%, transparent) 1px, transparent 1px),
+    color-mix(in oklch, var(--paper) 72%, transparent);
+  background-size: 48px 48px;
+}
+
+.territorial-map.technical .territorial-map-canvas {
+  min-height: 250px;
+}
+
+.territorial-map-canvas svg {
   display: block;
   width: 100%;
-  height: 150px;
+  height: 146px;
 }
 
-.territorial-context.technical .context-map {
-  height: 220px;
+.territorial-map.technical .territorial-map-canvas svg {
+  height: 258px;
 }
 
-.context-paper {
-  fill: url("#context-paper");
-  stroke: color-mix(in oklch, var(--river) 9%, transparent);
+.map-paper {
+  fill: color-mix(in oklch, var(--paper) 52%, transparent);
 }
 
-.context-globe {
-  fill: color-mix(in oklch, var(--turquoise) 9%, var(--paper));
-  stroke: color-mix(in oklch, var(--river) 12%, transparent);
-  stroke-width: 1.2;
-}
-
-.context-america {
-  fill: color-mix(in oklch, var(--river) 12%, transparent);
-  stroke: color-mix(in oklch, var(--river) 18%, transparent);
-  stroke-width: 1.2;
-}
-
-.context-panama,
-.context-corridor,
-.context-route {
+.map-grid-line {
   fill: none;
-  stroke-linecap: round;
+  stroke: color-mix(in oklch, var(--river) 9%, transparent);
+  stroke-width: 1;
 }
 
-.context-panama {
-  stroke: color-mix(in oklch, var(--river) 58%, transparent);
-  stroke-width: 9;
+.aoi-shape {
+  fill: color-mix(in oklch, var(--turquoise) 13%, transparent);
+  stroke: var(--river);
+  stroke-linejoin: round;
+  stroke-width: 3.2;
 }
 
-.context-azuero {
-  fill: color-mix(in oklch, var(--review) 42%, var(--paper));
-  stroke: color-mix(in oklch, var(--river) 30%, transparent);
-  stroke-width: 1.4;
-}
-
-.context-corridor {
-  stroke: url("#context-river");
-  stroke-width: 5;
-}
-
-.context-route {
-  stroke: color-mix(in oklch, var(--river) 14%, transparent);
-  stroke-width: 1.4;
-  stroke-dasharray: 5 6;
-}
-
-.context-marker-halo {
+.aoi-marker-halo {
   fill: var(--stop);
   opacity: 0.14;
 }
 
-.context-marker {
+.aoi-marker {
   fill: var(--stop);
   stroke: color-mix(in oklch, var(--paper) 92%, var(--cream));
   stroke-width: 3;
 }
 
-.territorial-context.tone-usable .context-marker,
-.territorial-context.tone-usable .context-marker-halo {
+.territorial-map.tone-usable .aoi-marker,
+.territorial-map.tone-usable .aoi-marker-halo {
   fill: var(--usable);
 }
 
-.territorial-context.tone-review .context-marker,
-.territorial-context.tone-review .context-marker-halo {
+.territorial-map.tone-review .aoi-marker,
+.territorial-map.tone-review .aoi-marker-halo {
   fill: var(--review);
 }
 
-.context-svg-label {
-  fill: color-mix(in oklch, var(--river) 86%, transparent);
+.map-label {
+  fill: color-mix(in oklch, var(--river) 90%, transparent);
   font-family: inherit;
-  font-size: 12px;
   font-weight: 820;
   letter-spacing: 0.02em;
 }
 
-.context-facts {
+.map-label.main {
+  font-size: 12px;
+}
+
+.map-label.corner {
+  fill: var(--muted);
+  font-size: 10px;
+}
+
+.territorial-map-empty {
   display: grid;
-  gap: 8px;
+  min-height: 134px;
+  place-items: center;
+  color: var(--river-soft);
+  font-size: 0.88rem;
+  font-weight: 760;
+}
+
+.territorial-map-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
   align-content: center;
 }
 
-.context-facts span,
-.context-facts strong {
+.territorial-map-facts span,
+.territorial-map-facts strong {
   min-width: 0;
-  padding: 8px 10px;
+  padding: 7px 10px;
   border: 1px solid color-mix(in oklch, var(--river) 10%, transparent);
   border-radius: 999px;
   background: color-mix(in oklch, var(--paper) 72%, transparent);
   color: var(--river-soft);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 780;
   overflow-wrap: anywhere;
 }
 
-.context-facts strong {
+.territorial-map-facts strong {
   color: var(--river);
 }
 
-.context-state {
+.map-state {
   color: var(--stop);
 }
 
-.context-note {
-  margin: 8px 0 0;
+.territorial-map-note {
+  margin: 10px 0 0;
   color: var(--river-soft);
   font-size: 0.82rem;
   font-weight: 720;
 }
 
-.detail-tabs {
+.decision-timeline-row {
   margin-top: 20px;
+}
+
+.decision-timeline-row .observation-timeline {
+  box-shadow: var(--shadow-soft);
+}
+
+.decision-below-fold {
+  margin-top: clamp(56px, 12vh, 110px);
+}
+
+.detail-tabs {
+  margin-top: 0;
   border-radius: 34px;
   padding: 14px;
 }
@@ -1137,7 +1182,7 @@ select {
 .metrics-section,
 .technical-trace-section,
 .threshold-visual.compact,
-.territorial-context.technical,
+.territorial-map.technical,
 .pipeline-section,
 .brief-section,
 .limits-card {
@@ -1275,7 +1320,7 @@ select {
 .comparison-section,
 .metrics-section,
 .technical-trace-section,
-.territorial-context.technical,
+.territorial-map.technical,
 .pipeline-section,
 .brief-section,
 .limits-card {
@@ -1447,10 +1492,13 @@ select {
   .instrument-panel {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      "why why"
+      "threshold map";
   }
 
   .why-copy,
-  .territorial-context {
+  .territorial-map {
     grid-column: 1 / -1;
   }
 
@@ -1540,6 +1588,18 @@ select {
 
   .instrument-panel {
     grid-template-columns: 1fr;
+    grid-template-areas:
+      "why"
+      "threshold"
+      "map";
+  }
+
+  .instrument-panel .why-copy {
+    grid-template-columns: 1fr;
+  }
+
+  .insight-text {
+    grid-column: auto;
   }
 
   .instrument-panel .compact-compare {
@@ -1572,7 +1632,7 @@ select {
   .trace-grid,
   .brief-grid,
   .technical-status-row,
-  .context-body,
+  .territorial-map-body,
   .modules-strip,
   .module-list {
     grid-template-columns: 1fr;
@@ -1607,7 +1667,7 @@ select {
   .threshold-marker,
   .timeline-point,
   .threshold-visual,
-  .territorial-context {
+  .territorial-map {
     transition: none;
   }
 }
@@ -1624,7 +1684,7 @@ select {
   .trace-item,
   .threshold-visual,
   .timeline-point,
-  .territorial-context {
+  .territorial-map {
     transition:
       transform 180ms ease-out,
       box-shadow 180ms ease-out,
@@ -1635,8 +1695,8 @@ select {
     animation: decision-enter 320ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .context-marker-halo {
-    animation: context-marker-pulse 2.8s ease-out infinite;
+  .aoi-marker-halo {
+    animation: aoi-marker-pulse 2.8s ease-out infinite;
   }
 
   .summary-card:hover,
@@ -1646,7 +1706,7 @@ select {
   .trace-item:hover,
   .timeline-point:hover,
   .threshold-visual:hover,
-  .territorial-context:hover {
+  .territorial-map:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-soft);
   }
@@ -1664,7 +1724,7 @@ select {
   }
 }
 
-@keyframes context-marker-pulse {
+@keyframes aoi-marker-pulse {
   0%,
   100% {
     opacity: 0.12;
