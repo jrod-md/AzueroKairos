@@ -89,6 +89,7 @@ const MODULE_FLOW = [
   "Kairós Brief",
   "Kairós Ledger",
   "Kairós Field",
+  "Kairós Watch",
 ];
 
 const FIELD_CONDITION_OPTIONS = [
@@ -104,19 +105,25 @@ const FIELD_CONDITION_OPTIONS = [
 export default function App() {
   const [observations, setObservations] = useState([]);
   const [ledgerRows, setLedgerRows] = useState([]);
+  const [watchData, setWatchData] = useState(null);
   const [selectedDate, setSelectedDate] = useState(DEFAULT_DATE);
   const [activePage, setActivePage] = useState(getInitialPage);
   const [activeDetailTab, setActiveDetailTab] = useState("resumen");
   const [loadState, setLoadState] = useState({ status: "loading", message: "" });
+  const [watchLoadState, setWatchLoadState] = useState({
+    status: "loading",
+    message: "",
+  });
 
   useEffect(() => {
     let active = true;
 
     async function loadData() {
       try {
-        const [observationsResponse, ledgerResponse] = await Promise.all([
+        const [observationsResponse, ledgerResponse, watchResult] = await Promise.all([
           fetch("/data/observations.json"),
           fetch("/data/evidence_ledger.json"),
+          loadWatchData(),
         ]);
 
         if (!observationsResponse.ok) {
@@ -132,6 +139,11 @@ export default function App() {
 
         setObservations(cleanObservations);
         setLedgerRows(cleanLedger);
+        setWatchData(watchResult.payload);
+        setWatchLoadState({
+          status: watchResult.status,
+          message: watchResult.message,
+        });
         setSelectedDate(
           cleanObservations.some((record) => record.date === DEFAULT_DATE)
             ? DEFAULT_DATE
@@ -146,6 +158,10 @@ export default function App() {
             error instanceof Error
               ? error.message
               : "No se pudo cargar la data pública.",
+        });
+        setWatchLoadState({
+          status: "error",
+          message: "No se pudo cargar Kairós Watch.",
         });
       }
     }
@@ -225,7 +241,7 @@ export default function App() {
           activeDetailTab={activeDetailTab}
           setActiveDetailTab={setActiveDetailTab}
         />
-      ) : (
+      ) : activePage === "technical" ? (
         <TechnicalDashboard
           availableDates={availableDates}
           comparisonRecords={comparisonRecords}
@@ -234,13 +250,46 @@ export default function App() {
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
         />
+      ) : (
+        <KairosWatch data={watchData} loadState={watchLoadState} />
       )}
     </main>
   );
 }
 
+async function loadWatchData() {
+  try {
+    const response = await fetch("/data/kairos_watch.json");
+    if (!response.ok) {
+      return {
+        status: "missing",
+        message:
+          "Kairós Watch estará disponible cuando exista /data/kairos_watch.json.",
+        payload: null,
+      };
+    }
+
+    return {
+      status: "ready",
+      message: "",
+      payload: normalizeWatchPayload(await response.json()),
+    };
+  } catch {
+    return {
+      status: "error",
+      message: "No se pudo cargar /data/kairos_watch.json.",
+      payload: null,
+    };
+  }
+}
+
 function setPageAndHash(page) {
-  const nextHash = page === "technical" ? "#datos-tecnicos" : "#decision";
+  const nextHash =
+    page === "technical"
+      ? "#datos-tecnicos"
+      : page === "watch"
+        ? "#kairos-watch"
+        : "#decision";
   if (window.location.hash !== nextHash) {
     window.location.hash = nextHash;
     return;
@@ -250,6 +299,9 @@ function setPageAndHash(page) {
 function getInitialPage() {
   if (typeof window !== "undefined" && window.location.hash === "#datos-tecnicos") {
     return "technical";
+  }
+  if (typeof window !== "undefined" && window.location.hash === "#kairos-watch") {
+    return "watch";
   }
   return "decision";
 }
@@ -280,6 +332,13 @@ function Header({ activePage, setActivePage, statusText }) {
           onClick={() => setActivePage("technical")}
         >
           Datos técnicos
+        </button>
+        <button
+          className={activePage === "watch" ? "active" : ""}
+          type="button"
+          onClick={() => setActivePage("watch")}
+        >
+          Kairós Watch
         </button>
       </nav>
 
@@ -725,6 +784,190 @@ function ModulesStrip() {
   );
 }
 
+function KairosWatch({ data, loadState }) {
+  const ready = loadState.status === "ready" && data;
+  const nodes = ready ? data.nodes ?? [] : [];
+  const dates = ready ? data.dates ?? [] : [];
+  const observations = ready ? data.observations ?? [] : [];
+  const summaries = ready ? data.summary_by_node ?? [] : [];
+  const observationMap = useMemo(
+    () =>
+      new Map(
+        observations.map((observation) => [
+          `${observation.node_id}|${observation.date}`,
+          observation,
+        ]),
+      ),
+    [observations],
+  );
+
+  if (!ready) {
+    return (
+      <section className="watch-screen" aria-label="Kairós Watch">
+        <div className="watch-hero">
+          <div>
+            <p className="small-label">Kairós Watch</p>
+            <h1>Atlas de confianza para Azuero</h1>
+            <p>Confianza satelital por subcorredor y fecha.</p>
+          </div>
+          <article className="watch-empty-card">
+            <span>Data regional no disponible</span>
+            <p>
+              {loadState.message ||
+                "Kairós Watch estará disponible cuando se exporte kairos_watch.json."}
+            </p>
+          </article>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="watch-screen" aria-label="Kairós Watch">
+      <div className="watch-hero">
+        <div>
+          <p className="small-label">Kairós Watch</p>
+          <h1>Atlas de confianza para Azuero</h1>
+          <p>Confianza satelital por subcorredor y fecha.</p>
+        </div>
+        <article className="watch-insight-card">
+          <span>Lectura regional</span>
+          <p>
+            El atlas no busca producir alertas constantes. Identifica dónde y
+            cuándo la evidencia Copernicus es suficientemente confiable para apoyar
+            una decisión.
+          </p>
+        </article>
+      </div>
+
+      <section className="watch-matrix-section" aria-label="Matriz regional de confianza">
+        <div className="section-heading compact">
+          <div>
+            <p className="small-label">Matriz de confianza</p>
+            <h2>Subcorredores por fecha</h2>
+          </div>
+          <p>
+            Cada celda resume si la observación Sentinel puede interpretarse,
+            revisarse o no inferirse.
+          </p>
+        </div>
+
+        <div className="watch-matrix-wrap">
+          <table className="watch-matrix">
+            <thead>
+              <tr>
+                <th scope="col">Nodo</th>
+                {dates.map((date) => (
+                  <th scope="col" key={date}>
+                    {date}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {nodes.map((node) => (
+                <tr key={node.node_id}>
+                  <th scope="row">
+                    <strong>{node.display_name}</strong>
+                    <span>{node.node_id}</span>
+                  </th>
+                  {dates.map((date) => {
+                    const observation = observationMap.get(`${node.node_id}|${date}`);
+                    return (
+                      <WatchMatrixCell
+                        date={date}
+                        key={`${node.node_id}-${date}`}
+                        observation={observation}
+                      />
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <WatchSummaryCards summaries={summaries} />
+
+      <section className="watch-limits" aria-label="Límite científico de Kairós Watch">
+        <span>Límite científico</span>
+        <p>
+          Estos estados miden confianza de observación, no contaminación química ni
+          agua segura.
+        </p>
+      </section>
+    </section>
+  );
+}
+
+function WatchMatrixCell({ observation, date }) {
+  if (!observation) {
+    return (
+      <td>
+        <div className="watch-cell missing">
+          <span>{date}</span>
+          <strong>Sin dato</strong>
+        </div>
+      </td>
+    );
+  }
+
+  const state = getStateMeta(observation);
+  return (
+    <td>
+      <div className={`watch-cell tone-${state.tone}`}>
+        <span>{state.label}</span>
+        <strong>{formatPercent(observation.validPercent)}</strong>
+      </div>
+    </td>
+  );
+}
+
+function WatchSummaryCards({ summaries }) {
+  return (
+    <section className="watch-summary-section" aria-label="Resumen por nodo">
+      <div className="section-heading compact">
+        <div>
+          <p className="small-label">Resumen por nodo</p>
+          <h2>Lectura comparativa del corredor</h2>
+        </div>
+      </div>
+      <div className="watch-summary-grid">
+        {summaries.map((summary) => (
+          <article className="watch-summary-card" key={summary.node_id}>
+            <div className="watch-summary-title">
+              <span>{summary.node_id}</span>
+              <h3>{summary.display_name}</h3>
+            </div>
+            <div className="watch-summary-stats">
+              <WatchStat label="Total fechas" value={summary.total_dates} />
+              <WatchStat label="Usable" value={summary.usable_count} />
+              <WatchStat label="Revisar" value={summary.low_confidence_count} />
+              <WatchStat label="No inferir" value={summary.do_not_infer_count} />
+              <WatchStat
+                label="Promedio válido"
+                value={formatPercent(summary.mean_validPercent)}
+              />
+              <WatchStat label="Mejor fecha" value={summary.best_date} />
+              <WatchStat label="Peor fecha" value={summary.worst_date} />
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function WatchStat({ label, value }) {
+  return (
+    <div className="watch-stat">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
 function TechnicalDashboard({
   availableDates,
   comparisonRecords,
@@ -1136,6 +1379,30 @@ function normalizeRecord(record) {
       typeof value === "string" ? repairMojibake(value) : value,
     ]),
   );
+}
+
+function normalizeWatchPayload(payload) {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  return {
+    ...payload,
+    nodes: Array.isArray(payload.nodes)
+      ? payload.nodes.map(normalizeRecord)
+      : [],
+    dates: Array.isArray(payload.dates)
+      ? payload.dates.map((date) =>
+          typeof date === "string" ? repairMojibake(date) : date,
+        )
+      : [],
+    observations: Array.isArray(payload.observations)
+      ? payload.observations.map(normalizeRecord)
+      : [],
+    summary_by_node: Array.isArray(payload.summary_by_node)
+      ? payload.summary_by_node.map(normalizeRecord)
+      : [],
+  };
 }
 
 function repairMojibake(value) {
