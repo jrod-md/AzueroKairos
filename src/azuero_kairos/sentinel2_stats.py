@@ -152,6 +152,34 @@ def run_official_batch(
 ) -> Path:
     """Run the official Sentinel-2 batch and write one processed CSV."""
 
+    rows = run_stats_rows(
+        aoi_path=aoi_path,
+        dates=dates,
+        resolution_m=resolution_m,
+        raw_json_dir=raw_json_dir,
+        sleep_seconds=sleep_seconds,
+        request_timeout_seconds=request_timeout_seconds,
+        force=force,
+    )
+
+    csv_path = Path(processed_csv_path)
+    csv_path.parent.mkdir(parents=True, exist_ok=True)
+    write_processed_csv(csv_path, rows)
+    return csv_path
+
+
+def run_stats_rows(
+    *,
+    aoi_path: str | Path = DEFAULT_AOI_PATH,
+    dates: Iterable[str] = OFFICIAL_DATES,
+    resolution_m: int = DEFAULT_RESOLUTION_M,
+    raw_json_dir: str | Path = DEFAULT_RAW_JSON_DIR,
+    sleep_seconds: float = DEFAULT_SLEEP_SECONDS,
+    request_timeout_seconds: float = 60.0,
+    force: bool = False,
+) -> list[dict[str, Any]]:
+    """Run one Sentinel-2 AOI batch and return processed rows without writing CSV."""
+
     if resolution_m <= 0:
         raise Sentinel2StatsError("Resolution must be a positive integer.")
 
@@ -164,9 +192,7 @@ def run_official_batch(
     validate_request_grid(preflight)
 
     raw_dir = Path(raw_json_dir)
-    csv_path = Path(processed_csv_path)
     raw_dir.mkdir(parents=True, exist_ok=True)
-    csv_path.parent.mkdir(parents=True, exist_ok=True)
 
     rows: list[dict[str, Any]] = []
     token: CDSEToken | None = None
@@ -254,8 +280,7 @@ def run_official_batch(
             if sleep_seconds > 0:
                 time.sleep(sleep_seconds)
 
-    write_processed_csv(csv_path, rows)
-    return csv_path
+    return rows
 
 
 def load_aoi(path: str | Path) -> AoiConfig:
