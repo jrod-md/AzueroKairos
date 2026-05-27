@@ -1,0 +1,90 @@
+{
+  "source_csv": "outputs/processed_csv/exposure_node_context.csv",
+  "layer_type": "exposure_context_only",
+  "preferred_source": "Copernicus Land Monitoring Service Global Dynamic Land Cover",
+  "public_safe": true,
+  "data_status": "data_pending",
+  "schema_note": "Kairós Exposure is designed to summarize approximate agricultural and riparian land-cover context around AOI nodes once an official CLMS/CDSE raster pull is connected. Current rows remain data_pending when no official land-cover composition has been obtained.",
+  "claim_limit": "This layer does not identify crop types, exact farm boundaries, private producers, contamination, water safety, or chemical exposure.",
+  "nodes": [
+    {
+      "node_id": "la_villa_central",
+      "display_name": "La Villa Central",
+      "aoi": "la_villa_central"
+    },
+    {
+      "node_id": "la_villa_este",
+      "display_name": "La Villa Este",
+      "aoi": "la_villa_este"
+    },
+    {
+      "node_id": "la_villa_oeste",
+      "display_name": "La Villa Oeste",
+      "aoi": "la_villa_oeste"
+    }
+  ],
+  "observations": [
+    {
+      "node_id": "la_villa_oeste",
+      "node_display_name": "La Villa Oeste",
+      "aoi": "la_villa_oeste",
+      "land_cover_source": "Copernicus Land Monitoring Service Global Dynamic Land Cover (official pull pending)",
+      "agricultural_exposure_status": "data_pending",
+      "riparian_context_status": "data_pending",
+      "exposure_confidence": "data_pending",
+      "api_status": "PENDING_OFFICIAL_CLMS_PULL",
+      "api_error": "",
+      "notes": "Kairós Exposure schema is prepared for official CLMS land-cover composition around each node. Values remain data_pending until a CLMS/CDSE raster pull and zonal summary are completed. No crop types, farm boundaries, private producers, contamination, or water-safety claims are inferred."
+    },
+    {
+      "node_id": "la_villa_central",
+      "node_display_name": "La Villa Central",
+      "aoi": "la_villa_central",
+      "land_cover_source": "Copernicus Land Monitoring Service Global Dynamic Land Cover (official pull pending)",
+      "agricultural_exposure_status": "data_pending",
+      "riparian_context_status": "data_pending",
+      "exposure_confidence": "data_pending",
+      "api_status": "PENDING_OFFICIAL_CLMS_PULL",
+      "api_error": "",
+      "notes": "Kairós Exposure schema is prepared for official CLMS land-cover composition around each node. Values remain data_pending until a CLMS/CDSE raster pull and zonal summary are completed. No crop types, farm boundaries, private producers, contamination, or water-safety claims are inferred."
+    },
+    {
+      "node_id": "la_villa_este",
+      "node_display_name": "La Villa Este",
+      "aoi": "la_villa_este",
+      "land_cover_source": "Copernicus Land Monitoring Service Global Dynamic Land Cover (official pull pending)",
+      "agricultural_exposure_status": "data_pending",
+      "riparian_context_status": "data_pending",
+      "exposure_confidence": "data_pending",
+      "api_status": "PENDING_OFFICIAL_CLMS_PULL",
+      "api_error": "",
+      "notes": "Kairós Exposure schema is prepared for official CLMS land-cover composition around each node. Values remain data_pending until a CLMS/CDSE raster pull and zonal summary are completed. No crop types, farm boundaries, private producers, contamination, or water-safety claims are inferred."
+    }
+  ],
+  "summary_by_node": [
+    {
+      "node_id": "la_villa_central",
+      "display_name": "La Villa Central",
+      "aoi": "la_villa_central",
+      "agricultural_exposure_status": "data_pending",
+      "riparian_context_status": "data_pending",
+      "exposure_confidence": "data_pending"
+    },
+    {
+      "node_id": "la_villa_este",
+      "display_name": "La Villa Este",
+      "aoi": "la_villa_este",
+      "agricultural_exposure_status": "data_pending",
+      "riparian_context_status": "data_pending",
+      "exposure_confidence": "data_pending"
+    },
+    {
+      "node_id": "la_villa_oeste",
+      "display_name": "La Villa Oeste",
+      "aoi": "la_villa_oeste",
+      "agricultural_exposure_status": "data_pending",
+      "riparian_context_status": "data_pending",
+      "exposure_confidence": "data_pending"
+    }
+  ]
+}
