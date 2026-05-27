@@ -1,0 +1,19 @@
+nodes:
+  - node_id: la_villa_oeste
+    display_name: La Villa Oeste
+    geojson_path: configs/aoi_nodes/la_villa_oeste.geojson
+    region: Azuero
+    corridor: Río La Villa
+    note: analytical sub-AOI derived from corridor_wide for hackathon MVP
+  - node_id: la_villa_central
+    display_name: La Villa Central
+    geojson_path: configs/aoi_nodes/la_villa_central.geojson
+    region: Azuero
+    corridor: Río La Villa
+    note: analytical sub-AOI derived from corridor_wide for hackathon MVP
+  - node_id: la_villa_este
+    display_name: La Villa Este
+    geojson_path: configs/aoi_nodes/la_villa_este.geojson
+    region: Azuero
+    corridor: Río La Villa
+    note: analytical sub-AOI derived from corridor_wide for hackathon MVP

@@ -1,0 +1,45 @@
+{
+  "type": "FeatureCollection",
+  "name": "la_villa_este",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "node_id": "la_villa_este",
+        "display_name": "La Villa Este",
+        "region": "Azuero",
+        "corridor": "Río La Villa",
+        "source_aoi": "corridor_wide",
+        "derived_from": "configs/aoi_corridor_wide_mvp.geojson",
+        "note": "analytical sub-AOI derived from corridor_wide for hackathon MVP"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -80.44333333,
+              7.82
+            ],
+            [
+              -80.38,
+              7.82
+            ],
+            [
+              -80.36,
+              8.1
+            ],
+            [
+              -80.44333333,
+              8.1
+            ],
+            [
+              -80.44333333,
+              7.82
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
