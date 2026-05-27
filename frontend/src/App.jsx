@@ -76,7 +76,7 @@ const SYSTEM_MODULES = [
   },
   {
     name: "Kairós Field",
-    text: "Futuro flujo de verificación territorial.",
+    text: "Solicita verificación territorial cuando la confianza satelital no alcanza.",
   },
   {
     name: "Kairós Watch",
@@ -466,31 +466,27 @@ function DecisionLanding({
 }
 
 function KairosFieldLite({ record }) {
-  const [selectedCondition, setSelectedCondition] = useState("seleccionar");
   const state = getStateMeta(record);
   const needsVerification =
     record.confidence_class === "do_not_infer" ||
     record.confidence_class === "low_confidence";
-  const isUsable = record.confidence_class === "usable";
-  const status = needsVerification
-    ? "Verificación territorial recomendada"
-    : "Verificación territorial opcional";
+  const status = "Verificación territorial recomendada";
   const reason =
     record.confidence_class === "do_not_infer"
       ? "La observación Sentinel no tiene suficiente evidencia válida para una inferencia responsable."
-      : isUsable
-        ? "La observación puede apoyar una lectura exploratoria con límites explícitos; la verificación territorial queda como complemento institucional."
-        : "La observación Sentinel tiene evidencia limitada y requiere revisión o verificación territorial.";
-  const reviewStatus = needsVerification
-    ? "pendiente de verificación"
-    : "opcional";
+      : "La observación Sentinel tiene evidencia limitada y requiere revisión o verificación territorial.";
+
+  if (!needsVerification) {
+    return null;
+  }
+
   const fieldRows = [
     ["Fecha de inspección", "pendiente"],
     ["Responsable / rol", "técnico territorial"],
     ["Coordenadas", "pendiente"],
-    ["Condición visible", selectedCondition],
+    ["Condición visible", "pendiente"],
     ["Nota de campo", "pendiente"],
-    ["Estado de revisión", reviewStatus],
+    ["Estado", "pendiente de verificación"],
   ];
 
   return (
@@ -530,19 +526,14 @@ function KairosFieldLite({ record }) {
 
           <div className="condition-control">
             <div className="condition-control-heading">
-              <span>Condición visible</span>
-              <strong>{selectedCondition}</strong>
+              <span>Condiciones visibles a registrar</span>
+              <strong>pendiente</strong>
             </div>
             <div className="condition-options" aria-label="Opciones de condición visible">
               {FIELD_CONDITION_OPTIONS.map((option) => (
-                <button
-                  className={selectedCondition === option ? "active" : ""}
-                  key={option}
-                  type="button"
-                  onClick={() => setSelectedCondition(option)}
-                >
+                <span className="condition-option" key={option}>
                   {option}
-                </button>
+                </span>
               ))}
             </div>
           </div>

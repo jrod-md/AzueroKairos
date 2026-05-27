@@ -1092,7 +1092,10 @@ select {
   margin-top: 11px;
 }
 
-.condition-options button {
+.condition-option {
+  display: inline-flex;
+  align-items: center;
+  min-height: 35px;
   border: 1px solid color-mix(in oklch, var(--river) 12%, transparent);
   border-radius: 999px;
   padding: 8px 10px;
@@ -1100,41 +1103,6 @@ select {
   color: var(--river-soft);
   font-size: 0.8rem;
   font-weight: 780;
-  transition:
-    transform 160ms ease,
-    border-color 160ms ease,
-    background 160ms ease,
-    color 160ms ease;
-}
-
-.condition-options button:hover {
-  transform: translateY(-1px);
-  border-color: color-mix(in oklch, var(--river) 28%, transparent);
-  color: var(--river);
-}
-
-.condition-options button.active {
-  border-color: color-mix(in oklch, var(--river) 28%, transparent);
-  background: color-mix(in oklch, var(--river) 9%, var(--paper));
-  color: var(--river);
-}
-
-.field-lite-section.tone-stop .condition-options button.active {
-  border-color: color-mix(in oklch, var(--stop) 45%, transparent);
-  background: color-mix(in oklch, var(--stop) 11%, var(--paper));
-  color: var(--stop);
-}
-
-.field-lite-section.tone-review .condition-options button.active {
-  border-color: color-mix(in oklch, var(--review) 45%, transparent);
-  background: color-mix(in oklch, var(--review) 11%, var(--paper));
-  color: color-mix(in oklch, var(--review) 80%, var(--river));
-}
-
-.field-lite-section.tone-usable .condition-options button.active {
-  border-color: color-mix(in oklch, var(--usable) 45%, transparent);
-  background: color-mix(in oklch, var(--usable) 11%, var(--paper));
-  color: var(--usable);
 }
 
 .field-lite-disclaimer {
@@ -2257,8 +2225,7 @@ select {
   .threshold-visual,
   .territorial-map,
   .watch-cell,
-  .watch-summary-card,
-  .condition-options button {
+  .watch-summary-card {
     transition: none;
   }
 }
@@ -2277,8 +2244,7 @@ select {
   .timeline-point,
   .territorial-map,
   .watch-cell,
-  .watch-summary-card,
-  .condition-options button {
+  .watch-summary-card {
     transition:
       transform 180ms ease-out,
       box-shadow 180ms ease-out,
