@@ -1,0 +1,274 @@
+{
+  "source_csv": "outputs/processed_csv/hydroclimate_node_context.csv",
+  "layer_type": "hydroclimate_context_only",
+  "data_source": "CHIRPS daily rainfall via ClimateSERV",
+  "public_safe": true,
+  "thresholds": {
+    "heavy_rain_context": "rain_72h_mm >= 50",
+    "antecedent_rain": "rain_7d_mm >= 75",
+    "note": "MVP contextual thresholds only; not regulatory thresholds."
+  },
+  "claim_limit": "This layer does not detect contamination, crop loss, or water safety. It only provides rainfall context that may help explain runoff or field verification priority.",
+  "nodes": [
+    {
+      "node_id": "la_villa_central",
+      "display_name": "La Villa Central"
+    },
+    {
+      "node_id": "la_villa_este",
+      "display_name": "La Villa Este"
+    },
+    {
+      "node_id": "la_villa_oeste",
+      "display_name": "La Villa Oeste"
+    }
+  ],
+  "dates": [
+    "2025-06-02",
+    "2025-06-10",
+    "2025-06-15",
+    "2025-06-30",
+    "2025-07-15"
+  ],
+  "observations": [
+    {
+      "node_id": "la_villa_oeste",
+      "node_display_name": "La Villa Oeste",
+      "date": "2025-06-02",
+      "rain_24h_mm": 0,
+      "rain_72h_mm": 19.3,
+      "rain_7d_mm": 35.3,
+      "hydroclimate_status": "normal_context",
+      "recommended_context_action": "Use rainfall as background context only; keep Sentinel confidence classification unchanged.",
+      "data_source": "CHIRPS daily rainfall via ClimateSERV",
+      "api_status": "OK",
+      "api_error": ""
+    },
+    {
+      "node_id": "la_villa_oeste",
+      "node_display_name": "La Villa Oeste",
+      "date": "2025-06-10",
+      "rain_24h_mm": 1.05,
+      "rain_72h_mm": 36.44,
+      "rain_7d_mm": 69.37,
+      "hydroclimate_status": "normal_context",
+      "recommended_context_action": "Use rainfall as background context only; keep Sentinel confidence classification unchanged.",
+      "data_source": "CHIRPS daily rainfall via ClimateSERV",
+      "api_status": "OK",
+      "api_error": ""
+    },
+    {
+      "node_id": "la_villa_oeste",
+      "node_display_name": "La Villa Oeste",
+      "date": "2025-06-15",
+      "rain_24h_mm": 12.13,
+      "rain_72h_mm": 45.73,
+      "rain_7d_mm": 102.05,
+      "hydroclimate_status": "antecedent_rain",
+      "recommended_context_action": "Review antecedent rainfall context before interpreting runoff-sensitive satellite observations.",
+      "data_source": "CHIRPS daily rainfall via ClimateSERV",
+      "api_status": "OK",
+      "api_error": ""
+    },
+    {
+      "node_id": "la_villa_oeste",
+      "node_display_name": "La Villa Oeste",
+      "date": "2025-06-30",
+      "rain_24h_mm": 0,
+      "rain_72h_mm": 6.72,
+      "rain_7d_mm": 24.94,
+      "hydroclimate_status": "normal_context",
+      "recommended_context_action": "Use rainfall as background context only; keep Sentinel confidence classification unchanged.",
+      "data_source": "CHIRPS daily rainfall via ClimateSERV",
+      "api_status": "OK",
+      "api_error": ""
+    },
+    {
+      "node_id": "la_villa_oeste",
+      "node_display_name": "La Villa Oeste",
+      "date": "2025-07-15",
+      "rain_24h_mm": 0,
+      "rain_72h_mm": 1.83,
+      "rain_7d_mm": 29.79,
+      "hydroclimate_status": "normal_context",
+      "recommended_context_action": "Use rainfall as background context only; keep Sentinel confidence classification unchanged.",
+      "data_source": "CHIRPS daily rainfall via ClimateSERV",
+      "api_status": "OK",
+      "api_error": ""
+    },
+    {
+      "node_id": "la_villa_central",
+      "node_display_name": "La Villa Central",
+      "date": "2025-06-02",
+      "rain_24h_mm": 0,
+      "rain_72h_mm": 18.68,
+      "rain_7d_mm": 36.4,
+      "hydroclimate_status": "normal_context",
+      "recommended_context_action": "Use rainfall as background context only; keep Sentinel confidence classification unchanged.",
+      "data_source": "CHIRPS daily rainfall via ClimateSERV",
+      "api_status": "OK",
+      "api_error": ""
+    },
+    {
+      "node_id": "la_villa_central",
+      "node_display_name": "La Villa Central",
+      "date": "2025-06-10",
+      "rain_24h_mm": 0,
+      "rain_72h_mm": 37.82,
+      "rain_7d_mm": 72.6,
+      "hydroclimate_status": "normal_context",
+      "recommended_context_action": "Use rainfall as background context only; keep Sentinel confidence classification unchanged.",
+      "data_source": "CHIRPS daily rainfall via ClimateSERV",
+      "api_status": "OK",
+      "api_error": ""
+    },
+    {
+      "node_id": "la_villa_central",
+      "node_display_name": "La Villa Central",
+      "date": "2025-06-15",
+      "rain_24h_mm": 11.65,
+      "rain_72h_mm": 42.1,
+      "rain_7d_mm": 98.92,
+      "hydroclimate_status": "antecedent_rain",
+      "recommended_context_action": "Review antecedent rainfall context before interpreting runoff-sensitive satellite observations.",
+      "data_source": "CHIRPS daily rainfall via ClimateSERV",
+      "api_status": "OK",
+      "api_error": ""
+    },
+    {
+      "node_id": "la_villa_central",
+      "node_display_name": "La Villa Central",
+      "date": "2025-06-30",
+      "rain_24h_mm": 0,
+      "rain_72h_mm": 5.43,
+      "rain_7d_mm": 21.24,
+      "hydroclimate_status": "normal_context",
+      "recommended_context_action": "Use rainfall as background context only; keep Sentinel confidence classification unchanged.",
+      "data_source": "CHIRPS daily rainfall via ClimateSERV",
+      "api_status": "OK",
+      "api_error": ""
+    },
+    {
+      "node_id": "la_villa_central",
+      "node_display_name": "La Villa Central",
+      "date": "2025-07-15",
+      "rain_24h_mm": 0,
+      "rain_72h_mm": 1.57,
+      "rain_7d_mm": 26.95,
+      "hydroclimate_status": "normal_context",
+      "recommended_context_action": "Use rainfall as background context only; keep Sentinel confidence classification unchanged.",
+      "data_source": "CHIRPS daily rainfall via ClimateSERV",
+      "api_status": "OK",
+      "api_error": ""
+    },
+    {
+      "node_id": "la_villa_este",
+      "node_display_name": "La Villa Este",
+      "date": "2025-06-02",
+      "rain_24h_mm": 0,
+      "rain_72h_mm": 16.38,
+      "rain_7d_mm": 33.56,
+      "hydroclimate_status": "normal_context",
+      "recommended_context_action": "Use rainfall as background context only; keep Sentinel confidence classification unchanged.",
+      "data_source": "CHIRPS daily rainfall via ClimateSERV",
+      "api_status": "OK",
+      "api_error": ""
+    },
+    {
+      "node_id": "la_villa_este",
+      "node_display_name": "La Villa Este",
+      "date": "2025-06-10",
+      "rain_24h_mm": 0,
+      "rain_72h_mm": 41.32,
+      "rain_7d_mm": 77.64,
+      "hydroclimate_status": "antecedent_rain",
+      "recommended_context_action": "Review antecedent rainfall context before interpreting runoff-sensitive satellite observations.",
+      "data_source": "CHIRPS daily rainfall via ClimateSERV",
+      "api_status": "OK",
+      "api_error": ""
+    },
+    {
+      "node_id": "la_villa_este",
+      "node_display_name": "La Villa Este",
+      "date": "2025-06-15",
+      "rain_24h_mm": 9.87,
+      "rain_72h_mm": 33.61,
+      "rain_7d_mm": 90.46,
+      "hydroclimate_status": "antecedent_rain",
+      "recommended_context_action": "Review antecedent rainfall context before interpreting runoff-sensitive satellite observations.",
+      "data_source": "CHIRPS daily rainfall via ClimateSERV",
+      "api_status": "OK",
+      "api_error": ""
+    },
+    {
+      "node_id": "la_villa_este",
+      "node_display_name": "La Villa Este",
+      "date": "2025-06-30",
+      "rain_24h_mm": 0,
+      "rain_72h_mm": 3.98,
+      "rain_7d_mm": 17.69,
+      "hydroclimate_status": "normal_context",
+      "recommended_context_action": "Use rainfall as background context only; keep Sentinel confidence classification unchanged.",
+      "data_source": "CHIRPS daily rainfall via ClimateSERV",
+      "api_status": "OK",
+      "api_error": ""
+    },
+    {
+      "node_id": "la_villa_este",
+      "node_display_name": "La Villa Este",
+      "date": "2025-07-15",
+      "rain_24h_mm": 0,
+      "rain_72h_mm": 1.08,
+      "rain_7d_mm": 21.92,
+      "hydroclimate_status": "normal_context",
+      "recommended_context_action": "Use rainfall as background context only; keep Sentinel confidence classification unchanged.",
+      "data_source": "CHIRPS daily rainfall via ClimateSERV",
+      "api_status": "OK",
+      "api_error": ""
+    }
+  ],
+  "summary_by_node": [
+    {
+      "node_id": "la_villa_central",
+      "display_name": "La Villa Central",
+      "total_dates": 5,
+      "max_rain_24h_mm": 11.65,
+      "max_rain_72h_mm": 42.1,
+      "max_rain_7d_mm": 98.92,
+      "wettest_72h_date": "2025-06-15",
+      "dry_or_low_rain_count": 0,
+      "normal_context_count": 4,
+      "antecedent_rain_count": 1,
+      "heavy_rain_context_count": 0,
+      "data_unavailable_count": 0
+    },
+    {
+      "node_id": "la_villa_este",
+      "display_name": "La Villa Este",
+      "total_dates": 5,
+      "max_rain_24h_mm": 9.87,
+      "max_rain_72h_mm": 41.32,
+      "max_rain_7d_mm": 90.46,
+      "wettest_72h_date": "2025-06-10",
+      "dry_or_low_rain_count": 0,
+      "normal_context_count": 3,
+      "antecedent_rain_count": 2,
+      "heavy_rain_context_count": 0,
+      "data_unavailable_count": 0
+    },
+    {
+      "node_id": "la_villa_oeste",
+      "display_name": "La Villa Oeste",
+      "total_dates": 5,
+      "max_rain_24h_mm": 12.13,
+      "max_rain_72h_mm": 45.73,
+      "max_rain_7d_mm": 102.05,
+      "wettest_72h_date": "2025-06-15",
+      "dry_or_low_rain_count": 0,
+      "normal_context_count": 4,
+      "antecedent_rain_count": 1,
+      "heavy_rain_context_count": 0,
+      "data_unavailable_count": 0
+    }
+  ]
+}
