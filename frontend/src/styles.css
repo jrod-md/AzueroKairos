@@ -2621,6 +2621,7 @@ select {
 .decision-card,
 .meaning-panel,
 .technical-audit-receipt,
+.clms-context-block,
 .comparison-section,
 .metrics-section,
 .technical-trace-section,
@@ -2820,6 +2821,7 @@ select {
 
 .comparison-section,
 .metrics-section,
+.clms-context-block,
 .technical-trace-section,
 .territorial-map.technical,
 .pipeline-section,
@@ -2853,6 +2855,89 @@ select {
   max-width: 560px;
   margin: 0;
   line-height: 1.45;
+}
+
+.clms-meta-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
+  gap: 9px;
+  margin: 12px 0 0;
+}
+
+.clms-meta-row div {
+  min-width: 0;
+  border: 1px solid color-mix(in oklch, var(--river) 8%, transparent);
+  border-radius: 14px;
+  padding: 9px 10px;
+  background: color-mix(in oklch, var(--paper-soft) 58%, transparent);
+}
+
+.clms-meta-row dt {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 840;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.clms-meta-row dd {
+  margin: 5px 0 0;
+  color: var(--river);
+  font-size: 0.78rem;
+  font-weight: 760;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.clms-table-wrap {
+  margin-top: 12px;
+  overflow-x: auto;
+}
+
+.clms-node-table {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: separate;
+  border-spacing: 0 7px;
+}
+
+.clms-node-table th,
+.clms-node-table td {
+  padding: 10px 11px;
+  background: color-mix(in oklch, var(--paper) 64%, transparent);
+  color: var(--river);
+  font-size: 0.82rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.clms-node-table thead th {
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 860;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.clms-node-table tbody th {
+  border-radius: 14px 0 0 14px;
+}
+
+.clms-node-table tbody td:last-child {
+  border-radius: 0 14px 14px 0;
+}
+
+.clms-node-table strong,
+.clms-node-table span {
+  display: block;
+}
+
+.clms-node-table span {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 760;
 }
 
 .comparison-grid {

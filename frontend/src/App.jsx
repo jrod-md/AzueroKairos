@@ -132,6 +132,7 @@ export default function App() {
   const [sarContext, setSarContext] = useState(null);
   const [hydroClimate, setHydroClimate] = useState(null);
   const [decisionCases, setDecisionCases] = useState(null);
+  const [exposureContext, setExposureContext] = useState(null);
   const [selectedDate, setSelectedDate] = useState(DEFAULT_DATE);
   const [activePage, setActivePage] = useState(getInitialPage);
   const [activeDetailTab, setActiveDetailTab] = useState("resumen");
@@ -154,6 +155,10 @@ export default function App() {
     status: "loading",
     message: "",
   });
+  const [exposureLoadState, setExposureLoadState] = useState({
+    status: "loading",
+    message: "",
+  });
 
   useEffect(() => {
     let active = true;
@@ -167,6 +172,7 @@ export default function App() {
           sarResult,
           hydroClimateResult,
           decisionCasesResult,
+          exposureResult,
         ] = await Promise.all([
           fetch("/data/observations.json"),
           fetch("/data/evidence_ledger.json"),
@@ -174,6 +180,7 @@ export default function App() {
           loadSarContext(),
           loadHydroClimateContext(),
           loadDecisionCases(),
+          loadExposureContext(),
         ]);
 
         if (!observationsResponse.ok) {
@@ -209,6 +216,11 @@ export default function App() {
           status: decisionCasesResult.status,
           message: decisionCasesResult.message,
         });
+        setExposureContext(exposureResult.payload);
+        setExposureLoadState({
+          status: exposureResult.status,
+          message: exposureResult.message,
+        });
         setSelectedDate(
           cleanObservations.some((record) => record.date === DEFAULT_DATE)
             ? DEFAULT_DATE
@@ -239,6 +251,10 @@ export default function App() {
         setDecisionCasesLoadState({
           status: "error",
           message: "No se pudo cargar Kairós Cases.",
+        });
+        setExposureLoadState({
+          status: "error",
+          message: "Contexto CLMS no disponible para esta demo.",
         });
       }
     }
@@ -336,6 +352,8 @@ export default function App() {
           setSelectedDate={setSelectedDate}
           sarContext={sarContext}
           sarLoadState={sarLoadState}
+          exposureContext={exposureContext}
+          exposureLoadState={exposureLoadState}
         />
       ) : activePage === "cases" ? (
         <KairosCases
@@ -457,6 +475,31 @@ async function loadDecisionCases() {
     return {
       status: "error",
       message: "No se pudo cargar /data/decision_cases.json.",
+      payload: null,
+    };
+  }
+}
+
+async function loadExposureContext() {
+  try {
+    const response = await fetch("/data/exposure_context.json");
+    if (!response.ok) {
+      return {
+        status: "missing",
+        message: "Contexto CLMS no disponible para esta demo.",
+        payload: null,
+      };
+    }
+
+    return {
+      status: "ready",
+      message: "",
+      payload: normalizeExposurePayload(await response.json()),
+    };
+  } catch {
+    return {
+      status: "error",
+      message: "Contexto CLMS no disponible para esta demo.",
       payload: null,
     };
   }
@@ -1793,6 +1836,8 @@ function TechnicalDashboard({
   setSelectedDate,
   sarContext,
   sarLoadState,
+  exposureContext,
+  exposureLoadState,
 }) {
   const state = getStateMeta(record);
 
@@ -1829,6 +1874,10 @@ function TechnicalDashboard({
       </div>
 
       <TechnicalAuditReceipt record={record} ledger={ledger} state={state} />
+      <ClmsExposureContextBlock
+        data={exposureContext}
+        loadState={exposureLoadState}
+      />
 
       <div className="technical-hero-grid">
         <DecisionCard record={record} state={state} />
@@ -1904,6 +1953,96 @@ function TechnicalAuditReceipt({ record, ledger, state }) {
           </div>
         ))}
       </dl>
+    </section>
+  );
+}
+
+function ClmsExposureContextBlock({ data, loadState }) {
+  const nodes = Array.isArray(data?.nodes) ? data.nodes : [];
+  const available =
+    loadState?.status === "ready" &&
+    data?.data_status === "exposure_available" &&
+    nodes.length > 0;
+
+  if (!available) {
+    return (
+      <section className="clms-context-block" aria-label="Contexto territorial CLMS">
+        <div className="section-heading compact">
+          <div>
+            <p className="small-label">Capa auxiliar</p>
+            <h2>Contexto territorial CLMS 2020</h2>
+          </div>
+          <p>Contexto CLMS no disponible para esta demo.</p>
+        </div>
+      </section>
+    );
+  }
+
+  const firstNode = nodes[0] ?? {};
+  const claimNote =
+    nodes.find((node) => node.notes)?.notes ||
+    "Capa auxiliar; no modifica la clasificacion Sentinel-2 ni la decision publica de confianza.";
+  const metadata = [
+    ["Dataset", data.source_dataset],
+    ["Referencia", data.reference_year],
+    ["Fuente", `${displayValue(data.source_resolution_m)} m`],
+    [
+      "Muestreo",
+      firstNode.analysis_resolution_m
+        ? `${firstNode.analysis_resolution_m} m`
+        : displayValue(data.resolution_strategy),
+    ],
+    ["Coleccion", data.collection_id],
+  ];
+
+  return (
+    <section className="clms-context-block" aria-label="Contexto territorial CLMS">
+      <div className="section-heading compact">
+        <div>
+          <p className="small-label">Capa auxiliar</p>
+          <h2>Contexto territorial CLMS 2020</h2>
+        </div>
+        <p>{claimNote}</p>
+      </div>
+
+      <dl className="clms-meta-row">
+        {metadata.map(([label, value]) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{displayValue(value)}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <div className="clms-table-wrap">
+        <table className="clms-node-table">
+          <thead>
+            <tr>
+              <th scope="col">Nodo</th>
+              <th scope="col">Agricultura</th>
+              <th scope="col">Vegetacion</th>
+              <th scope="col">Agua/humedal</th>
+              <th scope="col">Urbano/suelo</th>
+              <th scope="col">Area</th>
+            </tr>
+          </thead>
+          <tbody>
+            {nodes.map((node) => (
+              <tr key={node.node_id}>
+                <th scope="row">
+                  <strong>{node.node_name || node.node_id}</strong>
+                  <span>{displayValue(node.exposure_status)}</span>
+                </th>
+                <td>{formatPercent(node.cropland_agriculture_pct)}</td>
+                <td>{formatPercent(node.tree_vegetation_pct)}</td>
+                <td>{formatPercent(node.water_wetland_pct)}</td>
+                <td>{formatPercent(node.built_bare_other_pct)}</td>
+                <td>{`${formatDecimal(node.total_area_ha)} ha`}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
@@ -2361,6 +2500,25 @@ function normalizeHydroClimatePayload(payload) {
   };
 }
 
+function normalizeExposurePayload(payload) {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+
+  return {
+    ...payload,
+    nodes: Array.isArray(payload.nodes)
+      ? payload.nodes.map(normalizeRecord)
+      : [],
+    observations: Array.isArray(payload.observations)
+      ? payload.observations.map(normalizeRecord)
+      : [],
+    summary_by_node: Array.isArray(payload.summary_by_node)
+      ? payload.summary_by_node.map(normalizeRecord)
+      : [],
+  };
+}
+
 function normalizeDecisionCasesPayload(payload) {
   if (!payload || typeof payload !== "object") {
     return null;
@@ -2395,7 +2553,7 @@ function normalizeDecisionCasesPayload(payload) {
 }
 
 function repairMojibake(value) {
-  if (!/[ÃÂâ]/.test(value) || typeof TextDecoder === "undefined") {
+  if (!/[\u00c3\u00c2\u00e2]/.test(value) || typeof TextDecoder === "undefined") {
     return value;
   }
 
@@ -2406,14 +2564,14 @@ function repairMojibake(value) {
     return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
   } catch {
     return value
-      .replaceAll("Ã³", "ó")
-      .replaceAll("Ã¡", "á")
-      .replaceAll("Ã©", "é")
-      .replaceAll("Ã­", "í")
-      .replaceAll("Ãº", "ú")
-      .replaceAll("Ã±", "ñ")
-      .replaceAll("Ã¼", "ü")
-      .replaceAll("Â", "");
+      .replaceAll("\u00c3\u00b3", "\u00f3")
+      .replaceAll("\u00c3\u00a1", "\u00e1")
+      .replaceAll("\u00c3\u00a9", "\u00e9")
+      .replaceAll("\u00c3\u00ad", "\u00ed")
+      .replaceAll("\u00c3\u00ba", "\u00fa")
+      .replaceAll("\u00c3\u00b1", "\u00f1")
+      .replaceAll("\u00c3\u00bc", "\u00fc")
+      .replaceAll("\u00c2", "");
   }
 }
 
