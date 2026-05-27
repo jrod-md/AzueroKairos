@@ -84,6 +84,23 @@ const SYSTEM_MODULES = [
   },
 ];
 
+const MODULE_FLOW = [
+  "Kairós Signal",
+  "Kairós Brief",
+  "Kairós Ledger",
+  "Kairós Field",
+];
+
+const FIELD_CONDITION_OPTIONS = [
+  "Agua turbia visible",
+  "Sedimento o arrastre superficial",
+  "Coloración anómala visible",
+  "Erosión de ribera",
+  "Descarga visible",
+  "Sin condición visible registrada",
+  "Requiere laboratorio",
+];
+
 export default function App() {
   const [observations, setObservations] = useState([]);
   const [ledgerRows, setLedgerRows] = useState([]);
@@ -351,6 +368,8 @@ function DecisionLanding({
         />
       </div>
 
+      <KairosFieldLite record={record} />
+
       <div className="decision-below-fold">
         <section className="detail-tabs" aria-label="Detalle de la decisión">
           <div className="tab-list" role="tablist" aria-label="Secciones de detalle">
@@ -384,6 +403,98 @@ function DecisionLanding({
         <ModulesStrip />
       </div>
     </>
+  );
+}
+
+function KairosFieldLite({ record }) {
+  const [selectedCondition, setSelectedCondition] = useState("seleccionar");
+  const state = getStateMeta(record);
+  const needsVerification =
+    record.confidence_class === "do_not_infer" ||
+    record.confidence_class === "low_confidence";
+  const isUsable = record.confidence_class === "usable";
+  const status = needsVerification
+    ? "Verificación territorial recomendada"
+    : "Verificación territorial opcional";
+  const reason =
+    record.confidence_class === "do_not_infer"
+      ? "La observación Sentinel no tiene suficiente evidencia válida para una inferencia responsable."
+      : isUsable
+        ? "La observación puede apoyar una lectura exploratoria con límites explícitos; la verificación territorial queda como complemento institucional."
+        : "La observación Sentinel tiene evidencia limitada y requiere revisión o verificación territorial.";
+  const reviewStatus = needsVerification
+    ? "pendiente de verificación"
+    : "opcional";
+  const fieldRows = [
+    ["Fecha de inspección", "pendiente"],
+    ["Responsable / rol", "técnico territorial"],
+    ["Coordenadas", "pendiente"],
+    ["Condición visible", selectedCondition],
+    ["Nota de campo", "pendiente"],
+    ["Estado de revisión", reviewStatus],
+  ];
+
+  return (
+    <section className={`field-lite-section tone-${state.tone}`} aria-label="Kairós Field">
+      <div className="field-lite-heading">
+        <div>
+          <p className="small-label">Kairós Field</p>
+          <h2>Kairós Field</h2>
+          <p>
+            Cuando la evidencia satelital no alcanza, el sistema solicita
+            verificación territorial.
+          </p>
+        </div>
+        <span>{status}</span>
+      </div>
+
+      <article className="field-lite-card">
+        <div className="field-lite-summary">
+          <span className="small-label">Workflow territorial</span>
+          <h3>{status}</h3>
+          <p>{reason}</p>
+          <div className="field-lite-meta">
+            <span>Fecha: {record.date}</span>
+            <span>AOI: {record.aoi}</span>
+          </div>
+        </div>
+
+        <div className="field-lite-form" aria-label="Formulario demo de verificación">
+          <div className="field-lite-grid">
+            {fieldRows.map(([label, value]) => (
+              <div className="field-lite-item" key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </div>
+            ))}
+          </div>
+
+          <div className="condition-control">
+            <div className="condition-control-heading">
+              <span>Condición visible</span>
+              <strong>{selectedCondition}</strong>
+            </div>
+            <div className="condition-options" aria-label="Opciones de condición visible">
+              {FIELD_CONDITION_OPTIONS.map((option) => (
+                <button
+                  className={selectedCondition === option ? "active" : ""}
+                  key={option}
+                  type="button"
+                  onClick={() => setSelectedCondition(option)}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <p className="field-lite-disclaimer">
+          Esta verificación documenta condiciones visibles y contexto territorial.
+          No confirma pesticidas, metales pesados, patógenos ni agua segura.
+        </p>
+      </article>
+    </section>
   );
 }
 
@@ -593,6 +704,14 @@ function ModulesStrip() {
       <div>
         <p className="small-label">Sistema modular</p>
         <h2>Atlas de decisión territorial</h2>
+        <div className="module-flow" aria-label="Flujo modular Kairós">
+          {MODULE_FLOW.map((step, index) => (
+            <React.Fragment key={step}>
+              <span>{step}</span>
+              {index < MODULE_FLOW.length - 1 ? <b aria-hidden="true">→</b> : null}
+            </React.Fragment>
+          ))}
+        </div>
       </div>
       <div className="module-list">
         {SYSTEM_MODULES.map((module) => (
