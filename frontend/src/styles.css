@@ -1461,144 +1461,16 @@ select {
   line-height: 1.38;
 }
 
-.sar-overview-row {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.sar-table-wrap {
-  overflow-x: auto;
-  border: 1px solid rgba(17, 59, 75, 0.11);
-  border-radius: 22px;
-  background: color-mix(in oklch, var(--paper) 82%, transparent);
-}
-
-.sar-context-table {
-  width: 100%;
-  min-width: 960px;
-  border-spacing: 0;
-  color: var(--river);
-  font-size: 0.9rem;
-}
-
-.sar-context-table th,
-.sar-context-table td {
-  padding: 11px 12px;
-  text-align: left;
-  vertical-align: middle;
-  border-top: 1px solid rgba(17, 59, 75, 0.09);
-}
-
-.sar-context-table thead th {
-  border-top: 0;
-  color: var(--muted);
-  font-size: 0.68rem;
-  font-weight: 850;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
-}
-
-.sar-context-table tbody th {
-  min-width: 178px;
-}
-
-.sar-context-table tbody th strong,
-.sar-context-table tbody th span {
-  display: block;
-}
-
-.sar-context-table tbody th strong {
-  color: var(--river);
-  font-size: 0.94rem;
-}
-
-.sar-context-table tbody th span {
-  margin-top: 3px;
-  color: var(--muted);
-  font-size: 0.76rem;
+.sar-technical-note {
+  margin: 10px 0 0;
+  border: 1px solid color-mix(in oklch, var(--river) 8%, transparent);
+  border-radius: 16px;
+  padding: 11px 13px;
+  background: color-mix(in oklch, var(--paper-soft) 62%, transparent);
+  color: var(--river-soft);
+  font-size: 0.84rem;
   font-weight: 720;
-}
-
-.sar-status {
-  display: inline-flex;
-  align-items: center;
-  min-height: 28px;
-  border-radius: 999px;
-  padding: 5px 8px;
-  font-size: 0.7rem;
-  font-weight: 850;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-.sar-status.available {
-  background: color-mix(in oklch, var(--usable) 13%, var(--paper));
-  color: var(--usable);
-}
-
-.sar-status.low {
-  background: color-mix(in oklch, var(--review) 16%, var(--paper));
-  color: color-mix(in oklch, var(--review) 84%, var(--river));
-}
-
-.sar-status.error {
-  background: color-mix(in oklch, var(--stop) 12%, var(--paper));
-  color: var(--stop);
-}
-
-.sar-summary-strip {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.sar-summary-chip,
-.sar-empty-state {
-  border: 1px solid rgba(17, 59, 75, 0.1);
-  border-radius: 20px;
-  background: color-mix(in oklch, var(--paper) 76%, transparent);
-  padding: 14px;
-}
-
-.sar-summary-chip span,
-.sar-empty-state span {
-  color: var(--muted);
-  font-size: 0.74rem;
-  font-weight: 820;
-  letter-spacing: 0.045em;
-  text-transform: uppercase;
-}
-
-.sar-summary-chip strong {
-  display: block;
-  margin-top: 8px;
-  color: var(--river);
-  font-size: 1.35rem;
-  line-height: 1;
-}
-
-.sar-summary-chip p,
-.sar-empty-state p {
-  margin: 8px 0 0;
-  color: var(--river-soft);
-  font-size: 0.88rem;
-  font-weight: 700;
-  line-height: 1.4;
-}
-
-.sar-limit-note {
-  margin: 12px 0 0;
-  border: 1px solid rgba(17, 59, 75, 0.09);
-  border-radius: 18px;
-  padding: 13px 15px;
-  background: color-mix(in oklch, var(--paper-soft) 70%, var(--paper));
-  color: var(--river-soft);
-  font-size: 0.92rem;
-  font-weight: 740;
-  line-height: 1.48;
+  line-height: 1.42;
 }
 
 .trace-layout {
@@ -1769,23 +1641,6 @@ select {
   font-size: clamp(1.02rem, 1.6vw, 1.28rem);
   font-weight: 720;
   line-height: 1.45;
-}
-
-.sar-context-badge {
-  display: inline-flex;
-  width: fit-content;
-  align-items: center;
-  min-height: 30px;
-  margin-top: 14px;
-  border: 1px solid color-mix(in oklch, var(--turquoise) 38%, var(--line));
-  border-radius: 999px;
-  padding: 6px 10px;
-  background: color-mix(in oklch, var(--turquoise) 12%, var(--paper));
-  color: var(--river);
-  font-size: 0.72rem;
-  font-weight: 850;
-  letter-spacing: 0.045em;
-  text-transform: uppercase;
 }
 
 .watch-insight-card,
@@ -2604,7 +2459,6 @@ select {
 .meaning-panel,
 .comparison-section,
 .metrics-section,
-.sar-context-section,
 .technical-trace-section,
 .threshold-visual.compact,
 .territorial-map.technical,
@@ -2744,7 +2598,6 @@ select {
 
 .comparison-section,
 .metrics-section,
-.sar-context-section,
 .technical-trace-section,
 .territorial-map.technical,
 .pipeline-section,
@@ -2936,8 +2789,6 @@ select {
   .brief-grid,
   .module-list,
   .watch-summary-grid,
-  .sar-overview-row,
-  .sar-summary-strip,
   .hydro-context-notes {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -3104,8 +2955,6 @@ select {
   .watch-hero,
   .watch-summary-grid,
   .watch-summary-stats,
-  .sar-overview-row,
-  .sar-summary-strip,
   .corridor-evidence-facts,
   .corridor-contrast-row {
     grid-template-columns: 1fr;
@@ -3142,10 +2991,6 @@ select {
 
   .watch-hero h1 {
     font-size: clamp(2.35rem, 14vw, 3.7rem);
-  }
-
-  .sar-context-table {
-    min-width: 840px;
   }
 
   .hydro-context-notes {

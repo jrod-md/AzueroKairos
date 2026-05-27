@@ -57,13 +57,13 @@ const METRIC_HELP = {
 };
 
 const SCIENTIFIC_LIMITS =
-  "Azuero Kairós no detecta pesticidas, atrazina, patógenos, metales pesados, contaminación química disuelta ni agua segura. Las afirmaciones químicas o sanitarias requieren laboratorio o verificación autorizada.";
+  "Azuero Kairós limita la decisión pública a confianza de observación Sentinel. No hace afirmaciones químicas, sanitarias, de aptitud de uso ni de respuesta institucional.";
 
 const SAR_LIMITS =
-  "Sentinel-1 aporta contexto físico/SAR. No confirma contaminación, agua segura, pesticidas, patógenos ni metales pesados.";
+  "Sentinel-1 SAR fue evaluado como contexto auxiliar, pero este corte no produjo observaciones útiles. No se usa como evidencia principal en la decisión pública.";
 
 const HYDROCLIMATE_LIMITS =
-  "El contexto hidroclimático no mide contaminación química ni agua segura.";
+  "El contexto hidroclimático solo orienta revisión; no cambia la decisión Sentinel-2.";
 
 const HYDROCLIMATE_INSIGHT =
   "La lluvia antecedente no confirma riesgo. Ayuda a priorizar dónde revisar cuando la evidencia satelital es baja.";
@@ -227,7 +227,7 @@ export default function App() {
         });
         setSarLoadState({
           status: "error",
-          message: "No se pudo cargar Kairós SAR Context.",
+          message: "No se pudo cargar la nota técnica Sentinel-1.",
         });
         setHydroClimateLoadState({
           status: "error",
@@ -347,8 +347,6 @@ export default function App() {
         <KairosWatch
           data={watchData}
           loadState={watchLoadState}
-          sarContext={sarContext}
-          sarLoadState={sarLoadState}
           hydroClimate={hydroClimate}
           hydroClimateLoadState={hydroClimateLoadState}
         />
@@ -390,7 +388,7 @@ async function loadSarContext() {
       return {
         status: "missing",
         message:
-          "Kairós SAR Context estará disponible cuando exista /data/sar_context.json.",
+          "La nota técnica Sentinel-1 estará disponible cuando exista /data/sar_context.json.",
         payload: null,
       };
     }
@@ -937,7 +935,7 @@ function KairosFieldLite({ record }) {
 
         <p className="field-lite-disclaimer">
           Esta verificación documenta condiciones visibles y contexto territorial.
-          No confirma pesticidas, metales pesados, patógenos ni agua segura.
+          No sustituye análisis externo ni decisión de autoridad competente.
         </p>
       </article>
     </section>
@@ -987,8 +985,8 @@ function ConfidenceThresholdVisual({ record, compact = false }) {
       </div>
 
       <p className="threshold-note">
-        El umbral no mide contaminación; mide si la observación tiene suficiente
-        evidencia válida para interpretarse.
+        El umbral mide si la observación tiene suficiente evidencia válida para
+        interpretarse.
       </p>
     </section>
   );
@@ -1174,14 +1172,10 @@ function ModulesStrip() {
 function KairosWatch({
   data,
   loadState,
-  sarContext,
-  sarLoadState,
   hydroClimate,
   hydroClimateLoadState,
 }) {
   const ready = loadState.status === "ready" && data;
-  const hasSarContext =
-    sarLoadState.status === "ready" && Boolean(sarContext?.observations?.length);
   const nodes = ready ? data.nodes ?? [] : [];
   const dates = ready ? data.dates ?? [] : [];
   const observations = ready ? data.observations ?? [] : [];
@@ -1225,9 +1219,6 @@ function KairosWatch({
           <p className="small-label">Kairós Watch</p>
           <h1>Atlas de confianza para Azuero</h1>
           <p>Confianza satelital por subcorredor y fecha.</p>
-          {hasSarContext ? (
-            <span className="sar-context-badge">SAR context available</span>
-          ) : null}
         </div>
         <article className="watch-insight-card">
           <span>Lectura regional</span>
@@ -1297,8 +1288,8 @@ function KairosWatch({
       <section className="watch-limits" aria-label="Límite científico de Kairós Watch">
         <span>Límite científico</span>
         <p>
-          Estos estados miden confianza de observación, no contaminación química ni
-          agua segura.
+          Estos estados miden confianza de observación y brechas de evidencia; no
+          sustituyen verificación externa.
         </p>
       </section>
     </section>
@@ -1534,7 +1525,7 @@ function KairosCases({
         <span>Firewall de claims</span>
         <p>
           {data.claim_firewall ||
-            "No detecta pesticidas, metales pesados, patógenos, contaminación química disuelta ni agua segura."}
+            "No hace afirmaciones químicas, sanitarias, de aptitud de uso ni de respuesta institucional."}
         </p>
       </section>
     </section>
@@ -1664,7 +1655,6 @@ function CaseActionPanel({ caseItem, mode }) {
             caseItem.primary_validPercent,
           )}`}
         />
-        <CaseDataPair label="SAR" value={caseItem.sar_context_status} />
         <CaseDataPair label="Exposure" value={caseItem.exposure_status} />
         <CaseDataPair label="HydroClimate" value={caseItem.hydroclimate_status} />
         <CaseDataPair label="Ledger" value={caseItem.ledger_status} />
@@ -1752,7 +1742,7 @@ function TechnicalDashboard({
       <TerritorialMap record={record} state={state} variant="technical" />
       <ComparisonSection records={comparisonRecords} />
       <MetricsSection record={record} />
-      <SarContextSection data={sarContext} loadState={sarLoadState} />
+      <SarTechnicalNote data={sarContext} loadState={sarLoadState} />
       <EvidencePipeline />
       <TechnicalTraceability record={record} ledger={ledger} />
       <BriefPreview record={record} ledger={ledger} state={state} />
@@ -1888,105 +1878,15 @@ function MetricsSection({ record }) {
   );
 }
 
-function SarContextSection({ data, loadState }) {
+function SarTechnicalNote({ data, loadState }) {
   const ready = loadState.status === "ready" && data;
-  const observations = ready ? data.observations ?? [] : [];
-  const summaries = ready ? data.summary_by_node ?? [] : [];
-  const availableCount = observations.filter(
-    (row) => row.context_status === "sar_context_available",
-  ).length;
-  const lowObservationCount = observations.filter(
-    (row) => row.context_status === "sar_low_observation",
-  ).length;
-  const errorCount = observations.filter(
-    (row) => row.context_status === "sar_error",
-  ).length;
-
+  const note = ready
+    ? data.claim_limit || SAR_LIMITS
+    : "Sentinel-1 SAR no está disponible en este corte y no se usa como evidencia principal.";
   return (
-    <section className="sar-context-section" aria-label="Kairós SAR Context">
-      <div className="section-heading compact">
-        <div>
-          <p className="small-label">Context layer</p>
-          <h2>Kairós SAR Context</h2>
-        </div>
-        <p>Capa auxiliar Sentinel-1 para continuidad física bajo nubosidad.</p>
-      </div>
-
-      {!ready ? (
-        <article className="sar-empty-state">
-          <span>Contexto SAR no disponible</span>
-          <p>
-            {loadState.message ||
-              "La capa SAR se mostrará cuando /data/sar_context.json esté disponible."}
-          </p>
-        </article>
-      ) : (
-        <>
-          <div className="sar-overview-row">
-            <StatusChip label="Sensor" value={data.sensor || "sentinel-1-grd"} />
-            <StatusChip label="Observaciones SAR" value={observations.length} />
-            <StatusChip label="Contexto disponible" value={availableCount} />
-            <StatusChip label="Baja observación" value={lowObservationCount} />
-            <StatusChip label="Errores SAR" value={errorCount} />
-          </div>
-
-          <div className="sar-table-wrap" role="region" aria-label="Matriz SAR por nodo y fecha">
-            <table className="sar-context-table">
-              <thead>
-                <tr>
-                  <th scope="col">Node</th>
-                  <th scope="col">Date</th>
-                  <th scope="col">VV mean</th>
-                  <th scope="col">VH mean</th>
-                  <th scope="col">VV/VH ratio</th>
-                  <th scope="col">validPercent</th>
-                  <th scope="col">context_status</th>
-                  <th scope="col">api_status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {observations.map((row) => (
-                  <tr key={`${row.node_id}-${row.date}`}>
-                    <th scope="row">
-                      <strong>{row.node_display_name || row.node_id}</strong>
-                      <span>{row.aoi || row.node_id}</span>
-                    </th>
-                    <td>{row.date}</td>
-                    <td>{formatSarNumber(row.vv_mean)}</td>
-                    <td>{formatSarNumber(row.vh_mean)}</td>
-                    <td>{formatSarNumber(row.vv_vh_ratio)}</td>
-                    <td>{formatPercent(row.validPercent)}</td>
-                    <td>
-                      <span className={`sar-status ${sarStatusTone(row.context_status)}`}>
-                        {row.context_status || "pendiente"}
-                      </span>
-                    </td>
-                    <td>{row.api_status || "pendiente"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {summaries.length ? (
-            <div className="sar-summary-strip" aria-label="Resumen SAR por nodo">
-              {summaries.map((summary) => (
-                <article className="sar-summary-chip" key={summary.node_id}>
-                  <span>{summary.node_display_name || summary.node_id}</span>
-                  <strong>{formatPercent(summary.mean_validPercent)}</strong>
-                  <p>
-                    {summary.available_observations ?? 0} disponibles /{" "}
-                    {summary.low_observation_count ?? 0} baja observación
-                  </p>
-                </article>
-              ))}
-            </div>
-          ) : null}
-        </>
-      )}
-
-      <p className="sar-limit-note">{SAR_LIMITS}</p>
-    </section>
+    <p className="sar-technical-note" aria-label="Nota técnica Sentinel-1 SAR">
+      {note}
+    </p>
   );
 }
 
@@ -2383,14 +2283,6 @@ function formatDecimal(value) {
   });
 }
 
-function formatSarNumber(value) {
-  if (value === undefined || value === null || value === "") return "sin dato";
-  return formatNumber(value, {
-    minimumFractionDigits: 4,
-    maximumFractionDigits: 4,
-  });
-}
-
 function formatRainMm(value) {
   if (value === undefined || value === null || value === "") return "sin dato";
   const numeric = Number(value);
@@ -2399,12 +2291,6 @@ function formatRainMm(value) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })} mm`;
-}
-
-function sarStatusTone(status) {
-  if (status === "sar_context_available") return "available";
-  if (status === "sar_error") return "error";
-  return "low";
 }
 
 function isHydroReviewContext(row) {

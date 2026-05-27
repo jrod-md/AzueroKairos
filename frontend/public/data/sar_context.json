@@ -3,7 +3,7 @@
   "sensor": "sentinel-1-grd",
   "layer_type": "sar_context_only",
   "public_safe": true,
-  "claim_limit": "Sentinel-1 SAR context is a physical observation layer. It does not detect contamination, validate water safety, or replace Sentinel-2 optical confidence results.",
+  "claim_limit": "Sentinel-1 SAR fue evaluado como contexto auxiliar, pero este corte no produjo observaciones utiles. No se usa como evidencia principal en la decision publica.",
   "nodes": [
     {
       "node_id": "la_villa_central",
