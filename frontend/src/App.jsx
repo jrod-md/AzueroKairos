@@ -102,7 +102,7 @@ const SYSTEM_MODULES = [
     text: "Solicita verificación territorial cuando la confianza satelital no alcanza.",
   },
   {
-    name: "Kairós Watch",
+    name: "Corredor",
     text: "Futuro seguimiento temporal de observaciones.",
   },
 ];
@@ -112,7 +112,7 @@ const MODULE_FLOW = [
   "Kairós Brief",
   "Kairós Ledger",
   "Kairós Field",
-  "Kairós Watch",
+  "Corredor",
 ];
 
 const FIELD_CONDITION_OPTIONS = [
@@ -238,7 +238,7 @@ export default function App() {
         });
         setWatchLoadState({
           status: "error",
-          message: "No se pudo cargar Kairós Watch.",
+          message: "No se pudo cargar Corredor.",
         });
         setSarLoadState({
           status: "error",
@@ -250,7 +250,7 @@ export default function App() {
         });
         setDecisionCasesLoadState({
           status: "error",
-          message: "No se pudo cargar Kairós Cases.",
+          message: "No se pudo cargar Accion.",
         });
         setExposureLoadState({
           status: "error",
@@ -348,6 +348,7 @@ export default function App() {
           comparisonRecords={comparisonRecords}
           record={selectedRecord}
           ledger={selectedLedger}
+          hydroClimateContext={selectedHydroClimateContext}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
           sarContext={sarContext}
@@ -363,6 +364,7 @@ export default function App() {
           setActiveCaseId={setActiveCaseId}
           casePanelMode={casePanelMode}
           setCasePanelMode={setCasePanelMode}
+          exposureContext={exposureContext}
         />
       ) : (
         <KairosWatch
@@ -370,6 +372,10 @@ export default function App() {
           loadState={watchLoadState}
           hydroClimate={hydroClimate}
           hydroClimateLoadState={hydroClimateLoadState}
+          exposureContext={exposureContext}
+          exposureLoadState={exposureLoadState}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
         />
       )}
     </main>
@@ -383,7 +389,7 @@ async function loadWatchData() {
       return {
         status: "missing",
         message:
-          "Kairós Watch estará disponible cuando exista /data/kairos_watch.json.",
+          "Corredor estara disponible cuando exista /data/kairos_watch.json.",
         payload: null,
       };
     }
@@ -461,7 +467,7 @@ async function loadDecisionCases() {
       return {
         status: "missing",
         message:
-          "Kairós Cases estará disponible cuando exista /data/decision_cases.json.",
+          "Accion estara disponible cuando exista /data/decision_cases.json.",
         payload: null,
       };
     }
@@ -508,11 +514,11 @@ async function loadExposureContext() {
 function setPageAndHash(page) {
   const nextHash =
     page === "technical"
-      ? "#datos-tecnicos"
+      ? "#evidencia"
       : page === "watch"
-        ? "#kairos-watch"
+        ? "#corredor"
         : page === "cases"
-          ? "#kairos-cases"
+          ? "#accion"
           : "#decision";
   if (window.location.hash !== nextHash) {
     window.location.hash = nextHash;
@@ -521,13 +527,14 @@ function setPageAndHash(page) {
 }
 
 function getInitialPage() {
-  if (typeof window !== "undefined" && window.location.hash === "#datos-tecnicos") {
+  const hash = typeof window !== "undefined" ? window.location.hash : "";
+  if (hash === "#datos-tecnicos" || hash === "#technical" || hash === "#evidencia") {
     return "technical";
   }
-  if (typeof window !== "undefined" && window.location.hash === "#kairos-watch") {
+  if (hash === "#kairos-watch" || hash === "#corredor") {
     return "watch";
   }
-  if (typeof window !== "undefined" && window.location.hash === "#kairos-cases") {
+  if (hash === "#kairos-cases" || hash === "#accion") {
     return "cases";
   }
   return "decision";
@@ -558,21 +565,21 @@ function Header({ activePage, setActivePage, statusText }) {
           type="button"
           onClick={() => setActivePage("technical")}
         >
-          Datos técnicos
+          Evidencia
         </button>
         <button
           className={activePage === "watch" ? "active" : ""}
           type="button"
           onClick={() => setActivePage("watch")}
         >
-          Kairós Watch
+          Corredor
         </button>
         <button
           className={activePage === "cases" ? "active" : ""}
           type="button"
           onClick={() => setActivePage("cases")}
         >
-          Kairós Cases
+          Acción
         </button>
       </nav>
 
@@ -596,6 +603,78 @@ function DecisionLanding({
   setActiveDetailTab,
 }) {
   const state = getStateMeta(record);
+  const evidenceStatus = [
+    ["API", record.api_status === "OK" ? "OK" : record.api_status || "pendiente"],
+    ["Ledger", ledger?.evidence_status ? "OK" : "sin registro"],
+    ["Brief", record.brief_path || ledger?.brief_path ? "disponible" : "pendiente"],
+  ];
+
+  return (
+    <>
+      <section
+        className={`decision-workflow-hero tone-${state.tone}`}
+        aria-label="Decision de confianza"
+      >
+        <article className="decision-primary-panel">
+          <div className="decision-workflow-top">
+            <span>Decision</span>
+            <label>
+              <span>Fecha</span>
+              <select
+                value={selectedDate}
+                onChange={(event) => setSelectedDate(event.target.value)}
+              >
+                {availableDates.map((date) => (
+                  <option key={date} value={date}>
+                    {date}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          <div className="decision-workflow-body" key={record.date}>
+            <p className="decision-date">{record.date}</p>
+            <h1>{state.label}</h1>
+            <div className="decision-validity">
+              <strong>{formatPercent(record.validPercent)}</strong>
+              <span>evidencia valida</span>
+            </div>
+            <p className="decision-one-line">{record.reason_es || state.explanation}</p>
+            <div className="decision-next-action">
+              <span>Siguiente accion recomendada</span>
+              <p>{record.recommended_action_es || state.nextAction}</p>
+            </div>
+            <button
+              className="trace-link-button"
+              type="button"
+              onClick={() => setPageAndHash("technical")}
+            >
+              Ver trazabilidad
+            </button>
+          </div>
+        </article>
+
+        <aside className="decision-support-panel" aria-label="Estatus compacto de evidencia">
+          <CompactEvidenceStatus items={evidenceStatus} />
+          <OfficialContrastStrip records={comparisonRecords} />
+          <p className="decision-support-note">
+            API OK confirma ejecucion tecnica; no confirma evidencia suficiente
+            para inferir.
+          </p>
+        </aside>
+      </section>
+
+      <div className="decision-timeline-row">
+        <ObservationTimeline
+          records={observations}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+        />
+      </div>
+    </>
+  );
+
   const showHydroBadge = isHydroReviewContext(hydroClimateContext);
 
   return (
@@ -722,6 +801,22 @@ function DecisionLanding({
         <ModulesStrip />
       </div>
     </>
+  );
+}
+
+function CompactEvidenceStatus({ items }) {
+  return (
+    <section className="compact-evidence-status" aria-label="Estatus compacto de evidencia">
+      <p>Estado de evidencia</p>
+      <dl>
+        {items.map(([label, value]) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }
 
@@ -1312,6 +1407,9 @@ function KairosWatch({
   loadState,
   hydroClimate,
   hydroClimateLoadState,
+  exposureContext,
+  exposureLoadState,
+  selectedDate,
 }) {
   const ready = loadState.status === "ready" && data;
   const nodes = ready ? data.nodes ?? [] : [];
@@ -1331,18 +1429,18 @@ function KairosWatch({
 
   if (!ready) {
     return (
-      <section className="watch-screen" aria-label="Kairós Watch">
+      <section className="watch-screen" aria-label="Corredor">
         <div className="watch-hero">
           <div>
-            <p className="small-label">Kairós Watch</p>
-            <h1>Atlas de confianza para Azuero</h1>
+            <p className="small-label">Corredor</p>
+            <h1>Patron regional de confianza</h1>
             <p>Confianza satelital por subcorredor y fecha.</p>
           </div>
           <article className="watch-empty-card">
             <span>Data regional no disponible</span>
             <p>
               {loadState.message ||
-                "Kairós Watch estará disponible cuando se exporte kairos_watch.json."}
+                "El corredor estara disponible cuando se exporte kairos_watch.json."}
             </p>
           </article>
         </div>
@@ -1351,19 +1449,18 @@ function KairosWatch({
   }
 
   return (
-    <section className="watch-screen" aria-label="Kairós Watch">
+      <section className="watch-screen" aria-label="Corredor">
       <div className="watch-hero">
         <div>
-          <p className="small-label">Kairós Watch</p>
-          <h1>Atlas de confianza para Azuero</h1>
-          <p>Confianza satelital por subcorredor y fecha.</p>
+          <p className="small-label">Corredor</p>
+          <h1>Patron regional de confianza</h1>
+          <p>Rio La Villa / Azuero, tres nodos y cinco fechas Sentinel-2.</p>
         </div>
         <article className="watch-insight-card">
           <span>Lectura regional</span>
           <p>
-            El atlas no busca producir alertas constantes. Identifica dónde y
-            cuándo la evidencia Copernicus es suficientemente confiable para apoyar
-            una decisión.
+            El corredor muestra donde la evidencia Sentinel-2 permite interpretar
+            y donde debe marcarse NO INFERIR.
           </p>
         </article>
       </div>
@@ -1371,12 +1468,11 @@ function KairosWatch({
       <section className="watch-matrix-section" aria-label="Matriz regional de confianza">
         <div className="section-heading compact">
           <div>
-            <p className="small-label">Matriz de confianza</p>
-            <h2>Subcorredores por fecha</h2>
+            <p className="small-label">Patron Sentinel-2</p>
+            <h2>2025-06-10 abre la brecha; 2025-06-30 da contraste usable</h2>
           </div>
           <p>
-            Cada celda resume si la observación Sentinel puede interpretarse,
-            revisarse o no inferirse.
+            Cada celda resume confianza de observacion por nodo y fecha.
           </p>
         </div>
 
@@ -1416,15 +1512,18 @@ function KairosWatch({
         </div>
       </section>
 
+      <ClmsCorridorStrip data={exposureContext} loadState={exposureLoadState} />
+
       <HydroClimateWatchSection
         data={hydroClimate}
         loadState={hydroClimateLoadState}
+        selectedDate={selectedDate}
       />
 
       <WatchSummaryCards summaries={summaries} />
 
-      <section className="watch-limits" aria-label="Límite científico de Kairós Watch">
-        <span>Límite científico</span>
+      <section className="watch-limits" aria-label="Limite cientifico de Corredor">
+        <span>Limite cientifico</span>
         <p>
           Estos estados miden confianza de observación y brechas de evidencia; no
           sustituyen verificación externa.
@@ -1434,7 +1533,61 @@ function KairosWatch({
   );
 }
 
-function HydroClimateWatchSection({ data, loadState }) {
+function ClmsCorridorStrip({ data, loadState }) {
+  const nodes = Array.isArray(data?.summary_by_node)
+    ? data.summary_by_node
+    : Array.isArray(data?.nodes)
+      ? data.nodes
+      : [];
+  const available =
+    loadState?.status === "ready" &&
+    data?.data_status === "exposure_available" &&
+    nodes.length > 0;
+
+  return (
+    <section className="clms-corridor-strip" aria-label="Contexto territorial CLMS">
+      <div className="section-heading compact">
+        <div>
+          <p className="small-label">Contexto territorial auxiliar</p>
+          <h2>CLMS 2020 {available ? "disponible" : "no disponible"}</h2>
+        </div>
+        <p>
+          Capa auxiliar; no modifica la clasificacion Sentinel-2 ni la decision
+          publica de confianza.
+        </p>
+      </div>
+
+      {available ? (
+        <div className="clms-corridor-grid">
+          {nodes.map((node) => (
+            <article className="clms-corridor-node" key={node.node_id}>
+              <strong>{node.node_name || node.display_name || node.node_id}</strong>
+              <dl>
+                <ClmsMiniMetric label="Agri." value={node.cropland_agriculture_pct} />
+                <ClmsMiniMetric label="Veg." value={node.tree_vegetation_pct} />
+                <ClmsMiniMetric label="Agua" value={node.water_wetland_pct} />
+                <ClmsMiniMetric label="Urb./suelo" value={node.built_bare_other_pct} />
+              </dl>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className="availability-note">Contexto CLMS no disponible para esta demo.</p>
+      )}
+    </section>
+  );
+}
+
+function ClmsMiniMetric({ label, value }) {
+  return (
+    <div>
+      <dt>{label}</dt>
+      <dd>{formatPercent(value)}</dd>
+    </div>
+  );
+}
+
+function HydroClimateWatchSection({ data, loadState, selectedDate }) {
   const ready = loadState.status === "ready" && data;
   if (!ready) {
     return null;
@@ -1444,19 +1597,22 @@ function HydroClimateWatchSection({ data, loadState }) {
   if (!observations.length) {
     return null;
   }
+  const selectedRows = observations.filter((row) => row.date === selectedDate);
+  const flaggedRows = observations.filter(isHydroReviewContext);
+  const visibleRows = (selectedRows.length ? selectedRows : flaggedRows).slice(0, 6);
 
   return (
     <section className="hydro-context-section" aria-label="Kairós HydroClimate">
       <div className="section-heading compact">
         <div>
           <p className="small-label">Contexto hidroclimático</p>
-          <h2>Kairós HydroClimate</h2>
+          <h2>Resumen de contexto</h2>
         </div>
-        <p>Contexto de lluvia antecedente para priorizar revisión territorial.</p>
+        <p>Solo contexto auxiliar para priorizar revision territorial.</p>
       </div>
 
       <div className="hydro-context-grid">
-        {observations.map((observation) => (
+        {visibleRows.map((observation) => (
           <article
             className={`hydro-context-card ${hydroStatusTone(
               observation.hydroclimate_status,
@@ -1482,9 +1638,9 @@ function HydroClimateWatchSection({ data, loadState }) {
             </dl>
 
             <span className="hydro-status-chip">
-              {observation.hydroclimate_status || "data_unavailable"}
+              {translateHydroStatus(observation.hydroclimate_status)}
             </span>
-            <p>{observation.recommended_context_action || "Contexto no disponible."}</p>
+            <p>{translateContextAction(observation.recommended_context_action)}</p>
           </article>
         ))}
       </div>
@@ -1571,6 +1727,7 @@ function KairosCases({
   setActiveCaseId,
   casePanelMode,
   setCasePanelMode,
+  exposureContext,
 }) {
   const ready = loadState.status === "ready" && data;
   const cases = useMemo(() => {
@@ -1588,18 +1745,18 @@ function KairosCases({
 
   if (!ready) {
     return (
-      <section className="cases-screen" aria-label="Kairós Cases">
+      <section className="cases-screen" aria-label="Accion">
         <div className="cases-hero">
           <div>
-            <p className="small-label">Kairós Cases</p>
-            <h1>Workflow de decisión territorial</h1>
+            <p className="small-label">Accion</p>
+            <h1>Cola de decision territorial</h1>
             <p>{CASES_INSIGHT}</p>
           </div>
           <article className="cases-empty-card">
             <span>Casos no disponibles</span>
             <p>
               {loadState.message ||
-                "Kairós Cases estará disponible cuando se exporte decision_cases.json."}
+                "Accion estara disponible cuando se exporte decision_cases.json."}
             </p>
           </article>
         </div>
@@ -1608,15 +1765,15 @@ function KairosCases({
   }
 
   return (
-    <section className="cases-screen" aria-label="Kairós Cases">
+    <section className="cases-screen" aria-label="Accion">
       <div className="cases-hero">
         <div>
-          <p className="small-label">Kairós Cases</p>
-          <h1>Workflow de decisión territorial</h1>
+          <p className="small-label">Accion</p>
+          <h1>Cola de decision territorial</h1>
           <p>{CASES_INSIGHT}</p>
         </div>
         <article className="cases-insight-card">
-          <span>Decision Engine</span>
+          <span>Cola de decision</span>
           <dl>
             <div>
               <dt>Total casos</dt>
@@ -1638,10 +1795,10 @@ function KairosCases({
         <section className="case-board-section" aria-label="Tablero de casos">
           <div className="section-heading compact">
             <div>
-              <p className="small-label">Case board</p>
+              <p className="small-label">Cola de casos</p>
               <h2>Acciones recomendadas por nodo y fecha</h2>
             </div>
-            <p>Kairós Watch sigue siendo el panorama regional. Este tablero organiza la acción.</p>
+            <p>Corredor conserva el panorama regional. Esta vista organiza la accion.</p>
           </div>
 
           <div className="case-card-grid">
@@ -1656,11 +1813,15 @@ function KairosCases({
           </div>
         </section>
 
-        <CaseActionPanel caseItem={selectedCase} mode={casePanelMode} />
+        <CaseActionPanel
+          caseItem={selectedCase}
+          exposureContext={exposureContext}
+          mode={casePanelMode}
+        />
       </div>
 
-      <section className="cases-limit-note" aria-label="Límite científico de Kairós Cases">
-        <span>Firewall de claims</span>
+      <section className="cases-limit-note" aria-label="Limite cientifico de Accion">
+        <span>Limite de alcance</span>
         <p>
           {data.claim_firewall ||
             "No hace afirmaciones químicas, sanitarias, de aptitud de uso ni de respuesta institucional."}
@@ -1673,6 +1834,7 @@ function KairosCases({
 function DecisionCaseCard({ caseItem, isActive, onSelect }) {
   const tone = decisionCaseTone(caseItem);
   const verificationEnabled = canRequestVerification(caseItem);
+  const actionLabel = actionQueueLabel(caseItem);
 
   return (
     <article className={`case-card tone-${tone} ${isActive ? "active" : ""}`}>
@@ -1686,7 +1848,7 @@ function DecisionCaseCard({ caseItem, isActive, onSelect }) {
 
       <div className="case-label-row">
         <span className={`case-label tone-${tone}`}>{caseItem.decision_label}</span>
-        <span>{formatCasePercent(caseItem.primary_validPercent)} válido</span>
+        <span>{actionLabel}</span>
       </div>
 
       <div className="case-meta-grid">
@@ -1723,16 +1885,18 @@ function DecisionCaseCard({ caseItem, isActive, onSelect }) {
         >
           Solicitar verificación
         </button>
-        <button type="button" disabled title={LAB_ESCALATION_COPY}>
-          Escalar a laboratorio
-        </button>
       </div>
       <p className="case-lab-copy">{LAB_ESCALATION_COPY}</p>
     </article>
   );
 }
 
-function CaseActionPanel({ caseItem, mode }) {
+function CaseActionPanel({ caseItem, exposureContext, mode }) {
+  const exposureLabel =
+    exposureContext?.data_status === "exposure_available"
+      ? "CLMS disponible"
+      : caseItem?.exposure_status || "pendiente";
+
   if (!caseItem) {
     return (
       <aside className="case-action-panel">
@@ -1789,12 +1953,15 @@ function CaseActionPanel({ caseItem, mode }) {
         <CaseDataPair label="Fecha" value={caseItem.date} />
         <CaseDataPair
           label="Sentinel-2"
-          value={`${caseItem.primary_confidence_class || "pendiente"} · ${formatCasePercent(
+          value={`${caseItem.primary_confidence_class || "pendiente"} - ${formatCasePercent(
             caseItem.primary_validPercent,
           )}`}
         />
-        <CaseDataPair label="Exposure" value={caseItem.exposure_status} />
-        <CaseDataPair label="HydroClimate" value={caseItem.hydroclimate_status} />
+          <CaseDataPair label="Exposicion" value={exposureLabel} />
+        <CaseDataPair
+          label="HydroClimate"
+          value={translateHydroStatus(caseItem.hydroclimate_status)}
+        />
         <CaseDataPair label="Ledger" value={caseItem.ledger_status} />
       </dl>
       <div className="case-panel-gaps">
@@ -1838,15 +2005,16 @@ function TechnicalDashboard({
   sarLoadState,
   exposureContext,
   exposureLoadState,
+  hydroClimateContext,
 }) {
   const state = getStateMeta(record);
 
   return (
-    <section className="technical-screen" aria-label="Datos técnicos">
+    <section className="technical-screen" aria-label="Evidencia">
       <div className="technical-heading">
         <div>
-          <p className="small-label">Datos técnicos</p>
-          <h1>Lectura completa de la observación</h1>
+          <p className="small-label">Evidencia</p>
+          <h1>Sala de auditoria de la observacion</h1>
         </div>
         <label className="technical-date">
           <span>Fecha</span>
@@ -1873,7 +2041,14 @@ function TechnicalDashboard({
         />
       </div>
 
+      <EvidencePipeline compact={false} />
       <TechnicalAuditReceipt record={record} ledger={ledger} state={state} />
+      <EvidencePassport
+        comparisonRecords={comparisonRecords}
+        ledger={ledger}
+        record={record}
+        state={state}
+      />
       <ClmsExposureContextBlock
         data={exposureContext}
         loadState={exposureLoadState}
@@ -1889,11 +2064,10 @@ function TechnicalDashboard({
       <ComparisonSection records={comparisonRecords} />
       <MetricsSection record={record} />
       <SarTechnicalNote data={sarContext} loadState={sarLoadState} />
-      <EvidencePipeline />
+      <HydroClimateTechnicalNote row={hydroClimateContext} />
       <TechnicalTraceability record={record} ledger={ledger} />
       <BriefPreview record={record} ledger={ledger} state={state} />
       <ScientificLimits />
-      <ModulesStrip />
     </section>
   );
 }
@@ -2185,6 +2359,24 @@ function SarTechnicalNote({ data, loadState }) {
   );
 }
 
+function HydroClimateTechnicalNote({ row }) {
+  if (!row) {
+    return (
+      <p className="sar-technical-note" aria-label="Nota tecnica HydroClimate">
+        Contexto hidroclimatico no disponible para la fecha seleccionada.
+      </p>
+    );
+  }
+
+  return (
+    <p className="sar-technical-note" aria-label="Nota tecnica HydroClimate">
+      HydroClimate: {translateHydroStatus(row.hydroclimate_status)}. 72h{" "}
+      {formatRainMm(row.rain_72h_mm)}, 7d {formatRainMm(row.rain_7d_mm)}. Contexto
+      auxiliar; no cambia la decision Sentinel-2.
+    </p>
+  );
+}
+
 function TechnicalTraceability({ record, ledger }) {
   return (
     <section className="technical-trace-section" aria-label="Trazabilidad técnica">
@@ -2223,6 +2415,7 @@ function EvidencePipeline({ compact = true }) {
         "confidence engine",
         "brief",
         "ledger",
+        "decision",
       ];
 
   return (
@@ -2627,6 +2820,27 @@ function hydroStatusTone(status) {
   return "normal";
 }
 
+function translateHydroStatus(status) {
+  const labels = {
+    normal_context: "contexto normal",
+    antecedent_rain: "lluvia antecedente",
+    heavy_rain_context: "lluvia alta antecedente",
+    dry_or_low_rain: "lluvia baja",
+    data_unavailable: "datos pendientes",
+  };
+  return labels[status] || status || "sin dato";
+}
+
+function translateContextAction(value) {
+  const labels = {
+    "Use rainfall as background context only":
+      "Usar lluvia solo como contexto de fondo.",
+    "Review antecedent rainfall context":
+      "Revisar contexto de lluvia antecedente.",
+  };
+  return labels[value] || value || "Contexto no disponible.";
+}
+
 function sortHydroObservation(a, b) {
   const nodeCompare = String(a.node_id ?? "").localeCompare(String(b.node_id ?? ""));
   if (nodeCompare !== 0) return nodeCompare;
@@ -2657,6 +2871,13 @@ function decisionCaseTone(caseItem) {
   if (label === "NO INFERIR") return "stop";
   if (label === "REVISAR") return "review";
   return "usable";
+}
+
+function actionQueueLabel(caseItem) {
+  const label = String(caseItem?.decision_label ?? "").toUpperCase();
+  if (label === "NO INFERIR") return "verificacion recomendada";
+  if (label === "USABLE") return "lectura demostrativa con limites";
+  return "revision recomendada";
 }
 
 function canRequestVerification(caseItem) {

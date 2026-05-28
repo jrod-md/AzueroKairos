@@ -129,6 +129,213 @@ button {
   align-items: stretch;
 }
 
+.decision-workflow-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(360px, 0.62fr);
+  gap: 18px;
+  min-height: min(560px, calc(100vh - 96px));
+  align-items: stretch;
+}
+
+.decision-primary-panel,
+.decision-support-panel {
+  border: 1px solid var(--line);
+  background:
+    linear-gradient(140deg, color-mix(in oklch, var(--paper) 90%, transparent), color-mix(in oklch, var(--paper-soft) 82%, transparent)),
+    var(--paper);
+  box-shadow: var(--shadow);
+}
+
+.decision-primary-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 520px;
+  border-radius: 38px;
+  padding: clamp(28px, 4vw, 52px);
+}
+
+.decision-workflow-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.decision-workflow-top > span,
+.compact-evidence-status > p {
+  color: color-mix(in oklch, var(--muted) 88%, var(--river));
+  font-size: 0.74rem;
+  font-weight: 820;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.decision-workflow-top label {
+  display: grid;
+  gap: 5px;
+  min-width: 154px;
+  padding: 8px 11px;
+  border: 1px solid rgba(17, 59, 75, 0.12);
+  border-radius: 16px;
+  background: color-mix(in oklch, var(--paper) 78%, transparent);
+}
+
+.decision-workflow-top label span {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.decision-workflow-body {
+  max-width: 760px;
+}
+
+.decision-date {
+  margin: 0 0 12px;
+  color: var(--river-soft);
+  font-size: 0.94rem;
+  font-weight: 820;
+}
+
+.decision-workflow-body h1 {
+  max-width: 9ch;
+  margin: 0;
+  color: var(--stop);
+  font-size: clamp(4rem, 7vw, 6.8rem);
+  font-weight: 920;
+  letter-spacing: 0;
+  line-height: 0.86;
+  text-wrap: balance;
+}
+
+.tone-usable .decision-workflow-body h1 {
+  color: var(--usable);
+}
+
+.tone-review .decision-workflow-body h1 {
+  color: var(--review);
+}
+
+.decision-validity {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.decision-validity strong {
+  color: var(--river);
+  font-size: clamp(2.4rem, 4vw, 3.8rem);
+  line-height: 0.95;
+}
+
+.decision-validity span {
+  color: var(--river-soft);
+  font-size: 1.12rem;
+  font-weight: 760;
+}
+
+.decision-one-line {
+  max-width: 680px;
+  margin: 18px 0 0;
+  color: var(--river);
+  font-size: 1.22rem;
+  font-weight: 780;
+  line-height: 1.28;
+}
+
+.decision-next-action {
+  max-width: 680px;
+  margin-top: 18px;
+  border-radius: 22px;
+  padding: 15px 16px;
+  background: color-mix(in oklch, var(--paper) 74%, transparent);
+  box-shadow: inset 0 0 0 1px rgba(17, 59, 75, 0.1);
+}
+
+.decision-next-action span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 820;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.decision-next-action p {
+  margin: 7px 0 0;
+  color: var(--river);
+  font-weight: 800;
+  line-height: 1.34;
+}
+
+.trace-link-button {
+  width: fit-content;
+  margin-top: 18px;
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 15px;
+  background: var(--river);
+  color: var(--paper);
+  font-weight: 840;
+  cursor: pointer;
+}
+
+.decision-support-panel {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  border-radius: 30px;
+  padding: 18px;
+}
+
+.compact-evidence-status {
+  border: 1px solid color-mix(in oklch, var(--river) 8%, transparent);
+  border-radius: 20px;
+  padding: 14px;
+  background: color-mix(in oklch, var(--paper) 68%, transparent);
+}
+
+.compact-evidence-status p {
+  margin: 0 0 10px;
+}
+
+.compact-evidence-status dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.compact-evidence-status div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.compact-evidence-status dt {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 760;
+}
+
+.compact-evidence-status dd {
+  margin: 0;
+  color: var(--river);
+  font-size: 0.9rem;
+  font-weight: 840;
+}
+
+.decision-support-note {
+  margin: 0;
+  color: var(--river-soft);
+  font-size: 0.9rem;
+  font-weight: 740;
+  line-height: 1.42;
+}
+
 .report-panel,
 .why-panel,
 .detail-tabs,
@@ -2622,6 +2829,7 @@ select {
 .meaning-panel,
 .technical-audit-receipt,
 .clms-context-block,
+.clms-corridor-strip,
 .comparison-section,
 .metrics-section,
 .technical-trace-section,
@@ -2822,6 +3030,7 @@ select {
 .comparison-section,
 .metrics-section,
 .clms-context-block,
+.clms-corridor-strip,
 .technical-trace-section,
 .territorial-map.technical,
 .pipeline-section,
@@ -2938,6 +3147,51 @@ select {
   color: var(--muted);
   font-size: 0.68rem;
   font-weight: 760;
+}
+
+.clms-corridor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.clms-corridor-node {
+  min-width: 0;
+  border: 1px solid color-mix(in oklch, var(--river) 8%, transparent);
+  border-radius: 18px;
+  padding: 12px;
+  background: color-mix(in oklch, var(--paper) 64%, transparent);
+}
+
+.clms-corridor-node strong {
+  display: block;
+  color: var(--river);
+  font-size: 0.96rem;
+  font-weight: 840;
+}
+
+.clms-corridor-node dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0 0;
+}
+
+.clms-corridor-node div {
+  min-width: 0;
+}
+
+.clms-corridor-node dt {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.clms-corridor-node dd {
+  margin: 3px 0 0;
+  color: var(--river);
+  font-size: 0.86rem;
+  font-weight: 840;
 }
 
 .comparison-grid {
@@ -3065,6 +3319,7 @@ select {
 
 @media (max-width: 1180px) {
   .decision-hero,
+  .decision-workflow-hero,
   .technical-hero-grid {
     grid-template-columns: 1fr;
     min-height: 0;
@@ -3095,6 +3350,7 @@ select {
   .detail-grid,
   .brief-grid,
   .module-list,
+  .clms-corridor-grid,
   .watch-summary-grid,
   .hydro-context-notes {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3250,6 +3506,7 @@ select {
   .trace-grid,
   .brief-grid,
   .technical-status-row,
+  .clms-corridor-grid,
   .territorial-map-body,
   .field-lite-card,
   .field-lite-grid,
