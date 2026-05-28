@@ -71,3 +71,6 @@ outputs/exposure/
 
 # Local dashboard state
 .streamlit/secrets.toml
+
+# Experimental Sentinel-1 SAR preview outputs
+outputs/sar/
