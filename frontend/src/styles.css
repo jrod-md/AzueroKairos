@@ -3642,6 +3642,7 @@ select {
   grid-template-columns: minmax(150px, 0.42fr) minmax(150px, 0.42fr) minmax(0, 1fr);
   gap: 10px;
   align-items: stretch;
+  margin-top: 10px;
 }
 
 .sar-strip-grid div,
@@ -3673,13 +3674,50 @@ select {
 }
 
 .sar-strip-grid p,
-.sar-window-note {
+.sar-window-note,
+.sar-strip-explain {
   margin: 0;
   color: var(--river-soft);
   font-size: 0.88rem;
   font-weight: 720;
   line-height: 1.42;
   overflow-wrap: anywhere;
+}
+
+.sar-strip-explain {
+  max-width: 76ch;
+  margin-top: 4px;
+}
+
+.sar-method-rail {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-items: center;
+  margin-top: 12px;
+  border: 1px solid color-mix(in oklch, var(--river) 7%, transparent);
+  border-radius: 18px;
+  padding: 8px;
+  background: color-mix(in oklch, var(--paper-soft) 52%, transparent);
+}
+
+.sar-method-step {
+  min-width: 0;
+  border: 1px solid color-mix(in oklch, var(--river) 8%, transparent);
+  border-radius: 999px;
+  padding: 6px 9px;
+  background: color-mix(in oklch, var(--paper) 70%, transparent);
+  color: var(--river);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.18;
+  overflow-wrap: anywhere;
+}
+
+.sar-method-arrow {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 820;
 }
 
 .sar-count-row {

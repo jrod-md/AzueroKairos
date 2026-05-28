@@ -1574,13 +1574,38 @@ function SarCorridorStrip({ data, loadState }) {
     <section className="sar-context-strip" aria-label="Continuidad SAR">
       <div className="section-heading compact">
         <div>
-          <p className="small-label">Continuidad SAR</p>
+          <p className="small-label">Continuidad radar Sentinel-1</p>
           <h2>
-            Sentinel-1 SAR disponible en {availableCount}/{rowsTotal} ventanas
-            ampliadas
+            {availableCount}/{rowsTotal} ventanas con contexto SAR auxiliar
           </h2>
         </div>
-        <p>Capa auxiliar; no modifica la clasificacion Sentinel-2.</p>
+        <p>
+          SAR no modifica la clasificación Sentinel-2 ni sustituye verificación
+          territorial.
+        </p>
+      </div>
+
+      <p className="sar-strip-explain">
+        Cuando Sentinel-2 no alcanza evidencia suficiente, Kairós consulta
+        Sentinel-1 en ventanas temporales controladas.
+      </p>
+
+      <div className="sar-method-rail" aria-label="Método de continuidad SAR">
+        {[
+          "Sentinel-2 bajo",
+          "ventana SAR ±3/±6 días",
+          "contexto disponible / sin adquisición",
+          "decisión Sentinel-2 se mantiene",
+        ].map((step, index, steps) => (
+          <React.Fragment key={step}>
+            <span className="sar-method-step">{step}</span>
+            {index < steps.length - 1 ? (
+              <span className="sar-method-arrow" aria-hidden="true">
+                →
+              </span>
+            ) : null}
+          </React.Fragment>
+        ))}
       </div>
 
       <div className="sar-strip-grid">
