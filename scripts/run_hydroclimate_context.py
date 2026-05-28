@@ -53,8 +53,8 @@ SECRET_PATTERNS = [
 
 CONTEXT_ACTIONS = {
     "dry_or_low_rain": (
-        "Use as low-rainfall context only; do not infer water safety or "
-        "contamination conditions."
+        "Use as low-rainfall context only; keep Sentinel confidence "
+        "classification unchanged."
     ),
     "normal_context": (
         "Use rainfall as background context only; keep Sentinel confidence "

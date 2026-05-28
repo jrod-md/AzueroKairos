@@ -64,9 +64,9 @@ def main(argv: list[str] | None = None) -> int:
             "note": "MVP contextual thresholds only; not regulatory thresholds.",
         },
         "claim_limit": (
-            "This layer does not detect contamination, crop loss, or water safety. "
-            "It only provides rainfall context that may help explain runoff or "
-            "field verification priority."
+            "Contexto hidroclimatico auxiliar. No modifica la clasificacion "
+            "Sentinel-2 ni sustituye verificacion territorial, laboratorio o "
+            "autoridad competente."
         ),
         "nodes": nodes,
         "dates": dates,
