@@ -68,6 +68,18 @@ const HYDROCLIMATE_LIMITS =
 const HYDROCLIMATE_INSIGHT =
   "La lluvia antecedente no confirma riesgo. Ayuda a priorizar dónde revisar cuando la evidencia satelital es baja.";
 
+const LOCAL_AI_CONFIG = {
+  enabled:
+    String(import.meta.env.VITE_KAIROS_AI_ENABLED ?? "").toLowerCase() === "true",
+  endpoint: String(import.meta.env.VITE_KAIROS_AI_ENDPOINT ?? "").trim(),
+  model: String(import.meta.env.VITE_KAIROS_AI_MODEL ?? "").trim(),
+};
+
+const LOCAL_AI_TIMEOUT_MS = 8000;
+
+const LOCAL_AI_BRIEF_INSTRUCTIONS =
+  "Devuelve solo JSON estricto con decision_summary, evidence_used, evidence_gaps, limits, recommended_action y artifact_refs. Redacta en español sobrio. No decidas, no clasifiques, no crees evidencia y no cambies la clasificacion Sentinel-2. Usa solo el paquete recibido.";
+
 const CASES_INSIGHT =
   "Cada caso traduce capas de evidencia en una acción responsable.";
 
@@ -2367,6 +2379,24 @@ function TechnicalDashboard({
         />
       </div>
 
+      <EvidenceOrganizer
+        exposureContext={exposureContext}
+        hydroClimateContext={hydroClimateContext}
+        ledger={ledger}
+        record={record}
+        sarContext={sarContext}
+        state={state}
+      />
+
+      <LocalEvidenceAssistant
+        exposureContext={exposureContext}
+        hydroClimateContext={hydroClimateContext}
+        ledger={ledger}
+        record={record}
+        sarContext={sarContext}
+        state={state}
+      />
+
       <EvidenceDisclosure eyebrow="Cadena auditable" open title="CDSE a decision publica">
         <EvidencePipeline compact={false} />
       </EvidenceDisclosure>
@@ -2424,6 +2454,625 @@ function EvidenceDisclosure({ eyebrow, title, children, open = false }) {
       <div className="evidence-disclosure-body">{children}</div>
     </details>
   );
+}
+
+function EvidenceOrganizer({
+  record,
+  ledger,
+  state,
+  sarContext,
+  exposureContext,
+  hydroClimateContext,
+}) {
+  const model = buildEvidenceOrganizerModel({
+    record,
+    ledger,
+    state,
+    sarContext,
+    exposureContext,
+    hydroClimateContext,
+  });
+
+  return (
+    <section className={`evidence-organizer tone-${state.tone}`} aria-label="Resumen de evidencia">
+      <div className="evidence-organizer-head">
+        <div>
+          <p className="small-label">Resumen de evidencia</p>
+          <h2>{model.title}</h2>
+        </div>
+        <span>{model.badge}</span>
+      </div>
+
+      <div className="evidence-organizer-body">
+        {model.sections.map((section) => (
+          <article className="organizer-section" key={section.heading}>
+            <h3>{section.heading}</h3>
+            <ul>
+              {section.items.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function buildEvidenceOrganizerModel({
+  record,
+  ledger,
+  state,
+  sarContext,
+  exposureContext,
+  hydroClimateContext,
+}) {
+  const decisionLabel = state.label;
+  const apiStatus = record.api_status || "pendiente";
+  const validEvidence = formatPercent(record.validPercent);
+  const isNoInfer = record.confidence_class === "do_not_infer";
+  const isUsable = record.confidence_class === "usable";
+  const decisionReason = isNoInfer
+    ? `API ${apiStatus} confirma ejecucion tecnica; no confirma evidencia suficiente para inferir. La fraccion valida Sentinel-2 es ${validEvidence}.`
+    : isUsable
+      ? `La observacion permite interpretacion hidro-sedimentaria exploratoria con limites explicitos porque la fraccion valida Sentinel-2 es ${validEvidence}.`
+      : `La fraccion valida Sentinel-2 es ${validEvidence}; la observacion requiere revision antes de interpretar.`;
+  const action = record.recommended_action_es || record.recommended_action || state.nextAction || state.action;
+
+  return {
+    title: `${decisionLabel} para ${record.date}`,
+    badge: "organizado desde JSON publico",
+    sections: [
+      {
+        heading: "Qué sabemos",
+        items: compactItems([
+          `Fecha ${record.date}; AOI ${record.aoi || "no disponible"}.`,
+          `Sentinel-2 es la capa primaria y reporta ${validEvidence} de evidencia valida.`,
+          `API ${apiStatus}; ledger ${ledger?.evidence_status || "sin registro"}.`,
+          `Decision publicada: ${decisionLabel}.`,
+        ]),
+      },
+      {
+        heading: "Qué no sabemos",
+        items: compactItems([
+          isNoInfer
+            ? "No hay evidencia valida suficiente para una inferencia responsable."
+            : "La lectura no debe extenderse mas alla de confianza de observacion.",
+          "Las capas auxiliares no cambian la clasificacion Sentinel-2.",
+          "La verificacion territorial, laboratorio o autoridad competente quedan fuera de esta interfaz.",
+        ]),
+      },
+      {
+        heading: `Por qué la decisión es ${decisionLabel}`,
+        items: compactItems([
+          decisionReason,
+          record.reason_es || record.reason || state.explanation,
+          isUsable
+            ? "La interpretacion queda limitada a lectura exploratoria con trazabilidad."
+            : null,
+        ]),
+      },
+      {
+        heading: "Qué acción responsable sigue",
+        items: compactItems([
+          action,
+          isNoInfer
+            ? "Mantener NO INFERIR hasta contar con evidencia Sentinel-2 suficiente o verificacion territorial."
+            : "Mantener limites visibles al usar la observacion.",
+        ]),
+      },
+      {
+        heading: "Artefactos de trazabilidad",
+        items: compactItems([
+          ledger?.processed_csv_path
+            ? `CSV procesado: ${ledger.processed_csv_path}`
+            : "CSV procesado: no disponible.",
+          ledger?.brief_path || record.brief_path
+            ? `Brief: ${ledger?.brief_path || record.brief_path}`
+            : "Brief: no disponible.",
+          ledger?.raw_json_path || record.raw_json_path
+            ? `JSON fuente registrado: ${ledger?.raw_json_path || record.raw_json_path}`
+            : "JSON fuente: no disponible.",
+          ledger?.run_id ? `run_id: ${ledger.run_id}` : null,
+        ]),
+      },
+      {
+        heading: "Capas auxiliares",
+        items: compactItems([
+          buildOrganizerSarText(sarContext, record.date),
+          buildOrganizerClmsText(exposureContext),
+          buildOrganizerHydroText(hydroClimateContext),
+          "Estas capas aportan contexto auxiliar; la decision Sentinel-2 se mantiene.",
+        ]),
+      },
+    ],
+  };
+}
+
+function compactItems(items) {
+  return items.filter((item) => typeof item === "string" && item.trim());
+}
+
+function buildOrganizerSarText(data, selectedDate) {
+  if (data?.data_status !== "sar_context_available") {
+    return "SAR: contexto auxiliar no disponible para esta demo.";
+  }
+  const rows = getSarRows(data).filter((row) => row.target_date === selectedDate);
+  if (!rows.length) return "SAR: sin ventana registrada para la fecha seleccionada.";
+  const available = rows.filter(
+    (row) => row.context_status === "sar_context_available",
+  ).length;
+  return `SAR: ${available}/${rows.length} ventanas con continuidad auxiliar; no se usa como evidencia principal.`;
+}
+
+function buildOrganizerClmsText(data) {
+  if (data?.data_status !== "exposure_available") {
+    return "CLMS 2020: contexto territorial no disponible para esta demo.";
+  }
+  const nodes = Array.isArray(data.summary_by_node)
+    ? data.summary_by_node
+    : Array.isArray(data.nodes)
+      ? data.nodes
+      : [];
+  return `CLMS 2020: contexto territorial auxiliar disponible para ${nodes.length || 0} nodos.`;
+}
+
+function buildOrganizerHydroText(row) {
+  if (!row) return "HydroClimate: contexto de lluvia antecedente no disponible.";
+  const status = translateHydroStatus(row.hydroclimate_status || row.context_status);
+  return `HydroClimate: ${status}; 72h ${formatRainMm(row.rain_72h_mm)}, 7d ${formatRainMm(row.rain_7d_mm)}.`;
+}
+
+function LocalEvidenceAssistant({
+  record,
+  ledger,
+  state,
+  sarContext,
+  exposureContext,
+  hydroClimateContext,
+}) {
+  const organizerModel = useMemo(
+    () =>
+      buildEvidenceOrganizerModel({
+        record,
+        ledger,
+        state,
+        sarContext,
+        exposureContext,
+        hydroClimateContext,
+      }),
+    [record, ledger, state, sarContext, exposureContext, hydroClimateContext],
+  );
+  const evidencePacket = useMemo(
+    () =>
+      buildSafeEvidencePacket({
+        record,
+        ledger,
+        state,
+        sarContext,
+        exposureContext,
+        hydroClimateContext,
+      }),
+    [record, ledger, state, sarContext, exposureContext, hydroClimateContext],
+  );
+  const fallbackBrief = useMemo(
+    () => buildDeterministicAssistantBrief(evidencePacket, organizerModel),
+    [evidencePacket, organizerModel],
+  );
+  const [assistantState, setAssistantState] = useState({
+    status: "fallback",
+    message: "",
+    brief: null,
+  });
+
+  useEffect(() => {
+    setAssistantState({ status: "fallback", message: "", brief: null });
+  }, [record.date, record.aoi, record.confidence_class]);
+
+  const localStatus = getLocalAiStatus();
+  const displayedBrief = assistantState.brief || fallbackBrief;
+  const usingFallback = assistantState.status !== "local_ready";
+  const isLoading = assistantState.status === "loading";
+
+  async function handlePrepareBrief() {
+    if (!localStatus.ready) {
+      setAssistantState({
+        status: "fallback",
+        message: localStatus.message,
+        brief: null,
+      });
+      return;
+    }
+
+    setAssistantState({
+      status: "loading",
+      message: "Consultando modelo local configurado.",
+      brief: null,
+    });
+
+    try {
+      const candidate = await requestLocalEvidenceBrief(evidencePacket);
+      const validated = validateAssistantBrief(candidate);
+      if (!validated.ok) {
+        throw new Error(validated.reason);
+      }
+      setAssistantState({
+        status: "local_ready",
+        message: "Brief asistido preparado desde el paquete cerrado.",
+        brief: validated.brief,
+      });
+    } catch (error) {
+      setAssistantState({
+        status: "fallback",
+        message: `Respuesta local descartada; ${safeUiMessage(error)}. Usando resumen determinístico.`,
+        brief: null,
+      });
+    }
+  }
+
+  return (
+    <section className="local-ai-assistant" aria-label="Asistente de Evidencia Kairós">
+      <div className="local-ai-head">
+        <div>
+          <p className="small-label">Asistente de Evidencia Kairós</p>
+          <h2>IA local opcional, no decisoria</h2>
+          <p>
+            La IA no decide ni crea evidencia; solo organiza un paquete de evidencia ya
+            auditado.
+          </p>
+        </div>
+        <div className="local-ai-controls">
+          <span>{localStatus.message}</span>
+          <button
+            type="button"
+            disabled={isLoading || !localStatus.ready}
+            onClick={handlePrepareBrief}
+          >
+            {isLoading ? "Preparando..." : "Preparar brief asistido"}
+          </button>
+        </div>
+      </div>
+
+      <div className="local-ai-state-row">
+        <span>{usingFallback ? "Usando resumen determinístico" : "Brief asistido activo"}</span>
+        {assistantState.message ? <p>{assistantState.message}</p> : null}
+      </div>
+
+      <div className="local-ai-brief">
+        <BriefBlock title="Resumen de decisión" items={[displayedBrief.decision_summary]} />
+        <BriefBlock title="Evidencia usada" items={displayedBrief.evidence_used} />
+        <BriefBlock title="Brechas de evidencia" items={displayedBrief.evidence_gaps} />
+        <BriefBlock title="Límites" items={displayedBrief.limits} />
+        <BriefBlock title="Acción recomendada" items={[displayedBrief.recommended_action]} />
+        <BriefBlock title="Referencias" items={displayedBrief.artifact_refs} />
+      </div>
+    </section>
+  );
+}
+
+function BriefBlock({ title, items }) {
+  const safeItems = compactItems(items);
+  return (
+    <article className="local-ai-brief-block">
+      <h3>{title}</h3>
+      <ul>
+        {(safeItems.length ? safeItems : ["No disponible."]).map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </article>
+  );
+}
+
+function buildSafeEvidencePacket({
+  record,
+  ledger,
+  state,
+  sarContext,
+  exposureContext,
+  hydroClimateContext,
+}) {
+  return {
+    selected_date: record.date,
+    selected_context: record.aoi || "corredor",
+    sentinel2: {
+      confidence_class: record.confidence_class,
+      decision_label: state.label,
+      validPercent: safeNumber(record.validPercent),
+      api_status: record.api_status || "",
+      reason: record.reason_es || record.reason || state.explanation,
+      evidence_status: ledger?.evidence_status || "",
+      recommended_action:
+        record.recommended_action_es || record.recommended_action || state.nextAction || state.action,
+    },
+    artifact_refs: compactItems([
+      safeArtifactRef(ledger?.processed_csv_path, "CSV procesado"),
+      safeArtifactRef(ledger?.brief_path || record.brief_path, "Brief"),
+      safeArtifactRef(ledger?.raw_json_path || record.raw_json_path, "JSON registrado"),
+      ledger?.run_id ? `run_id: ${ledger.run_id}` : null,
+      ledger?.git_commit ? `commit: ${ledger.git_commit}` : null,
+    ]),
+    auxiliary_context: {
+      sar: buildPacketSarSummary(sarContext, record.date),
+      clms: buildPacketClmsSummary(exposureContext),
+      hydroclimate: buildPacketHydroSummary(hydroClimateContext),
+    },
+    limits: [
+      "Sentinel-2 mantiene la decision primaria.",
+      "SAR, CLMS e HydroClimate son contexto auxiliar.",
+      "La IA local solo reorganiza el paquete cerrado de evidencia.",
+      SCIENTIFIC_LIMITS,
+    ],
+  };
+}
+
+function buildDeterministicAssistantBrief(packet, organizerModel) {
+  const sections = new Map(
+    organizerModel.sections.map((section) => [section.heading, section.items]),
+  );
+  return {
+    decision_summary:
+      sections.get(`Por qué la decisión es ${packet.sentinel2.decision_label}`)?.[0] ||
+      `${packet.sentinel2.decision_label}: ${packet.sentinel2.reason}`,
+    evidence_used: compactItems([
+      `Sentinel-2: ${formatPercent(packet.sentinel2.validPercent)} de evidencia valida; API ${packet.sentinel2.api_status || "pendiente"}.`,
+      packet.sentinel2.evidence_status
+        ? `Ledger: ${packet.sentinel2.evidence_status}.`
+        : "Ledger: sin registro.",
+      packet.auxiliary_context.sar.summary,
+      packet.auxiliary_context.clms.summary,
+      packet.auxiliary_context.hydroclimate.summary,
+    ]),
+    evidence_gaps: sections.get("Qué no sabemos") || ["Brechas no disponibles."],
+    limits: packet.limits,
+    recommended_action:
+      packet.sentinel2.recommended_action || "Mantener revision responsable.",
+    artifact_refs: packet.artifact_refs.length
+      ? packet.artifact_refs
+      : ["Artefactos no disponibles."],
+  };
+}
+
+async function requestLocalEvidenceBrief(evidencePacket) {
+  const endpoint = LOCAL_AI_CONFIG.endpoint;
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), LOCAL_AI_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      signal: controller.signal,
+      body: JSON.stringify({
+        model: LOCAL_AI_CONFIG.model || undefined,
+        evidence_packet: evidencePacket,
+        instructions: LOCAL_AI_BRIEF_INSTRUCTIONS,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const payload = await response.json();
+    return extractAssistantPayload(payload);
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+function extractAssistantPayload(payload) {
+  if (isObject(payload) && hasAssistantShapeKeys(payload)) return payload;
+  const candidates = [
+    payload?.brief,
+    payload?.output,
+    payload?.response,
+    payload?.message?.content,
+    payload?.choices?.[0]?.message?.content,
+  ];
+  for (const candidate of candidates) {
+    if (isObject(candidate) && hasAssistantShapeKeys(candidate)) return candidate;
+    if (typeof candidate === "string") {
+      const parsed = parseJsonObjectFromText(candidate);
+      if (parsed && hasAssistantShapeKeys(parsed)) return parsed;
+    }
+  }
+  return null;
+}
+
+function parseJsonObjectFromText(value) {
+  try {
+    return JSON.parse(value);
+  } catch {
+    const start = value.indexOf("{");
+    const end = value.lastIndexOf("}");
+    if (start < 0 || end <= start) return null;
+    try {
+      return JSON.parse(value.slice(start, end + 1));
+    } catch {
+      return null;
+    }
+  }
+}
+
+function validateAssistantBrief(candidate) {
+  if (!isObject(candidate)) {
+    return { ok: false, reason: "salida sin JSON valido" };
+  }
+  if (containsUnsafeAssistantClaim(candidate)) {
+    return { ok: false, reason: "salida fuera del marco de claims" };
+  }
+
+  const brief = {
+    decision_summary: cleanAssistantString(candidate.decision_summary),
+    evidence_used: cleanAssistantList(candidate.evidence_used),
+    evidence_gaps: cleanAssistantList(candidate.evidence_gaps),
+    limits: cleanAssistantList(candidate.limits),
+    recommended_action: cleanAssistantString(candidate.recommended_action),
+    artifact_refs: cleanAssistantList(candidate.artifact_refs),
+  };
+  if (
+    !brief.decision_summary ||
+    !brief.recommended_action ||
+    !brief.evidence_used.length ||
+    !brief.evidence_gaps.length ||
+    !brief.limits.length ||
+    !brief.artifact_refs.length
+  ) {
+    return { ok: false, reason: "schema incompleto" };
+  }
+  return { ok: true, brief };
+}
+
+function hasAssistantShapeKeys(value) {
+  return (
+    isObject(value) &&
+    "decision_summary" in value &&
+    "evidence_used" in value &&
+    "evidence_gaps" in value &&
+    "limits" in value &&
+    "recommended_action" in value &&
+    "artifact_refs" in value
+  );
+}
+
+function containsUnsafeAssistantClaim(value) {
+  const text = stripAccents(JSON.stringify(value)).toLowerCase();
+  const fragments = [
+    ["contamin"],
+    ["quimic"],
+    ["sanitari"],
+    ["potab"],
+    ["agua", "segur"],
+    ["safe", "water"],
+    ["water", "safety"],
+    ["atraz"],
+    ["pestic"],
+    ["metal", "pesad"],
+    ["heavy", "metal"],
+    ["patogen"],
+    ["cri" + "sis"],
+    ["cierre", "automatic"],
+    ["automatic", "closure"],
+    ["suspension", "oblig"],
+    ["mandatory", "suspension"],
+    ["oper" + "ativo"],
+    ["oper" + "ational"],
+    ["autoridad", "decision"],
+  ];
+  return fragments.some((parts) => parts.every((part) => text.includes(part)));
+}
+
+function getLocalAiStatus() {
+  if (!LOCAL_AI_CONFIG.enabled) {
+    return { ready: false, message: "Modelo local no configurado" };
+  }
+  if (!LOCAL_AI_CONFIG.endpoint) {
+    return { ready: false, message: "IA local opcional no configurada" };
+  }
+  if (!isLocalEndpointAllowed(LOCAL_AI_CONFIG.endpoint)) {
+    return { ready: false, message: "Endpoint local no permitido" };
+  }
+  return {
+    ready: true,
+    message: LOCAL_AI_CONFIG.model
+      ? `Modelo local configurado: ${LOCAL_AI_CONFIG.model}`
+      : "Modelo local configurado",
+  };
+}
+
+function isLocalEndpointAllowed(endpoint) {
+  try {
+    const base =
+      typeof window !== "undefined" ? window.location.origin : "http://localhost";
+    const url = new URL(endpoint, base);
+    const host = url.hostname.toLowerCase();
+    return (
+      host === "localhost" ||
+      host === "127.0.0.1" ||
+      host === "::1" ||
+      host.startsWith("192.168.") ||
+      host.startsWith("10.") ||
+      /^172\.(1[6-9]|2\d|3[0-1])\./.test(host)
+    );
+  } catch {
+    return false;
+  }
+}
+
+function buildPacketSarSummary(data, selectedDate) {
+  if (data?.data_status !== "sar_context_available") {
+    return { status: "no disponible", summary: "SAR auxiliar no disponible." };
+  }
+  const rows = getSarRows(data).filter((row) => row.target_date === selectedDate);
+  const available = rows.filter(
+    (row) => row.context_status === "sar_context_available",
+  ).length;
+  return {
+    status: rows.length ? "disponible" : "sin ventana",
+    summary: rows.length
+      ? `SAR auxiliar: ${available}/${rows.length} ventanas con contexto.`
+      : "SAR auxiliar: sin ventana para la fecha.",
+  };
+}
+
+function buildPacketClmsSummary(data) {
+  if (data?.data_status !== "exposure_available") {
+    return { status: "no disponible", summary: "CLMS 2020 no disponible." };
+  }
+  const nodes = Array.isArray(data.summary_by_node)
+    ? data.summary_by_node
+    : Array.isArray(data.nodes)
+      ? data.nodes
+      : [];
+  return {
+    status: "disponible",
+    summary: `CLMS 2020 auxiliar: ${nodes.length || 0} nodos con contexto territorial.`,
+  };
+}
+
+function buildPacketHydroSummary(row) {
+  if (!row) {
+    return {
+      status: "no disponible",
+      summary: "HydroClimate auxiliar no disponible.",
+    };
+  }
+  const status = row.hydroclimate_status || row.context_status || "sin dato";
+  return {
+    status,
+    summary: `HydroClimate auxiliar: ${translateHydroStatus(status)}; 72h ${formatRainMm(row.rain_72h_mm)}, 7d ${formatRainMm(row.rain_7d_mm)}.`,
+  };
+}
+
+function safeArtifactRef(value, label) {
+  const text = typeof value === "string" ? value.trim() : "";
+  if (!text || /^[A-Za-z]:[\\/]/.test(text) || text.startsWith("\\\\")) return null;
+  return `${label}: ${text.replaceAll("\\", "/")}`;
+}
+
+function cleanAssistantString(value) {
+  return typeof value === "string" ? value.trim().slice(0, 700) : "";
+}
+
+function cleanAssistantList(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map(cleanAssistantString)
+    .filter(Boolean)
+    .slice(0, 8);
+}
+
+function isObject(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function safeNumber(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : null;
+}
+
+function safeUiMessage(error) {
+  const text = error instanceof Error ? error.message : String(error || "sin detalle");
+  return text.replace(/[^\w\s.:;,-]/g, "").slice(0, 120) || "sin detalle";
 }
 
 function TechnicalAuditReceipt({ record, ledger, state }) {
