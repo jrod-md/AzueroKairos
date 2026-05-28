@@ -3462,6 +3462,7 @@ select {
 .decision-card,
 .meaning-panel,
 .evidence-organizer,
+.local-ai-assistant,
 .technical-audit-receipt,
 .clms-context-block,
 .clms-corridor-strip,
@@ -3623,6 +3624,132 @@ select {
 .organizer-section li {
   color: var(--river-soft);
   font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.38;
+  overflow-wrap: anywhere;
+}
+
+.local-ai-assistant {
+  margin: 12px 0;
+  border-radius: 28px;
+  padding: clamp(16px, 2vw, 22px);
+  background:
+    linear-gradient(135deg, color-mix(in oklch, var(--river) 5%, var(--paper)), color-mix(in oklch, var(--paper-soft) 78%, transparent)),
+    var(--paper);
+}
+
+.local-ai-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.34fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.local-ai-head h2 {
+  margin: 4px 0 0;
+  color: var(--river);
+  font-size: clamp(1.28rem, 2.1vw, 1.9rem);
+  line-height: 1.08;
+}
+
+.local-ai-head p {
+  max-width: 72ch;
+  margin: 10px 0 0;
+  color: var(--river-soft);
+  font-size: 0.92rem;
+  font-weight: 720;
+  line-height: 1.45;
+}
+
+.local-ai-controls {
+  display: grid;
+  min-width: 0;
+  gap: 10px;
+  justify-items: end;
+}
+
+.local-ai-controls span,
+.local-ai-state-row span {
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 820;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
+.local-ai-controls button {
+  min-height: 36px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 14px;
+  background: var(--river);
+  color: var(--paper);
+  font-size: 0.82rem;
+  font-weight: 820;
+}
+
+.local-ai-controls button:disabled {
+  cursor: not-allowed;
+  background: color-mix(in oklch, var(--river) 20%, var(--stone));
+  color: var(--river-soft);
+}
+
+.local-ai-state-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  border: 1px solid color-mix(in oklch, var(--river) 8%, transparent);
+  border-radius: 16px;
+  padding: 10px 12px;
+  background: color-mix(in oklch, var(--paper) 68%, transparent);
+}
+
+.local-ai-state-row p {
+  max-width: 76ch;
+  margin: 0;
+  color: var(--river-soft);
+  font-size: 0.84rem;
+  font-weight: 720;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.local-ai-brief {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.local-ai-brief-block {
+  min-width: 0;
+  border: 1px solid color-mix(in oklch, var(--river) 8%, transparent);
+  border-radius: 18px;
+  padding: 12px;
+  background: color-mix(in oklch, var(--paper) 70%, transparent);
+}
+
+.local-ai-brief-block h3 {
+  margin: 0;
+  color: var(--river);
+  font-size: 0.96rem;
+  line-height: 1.18;
+}
+
+.local-ai-brief-block ul {
+  display: grid;
+  gap: 7px;
+  margin: 9px 0 0;
+  padding-left: 18px;
+}
+
+.local-ai-brief-block li {
+  color: var(--river-soft);
+  font-size: 0.84rem;
   font-weight: 700;
   line-height: 1.38;
   overflow-wrap: anywhere;
@@ -4340,6 +4467,7 @@ select {
   .brief-grid,
   .module-list,
   .evidence-organizer-body,
+  .local-ai-brief,
   .lens-layer-strip,
   .clms-corridor-grid,
   .sar-strip-grid,
@@ -4539,6 +4667,7 @@ select {
   .metric-grid,
   .detail-grid,
   .evidence-organizer-body,
+  .local-ai-brief,
   .trace-grid,
   .brief-grid,
   .technical-status-row,
@@ -4594,9 +4723,18 @@ select {
     text-align: left;
   }
 
+  .local-ai-controls {
+    justify-items: start;
+  }
+
+  .local-ai-controls span {
+    text-align: left;
+  }
+
   .watch-hero,
   .azuero-lens,
   .evidence-organizer-head,
+  .local-ai-head,
   .cases-hero,
   .case-board-section,
   .case-action-panel,
