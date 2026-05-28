@@ -74,3 +74,6 @@ outputs/exposure/
 
 # Experimental Sentinel-1 SAR preview outputs
 outputs/sar/
+
+# Experimental HydroClimate preview outputs
+outputs/hydroclimate/
