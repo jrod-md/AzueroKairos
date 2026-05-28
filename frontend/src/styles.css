@@ -2203,6 +2203,7 @@ select {
 .watch-empty-card,
 .watch-matrix-section,
 .hydro-context-section,
+.azuero-lens,
 .watch-summary-section,
 .watch-limits {
   border: 1px solid var(--line);
@@ -2238,10 +2239,302 @@ select {
 
 .watch-matrix-section,
 .hydro-context-section,
+.azuero-lens,
 .watch-summary-section,
 .watch-limits {
   border-radius: 30px;
   padding: 20px;
+}
+
+.azuero-lens {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(20px, 2.4vw, 30px);
+  background:
+    radial-gradient(circle at 12% 22%, color-mix(in oklch, var(--turquoise) 13%, transparent), transparent 20rem),
+    radial-gradient(circle at 86% 78%, color-mix(in oklch, var(--review) 10%, transparent), transparent 18rem),
+    color-mix(in oklch, var(--paper) 82%, transparent);
+}
+
+.azuero-lens-header {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 0.34fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.azuero-lens-header h2 {
+  max-width: 18ch;
+  margin: 4px 0 0;
+  color: var(--river);
+  font-size: clamp(1.75rem, 3vw, 3rem);
+  line-height: 0.96;
+}
+
+.azuero-lens-header p {
+  max-width: 68ch;
+  margin: 12px 0 0;
+  color: var(--river-soft);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.lens-trace-cue {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid color-mix(in oklch, var(--river) 12%, transparent);
+  border-radius: 22px;
+  padding: 14px;
+  background: color-mix(in oklch, var(--paper) 82%, transparent);
+}
+
+.lens-trace-cue span,
+.lens-layer-pill span,
+.lens-aux-chip b {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 840;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.lens-trace-cue strong {
+  color: var(--river);
+  font-size: 0.96rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.lens-trace-cue.ready {
+  border-color: color-mix(in oklch, var(--usable) 26%, transparent);
+}
+
+.azuero-lens-canvas {
+  position: relative;
+  min-height: 290px;
+  margin-top: 18px;
+  border: 1px solid color-mix(in oklch, var(--river) 10%, transparent);
+  border-radius: 28px;
+  background:
+    linear-gradient(color-mix(in oklch, var(--river) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklch, var(--river) 5%, transparent) 1px, transparent 1px),
+    color-mix(in oklch, var(--paper) 72%, transparent);
+  background-size: 42px 42px;
+}
+
+.lens-ribbon {
+  position: absolute;
+  inset: 18px;
+  width: calc(100% - 36px);
+  height: calc(100% - 36px);
+  color: var(--turquoise);
+  pointer-events: none;
+}
+
+.lens-ribbon-wide,
+.lens-ribbon-line {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.lens-ribbon-wide {
+  stroke: url(#lensRibbonGradient);
+  stroke-width: 42;
+}
+
+.lens-ribbon-line {
+  stroke: color-mix(in oklch, var(--river) 28%, transparent);
+  stroke-dasharray: 9 12;
+  stroke-width: 2;
+}
+
+.lens-node-grid {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  min-height: 290px;
+  align-items: center;
+  padding: 34px clamp(16px, 2vw, 26px);
+}
+
+.lens-node-card {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  gap: 14px;
+  border: 1px solid color-mix(in oklch, var(--river) 14%, transparent);
+  border-radius: 24px;
+  padding: 16px;
+  background: color-mix(in oklch, var(--paper) 88%, transparent);
+  box-shadow: 0 18px 42px color-mix(in oklch, var(--river) 10%, transparent);
+}
+
+.lens-node-pin {
+  position: absolute;
+  top: -13px;
+  left: var(--node-x);
+  display: block;
+  width: 24px;
+  height: 24px;
+  border: 5px solid color-mix(in oklch, var(--paper) 82%, transparent);
+  border-radius: 999px;
+  background: var(--review);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--river) 12%, transparent);
+  transform: translateX(-50%);
+}
+
+.lens-node-pin::after {
+  position: absolute;
+  inset: -10px;
+  border: 1px solid currentColor;
+  border-radius: inherit;
+  color: var(--review);
+  content: "";
+  opacity: 0.34;
+  animation: lensPulse 2.8s ease-out infinite;
+}
+
+.lens-node-card.tone-stop {
+  border-color: color-mix(in oklch, var(--stop) 34%, transparent);
+  background: color-mix(in oklch, var(--stop-soft) 34%, var(--paper));
+}
+
+.lens-node-card.tone-stop .lens-node-pin {
+  background: var(--stop);
+}
+
+.lens-node-card.tone-stop .lens-node-pin::after {
+  color: var(--stop);
+}
+
+.lens-node-card.tone-usable {
+  border-color: color-mix(in oklch, var(--usable) 34%, transparent);
+  background: color-mix(in oklch, var(--usable-soft) 34%, var(--paper));
+}
+
+.lens-node-card.tone-usable .lens-node-pin {
+  background: var(--usable);
+}
+
+.lens-node-card.tone-usable .lens-node-pin::after {
+  color: var(--usable);
+}
+
+.lens-node-main {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+}
+
+.lens-node-main span {
+  color: var(--river-soft);
+  font-size: 0.88rem;
+  font-weight: 780;
+  overflow-wrap: anywhere;
+}
+
+.lens-node-main strong {
+  color: var(--river);
+  font-size: clamp(1.2rem, 2vw, 1.72rem);
+  line-height: 1;
+}
+
+.lens-node-card.tone-stop .lens-node-main strong {
+  color: var(--stop);
+}
+
+.lens-node-card.tone-usable .lens-node-main strong {
+  color: var(--usable);
+}
+
+.lens-node-main em {
+  color: var(--river-soft);
+  font-size: 0.88rem;
+  font-style: normal;
+  font-weight: 720;
+}
+
+.lens-node-aux {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.lens-aux-chip {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid color-mix(in oklch, var(--river) 9%, transparent);
+  border-radius: 999px;
+  padding: 6px 9px;
+  background: color-mix(in oklch, var(--paper) 76%, transparent);
+  color: var(--river-soft);
+  font-size: 0.75rem;
+  font-weight: 760;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.lens-layer-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.lens-layer-pill {
+  display: grid;
+  min-width: 0;
+  gap: 6px;
+  border: 1px solid color-mix(in oklch, var(--river) 10%, transparent);
+  border-radius: 18px;
+  padding: 12px;
+  background: color-mix(in oklch, var(--paper) 74%, transparent);
+}
+
+.lens-layer-pill.primary {
+  border-color: color-mix(in oklch, var(--river) 24%, transparent);
+  background: color-mix(in oklch, var(--river) 8%, var(--paper));
+}
+
+.lens-layer-pill strong {
+  min-width: 0;
+  color: var(--river);
+  font-size: 0.86rem;
+  line-height: 1.24;
+  overflow-wrap: anywhere;
+}
+
+.lens-disclaimer {
+  max-width: 84ch;
+  margin: 14px 0 0;
+  color: var(--river-soft);
+  font-size: 0.9rem;
+  font-weight: 720;
+  line-height: 1.45;
+}
+
+@keyframes lensPulse {
+  0% {
+    opacity: 0.32;
+    transform: scale(0.76);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lens-node-pin::after {
+    animation: none;
+  }
 }
 
 .watch-matrix-wrap {
@@ -3962,6 +4255,7 @@ select {
   .detail-grid,
   .brief-grid,
   .module-list,
+  .lens-layer-strip,
   .clms-corridor-grid,
   .sar-strip-grid,
   .watch-summary-grid,
@@ -3970,6 +4264,10 @@ select {
   }
 
   .watch-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .azuero-lens-header {
     grid-template-columns: 1fr;
   }
 
@@ -4159,6 +4457,8 @@ select {
   .brief-grid,
   .technical-status-row,
   .clms-corridor-grid,
+  .lens-layer-strip,
+  .lens-node-grid,
   .sar-strip-grid,
   .territorial-map-body,
   .field-lite-card,
@@ -4200,6 +4500,7 @@ select {
   }
 
   .watch-hero,
+  .azuero-lens,
   .cases-hero,
   .case-board-section,
   .case-action-panel,
@@ -4211,6 +4512,24 @@ select {
   .watch-limits {
     border-radius: 26px;
     padding: 18px;
+  }
+
+  .azuero-lens-canvas {
+    min-height: 0;
+  }
+
+  .lens-ribbon {
+    opacity: 0.38;
+  }
+
+  .lens-node-grid {
+    min-height: 0;
+    padding: 28px 14px;
+  }
+
+  .lens-node-pin {
+    left: 18px;
+    transform: none;
   }
 
   .cases-hero h1 {

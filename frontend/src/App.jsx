@@ -372,6 +372,7 @@ export default function App() {
           hydroClimateLoadState={hydroClimateLoadState}
           exposureContext={exposureContext}
           exposureLoadState={exposureLoadState}
+          ledgerRows={ledgerRows}
           sarContext={sarContext}
           sarLoadState={sarLoadState}
           selectedDate={selectedDate}
@@ -1343,6 +1344,7 @@ function KairosWatch({
   hydroClimateLoadState,
   exposureContext,
   exposureLoadState,
+  ledgerRows,
   sarContext,
   sarLoadState,
   selectedDate,
@@ -1400,6 +1402,16 @@ function KairosWatch({
           </p>
         </article>
       </div>
+
+      <AzueroLens
+        exposureContext={exposureContext}
+        hydroClimate={hydroClimate}
+        ledgerRows={ledgerRows}
+        nodes={nodes}
+        observationMap={observationMap}
+        sarContext={sarContext}
+        selectedDate={selectedDate}
+      />
 
       <section className="watch-matrix-section" aria-label="Matriz regional de confianza">
         <div className="section-heading compact">
@@ -1469,6 +1481,244 @@ function KairosWatch({
       </section>
     </section>
   );
+}
+
+function AzueroLens({
+  nodes,
+  observationMap,
+  selectedDate,
+  sarContext,
+  exposureContext,
+  hydroClimate,
+  ledgerRows,
+}) {
+  const orderedNodes = orderCorridorNodes(nodes, []);
+  const lensNodes = orderedNodes.map((node, index) => {
+    const observation = observationMap.get(`${node.node_id}|${selectedDate}`);
+    const state = observation
+      ? getStateMeta(observation)
+      : {
+          label: "SIN DATO",
+          tone: "review",
+          explanation: "Sin observacion Sentinel-2 para esta fecha.",
+        };
+    const sarRow = findSarLensRow(sarContext, node.node_id, selectedDate);
+    const hydroRow = findHydroLensRow(hydroClimate, node.node_id, selectedDate);
+    const clmsRow = findClmsLensRow(exposureContext, node.node_id);
+
+    return {
+      node,
+      observation,
+      state,
+      sarRow,
+      hydroRow,
+      clmsRow,
+      x: [17, 50, 83][index] ?? 50,
+    };
+  });
+  const ledger = findLensLedger(ledgerRows, selectedDate);
+  const sarSummary = buildLensSarSummary(sarContext, selectedDate);
+  const clmsSummary = buildLensClmsSummary(exposureContext);
+  const hydroSummary = buildLensHydroSummary(hydroClimate, selectedDate);
+  const ledgerReady = Boolean(ledger?.evidence_status || ledger?.brief_path);
+
+  return (
+    <section className="azuero-lens" aria-label="Azuero Lens">
+      <div className="azuero-lens-header">
+        <div>
+          <p className="small-label">Azuero Lens v1</p>
+          <h2>Río La Villa como lente de evidencia</h2>
+          <p>
+            Fecha seleccionada: <strong>{selectedDate}</strong>. Sentinel-2 define
+            la decisión; las capas auxiliares solo agregan contexto.
+          </p>
+        </div>
+        <div className={`lens-trace-cue ${ledgerReady ? "ready" : "pending"}`}>
+          <span>Trazabilidad</span>
+          <strong>{ledgerReady ? "Ledger y brief vinculados" : "Ledger pendiente"}</strong>
+        </div>
+      </div>
+
+      <div className="azuero-lens-canvas">
+        <svg
+          className="lens-ribbon"
+          viewBox="0 0 920 250"
+          role="img"
+          aria-label="Representación esquemática del corredor Río La Villa"
+          focusable="false"
+        >
+          <defs>
+            <linearGradient id="lensRibbonGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor="currentColor" stopOpacity="0.18" />
+              <stop offset="48%" stopColor="currentColor" stopOpacity="0.34" />
+              <stop offset="100%" stopColor="currentColor" stopOpacity="0.18" />
+            </linearGradient>
+          </defs>
+          <path
+            className="lens-ribbon-wide"
+            d="M54 148 C180 70 305 190 438 128 C575 64 708 78 866 118"
+          />
+          <path
+            className="lens-ribbon-line"
+            d="M54 148 C180 70 305 190 438 128 C575 64 708 78 866 118"
+          />
+        </svg>
+
+        <div className="lens-node-grid">
+          {lensNodes.map(({ node, observation, state, sarRow, hydroRow, clmsRow, x }) => (
+            <article
+              className={`lens-node-card tone-${state.tone}`}
+              key={node.node_id}
+              style={{ "--node-x": `${x}%` }}
+            >
+              <span className="lens-node-pin" aria-hidden="true" />
+              <div className="lens-node-main">
+                <span>{node.display_name || node.node_id}</span>
+                <strong>{state.label}</strong>
+                <em>
+                  {observation
+                    ? `${formatPercent(observation.validPercent)} evidencia valida`
+                    : "sin dato Sentinel-2"}
+                </em>
+              </div>
+              <div className="lens-node-aux" aria-label="Capas auxiliares del nodo">
+                <LensAuxChip label="SAR" value={lensSarLabel(sarRow)} />
+                <LensAuxChip label="CLMS" value={lensClmsLabel(clmsRow)} />
+                <LensAuxChip label="Lluvia" value={lensHydroLabel(hydroRow)} />
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <div className="lens-layer-strip" aria-label="Resumen de capas auxiliares">
+        <LensLayerPill
+          label="Sentinel-2"
+          value="capa primaria de decisión"
+          tone="primary"
+        />
+        <LensLayerPill label="Sentinel-1 SAR" value={sarSummary} />
+        <LensLayerPill label="CLMS 2020" value={clmsSummary} />
+        <LensLayerPill label="HydroClimate" value={hydroSummary} />
+      </div>
+
+      <p className="lens-disclaimer">
+        Esta vista no es imagen satelital ni mapa geoespacial exacto; resume capas
+        de evidencia para guiar la decisión.
+      </p>
+    </section>
+  );
+}
+
+function LensAuxChip({ label, value }) {
+  return (
+    <span className="lens-aux-chip">
+      <b>{label}</b>
+      {value}
+    </span>
+  );
+}
+
+function LensLayerPill({ label, value, tone = "aux" }) {
+  return (
+    <div className={`lens-layer-pill ${tone}`}>
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function findLensLedger(rows, selectedDate) {
+  if (!Array.isArray(rows)) return null;
+  return (
+    rows.find((row) => row.date === selectedDate && row.aoi === "corridor_wide") ??
+    rows.find((row) => row.date === selectedDate) ??
+    null
+  );
+}
+
+function findSarLensRow(data, nodeId, selectedDate) {
+  return getSarRows(data).find(
+    (row) => row.node_id === nodeId && row.target_date === selectedDate,
+  );
+}
+
+function findHydroLensRow(data, nodeId, selectedDate) {
+  const rows = Array.isArray(data?.rows)
+    ? data.rows
+    : Array.isArray(data?.observations)
+      ? data.observations
+      : [];
+  return rows.find(
+    (row) =>
+      row.node_id === nodeId &&
+      (row.target_date === selectedDate || row.date === selectedDate),
+  );
+}
+
+function findClmsLensRow(data, nodeId) {
+  const rows = Array.isArray(data?.summary_by_node)
+    ? data.summary_by_node
+    : Array.isArray(data?.nodes)
+      ? data.nodes
+      : [];
+  return rows.find((row) => row.node_id === nodeId);
+}
+
+function buildLensSarSummary(data, selectedDate) {
+  if (data?.data_status !== "sar_context_available") return "no disponible";
+  const rows = getSarRows(data).filter((row) => row.target_date === selectedDate);
+  if (!rows.length) return "sin ventana para la fecha";
+  const available = rows.filter(
+    (row) => row.context_status === "sar_context_available",
+  ).length;
+  return `${available}/${rows.length} ventanas con contexto`;
+}
+
+function buildLensClmsSummary(data) {
+  if (data?.data_status !== "exposure_available") return "no disponible";
+  const rows = Array.isArray(data.summary_by_node)
+    ? data.summary_by_node
+    : Array.isArray(data.nodes)
+      ? data.nodes
+      : [];
+  return `${rows.length || 0} nodos con contexto territorial`;
+}
+
+function buildLensHydroSummary(data, selectedDate) {
+  const rows = (Array.isArray(data?.rows) ? data.rows : data?.observations ?? []).filter(
+    (row) => row.target_date === selectedDate || row.date === selectedDate,
+  );
+  if (!rows.length) return "sin dato para la fecha";
+  const reviewCount = rows.filter((row) =>
+    ["antecedent_rain_review", "antecedent_rain", "heavy_rain_context"].includes(
+      row.context_status || row.hydroclimate_status,
+    ),
+  ).length;
+  return reviewCount ? `${reviewCount}/${rows.length} con revision` : "contexto normal";
+}
+
+function lensSarLabel(row) {
+  if (!row) return "sin dato";
+  if (row.context_status === "sar_context_available") return "contexto";
+  if (row.context_status === "sar_no_acquisition") return "sin adquisicion";
+  return "auxiliar";
+}
+
+function lensClmsLabel(row) {
+  if (!row) return "sin dato";
+  if (row.exposure_status === "exposure_available") return "disponible";
+  return "auxiliar";
+}
+
+function lensHydroLabel(row) {
+  if (!row) return "sin dato";
+  const status = row.context_status || row.hydroclimate_status;
+  if (status === "antecedent_rain_review" || status === "antecedent_rain") {
+    return "revision";
+  }
+  if (status === "data_unavailable" || status === "api_error") return "pendiente";
+  return "normal";
 }
 
 function ClmsCorridorStrip({ data, loadState }) {
