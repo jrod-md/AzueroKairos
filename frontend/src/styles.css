@@ -3171,6 +3171,8 @@ select {
 .technical-audit-receipt,
 .clms-context-block,
 .clms-corridor-strip,
+.sar-context-block,
+.sar-context-strip,
 .comparison-section,
 .metrics-section,
 .technical-trace-section,
@@ -3437,6 +3439,8 @@ select {
 .metrics-section,
 .clms-context-block,
 .clms-corridor-strip,
+.sar-context-block,
+.sar-context-strip,
 .technical-trace-section,
 .territorial-map.technical,
 .pipeline-section,
@@ -3633,6 +3637,137 @@ select {
   overflow-wrap: anywhere;
 }
 
+.sar-strip-grid {
+  display: grid;
+  grid-template-columns: minmax(150px, 0.42fr) minmax(150px, 0.42fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+}
+
+.sar-strip-grid div,
+.sar-window-note,
+.sar-count-row div {
+  min-width: 0;
+  border: 1px solid color-mix(in oklch, var(--river) 8%, transparent);
+  border-radius: 16px;
+  padding: 10px 11px;
+  background: color-mix(in oklch, var(--paper-soft) 58%, transparent);
+}
+
+.sar-strip-grid span,
+.sar-count-row dt {
+  color: var(--muted);
+  font-size: 0.66rem;
+  font-weight: 840;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sar-strip-grid strong,
+.sar-count-row dd {
+  display: block;
+  margin: 5px 0 0;
+  color: var(--river);
+  font-size: 1rem;
+  font-weight: 860;
+}
+
+.sar-strip-grid p,
+.sar-window-note {
+  margin: 0;
+  color: var(--river-soft);
+  font-size: 0.88rem;
+  font-weight: 720;
+  line-height: 1.42;
+  overflow-wrap: anywhere;
+}
+
+.sar-count-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 9px;
+  margin: 12px 0 0;
+}
+
+.sar-count-row dd {
+  margin-left: 0;
+  overflow-wrap: anywhere;
+}
+
+.sar-window-note {
+  margin-top: 12px;
+}
+
+.sar-table-wrap {
+  margin-top: 12px;
+  overflow-x: auto;
+}
+
+.sar-context-table {
+  width: 100%;
+  min-width: 820px;
+  border-collapse: separate;
+  border-spacing: 0 7px;
+}
+
+.sar-context-table th,
+.sar-context-table td {
+  padding: 9px 10px;
+  background: color-mix(in oklch, var(--paper) 64%, transparent);
+  color: var(--river);
+  font-size: 0.78rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.sar-context-table thead th {
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 860;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.sar-context-table tbody th {
+  border-radius: 14px 0 0 14px;
+  font-weight: 820;
+}
+
+.sar-context-table tbody td:last-child {
+  border-radius: 0 14px 14px 0;
+}
+
+.sar-status-pill {
+  display: inline-flex;
+  min-height: 26px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 5px 8px;
+  background: color-mix(in oklch, var(--paper-soft) 72%, transparent);
+  color: var(--river-soft);
+  font-size: 0.67rem;
+  font-weight: 840;
+  line-height: 1.16;
+  text-align: center;
+}
+
+.sar-status-pill.available {
+  background: color-mix(in oklch, var(--usable) 16%, var(--paper));
+  color: color-mix(in oklch, var(--usable) 72%, var(--river));
+}
+
+.sar-status-pill.missing {
+  background: color-mix(in oklch, var(--review) 18%, var(--paper));
+  color: color-mix(in oklch, var(--review) 78%, var(--river));
+}
+
+.sar-status-pill.error {
+  background: color-mix(in oklch, var(--stop) 14%, var(--paper));
+  color: color-mix(in oklch, var(--stop) 74%, var(--river));
+}
+
 .comparison-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3790,6 +3925,7 @@ select {
   .brief-grid,
   .module-list,
   .clms-corridor-grid,
+  .sar-strip-grid,
   .watch-summary-grid,
   .hydro-context-notes {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3985,6 +4121,7 @@ select {
   .brief-grid,
   .technical-status-row,
   .clms-corridor-grid,
+  .sar-strip-grid,
   .territorial-map-body,
   .field-lite-card,
   .field-lite-grid,
@@ -4030,6 +4167,7 @@ select {
   .case-action-panel,
   .cases-limit-note,
   .watch-matrix-section,
+  .sar-context-strip,
   .hydro-context-section,
   .watch-summary-section,
   .watch-limits {

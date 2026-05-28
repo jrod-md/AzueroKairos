@@ -372,6 +372,8 @@ export default function App() {
           hydroClimateLoadState={hydroClimateLoadState}
           exposureContext={exposureContext}
           exposureLoadState={exposureLoadState}
+          sarContext={sarContext}
+          sarLoadState={sarLoadState}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
         />
@@ -1341,6 +1343,8 @@ function KairosWatch({
   hydroClimateLoadState,
   exposureContext,
   exposureLoadState,
+  sarContext,
+  sarLoadState,
   selectedDate,
 }) {
   const ready = loadState.status === "ready" && data;
@@ -1444,6 +1448,8 @@ function KairosWatch({
         </div>
       </section>
 
+      <SarCorridorStrip data={sarContext} loadState={sarLoadState} />
+
       <ClmsCorridorStrip data={exposureContext} loadState={exposureLoadState} />
 
       <HydroClimateWatchSection
@@ -1538,6 +1544,60 @@ function ClmsMiniMetric({ label, value }) {
       <dt>{label}</dt>
       <dd>{formatPercent(value)}</dd>
     </div>
+  );
+}
+
+function SarCorridorStrip({ data, loadState }) {
+  const available =
+    loadState?.status === "ready" &&
+    data?.data_status === "sar_context_available";
+
+  if (!available) {
+    return (
+      <section className="sar-context-strip" aria-label="Continuidad SAR">
+        <div className="section-heading compact">
+          <div>
+            <p className="small-label">Continuidad SAR</p>
+            <h2>Contexto SAR no disponible para esta demo.</h2>
+          </div>
+          <p>Capa auxiliar; no modifica la clasificacion Sentinel-2.</p>
+        </div>
+      </section>
+    );
+  }
+
+  const rowsTotal = asCount(data.rows_total);
+  const availableCount = asCount(data.sar_context_available_count);
+  const noAcquisitionCount = asCount(data.sar_no_acquisition_count);
+
+  return (
+    <section className="sar-context-strip" aria-label="Continuidad SAR">
+      <div className="section-heading compact">
+        <div>
+          <p className="small-label">Continuidad SAR</p>
+          <h2>
+            Sentinel-1 SAR disponible en {availableCount}/{rowsTotal} ventanas
+            ampliadas
+          </h2>
+        </div>
+        <p>Capa auxiliar; no modifica la clasificacion Sentinel-2.</p>
+      </div>
+
+      <div className="sar-strip-grid">
+        <div>
+          <span>Ventanas con contexto</span>
+          <strong>{availableCount}/{rowsTotal}</strong>
+        </div>
+        <div>
+          <span>Sin adquisicion util</span>
+          <strong>{noAcquisitionCount}</strong>
+        </div>
+        <p>
+          Cuando la adquisicion radar no coincide con la fecha objetivo, se
+          reporta la ventana y la fecha SAR asociada.
+        </p>
+      </div>
+    </section>
   );
 }
 
@@ -2068,8 +2128,8 @@ function TechnicalDashboard({
         <HydroClimateTechnicalNote row={hydroClimateContext} />
       </EvidenceDisclosure>
 
-      <EvidenceDisclosure eyebrow="SAR" title="Nota tecnica Sentinel-1">
-        <SarTechnicalNote data={sarContext} loadState={sarLoadState} />
+      <EvidenceDisclosure eyebrow="SAR" title="Continuidad Sentinel-1">
+        <SarTechnicalContextBlock data={sarContext} loadState={sarLoadState} />
       </EvidenceDisclosure>
 
       <EvidenceDisclosure eyebrow="Limites cientificos" title="Frontera de inferencia">
@@ -2360,15 +2420,94 @@ function MetricsSection({ record }) {
   );
 }
 
-function SarTechnicalNote({ data, loadState }) {
-  const ready = loadState.status === "ready" && data;
-  const note = ready
-    ? data.claim_limit || SAR_LIMITS
-    : "Sentinel-1 SAR no está disponible en este corte y no se usa como evidencia principal.";
+function SarTechnicalContextBlock({ data, loadState }) {
+  const ready = loadState?.status === "ready" && data;
+  const rows = ready ? getSarRows(data) : [];
+  const available =
+    ready && data.data_status === "sar_context_available" && rows.length > 0;
+
+  if (!available) {
+    return (
+      <section className="sar-context-block" aria-label="Contexto Sentinel-1 SAR">
+        <div className="section-heading compact">
+          <div>
+            <p className="small-label">Contexto auxiliar</p>
+            <h2>Continuidad SAR</h2>
+          </div>
+          <p>Contexto SAR no disponible para esta demo.</p>
+        </div>
+      </section>
+    );
+  }
+
+  const counts = [
+    ["Ventanas", asCount(data.rows_total)],
+    ["Con contexto", asCount(data.sar_context_available_count)],
+    ["Sin adquisicion", asCount(data.sar_no_acquisition_count)],
+    ["Errores API", asCount(data.sar_api_error_count)],
+  ];
+
   return (
-    <p className="sar-technical-note" aria-label="Nota técnica Sentinel-1 SAR">
-      {note}
-    </p>
+    <section className="sar-context-block" aria-label="Contexto Sentinel-1 SAR">
+      <div className="section-heading compact">
+        <div>
+          <p className="small-label">Contexto auxiliar</p>
+          <h2>Continuidad SAR Sentinel-1</h2>
+        </div>
+        <p>{data.claim_limit || SAR_LIMITS}</p>
+      </div>
+
+      <dl className="sar-count-row">
+        {counts.map(([label, value]) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{displayValue(value)}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <p className="sar-window-note">
+        {data.summary ||
+          "Cuando la adquisicion radar no coincide con la fecha objetivo, se reporta la ventana y la fecha SAR asociada."}
+      </p>
+
+      <div className="sar-table-wrap">
+        <table className="sar-context-table">
+          <thead>
+            <tr>
+              <th scope="col">Nodo</th>
+              <th scope="col">Fecha objetivo</th>
+              <th scope="col">Fecha SAR</th>
+              <th scope="col">Ventana</th>
+              <th scope="col">Estado</th>
+              <th scope="col">VV</th>
+              <th scope="col">VH</th>
+              <th scope="col">VV/VH</th>
+              <th scope="col">Valido</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={`${row.node_id}-${row.target_date}`}>
+                <th scope="row">{row.node_name || row.node_id}</th>
+                <td>{displayValue(row.target_date)}</td>
+                <td>{displayValue(row.matched_acquisition_date)}</td>
+                <td>{formatSarWindow(row.window_days)}</td>
+                <td>
+                  <span className={`sar-status-pill ${sarStatusTone(row.context_status)}`}>
+                    {translateSarStatus(row.context_status)}
+                  </span>
+                </td>
+                <td>{formatSarMetric(row.vv_mean)}</td>
+                <td>{formatSarMetric(row.vh_mean)}</td>
+                <td>{formatSarMetric(row.vv_vh_ratio)}</td>
+                <td>{formatPercent(row.validPercent)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
 
@@ -2722,6 +2861,9 @@ function normalizeWatchPayload(payload) {
     observations: Array.isArray(payload.observations)
       ? payload.observations.map(normalizeRecord)
       : [],
+    rows: Array.isArray(payload.rows)
+      ? payload.rows.map(normalizeRecord)
+      : [],
     summary_by_node: Array.isArray(payload.summary_by_node)
       ? payload.summary_by_node.map(normalizeRecord)
       : [],
@@ -2745,6 +2887,9 @@ function normalizeSarPayload(payload) {
       : [],
     observations: Array.isArray(payload.observations)
       ? payload.observations.map(normalizeRecord)
+      : [],
+    rows: Array.isArray(payload.rows)
+      ? payload.rows.map(normalizeRecord)
       : [],
     summary_by_node: Array.isArray(payload.summary_by_node)
       ? payload.summary_by_node.map(normalizeRecord)
@@ -2881,6 +3026,51 @@ function formatRainMm(value) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })} mm`;
+}
+
+function getSarRows(data) {
+  if (Array.isArray(data?.rows)) return data.rows;
+  if (Array.isArray(data?.observations)) return data.observations;
+  return [];
+}
+
+function asCount(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) ? numeric : 0;
+}
+
+function formatSarMetric(value) {
+  if (value === undefined || value === null || value === "") return "sin dato";
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "sin dato";
+  return formatNumber(numeric, {
+    minimumFractionDigits: 4,
+    maximumFractionDigits: 4,
+  });
+}
+
+function formatSarWindow(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "sin dato";
+  return `±${numeric} dias`;
+}
+
+function translateSarStatus(status) {
+  const labels = {
+    sar_context_available: "contexto disponible",
+    sar_low_observation: "observacion baja",
+    sar_no_acquisition: "sin adquisicion",
+    sar_api_error: "error API",
+    sar_error: "error API",
+  };
+  return labels[status] || status || "sin dato";
+}
+
+function sarStatusTone(status) {
+  if (status === "sar_context_available") return "available";
+  if (status === "sar_no_acquisition") return "missing";
+  if (status === "sar_api_error" || status === "sar_error") return "error";
+  return "low";
 }
 
 function isHydroReviewContext(row) {
