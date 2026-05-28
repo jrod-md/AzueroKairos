@@ -53,6 +53,8 @@ cache/
 *.png
 *.jpg
 *.jpeg
+!frontend/public/img/
+!frontend/public/img/*.png
 
 # Generated outputs
 outputs/raw_json/*

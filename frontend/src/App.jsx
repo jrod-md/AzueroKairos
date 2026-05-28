@@ -1,5 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
+import Navigation from "./components/Navigation/Navigation.jsx";
+import StatusBar from "./components/StatusBar/StatusBar.jsx";
 import TerritorialMap from "./components/TerritorialMap.jsx";
+import DecisionPage from "./pages/Decision/DecisionPage.jsx";
+import CorredorPage from "./pages/Corredor/CorredorPage.jsx";
+import EvidenciaPage from "./pages/Evidencia/EvidenciaPage.jsx";
 
 const DEFAULT_DATE = "2025-06-10";
 const COMPARISON_DATES = ["2025-06-10", "2025-06-30"];
@@ -338,15 +343,15 @@ export default function App() {
   }
 
   const availableDates = observations.map((record) => record.date);
-  const statusText = buildRunStatus(ledgerRows);
   const selectedState = getStateMeta(selectedRecord);
 
   return (
     <main className="app-shell">
+      <StatusBar activeState={selectedState.label} />
       <Header
         activePage={activePage}
+        activeState={selectedState.label}
         setActivePage={setPageAndHash}
-        statusText={statusText}
       />
 
       <StickyDecisionBar
@@ -358,8 +363,7 @@ export default function App() {
       />
 
       {activePage === "decision" ? (
-        <DecisionLanding
-          availableDates={availableDates}
+        <DecisionPage
           observations={observations}
           comparisonRecords={comparisonRecords}
           record={selectedRecord}
@@ -368,16 +372,9 @@ export default function App() {
           setSelectedDate={setSelectedDate}
         />
       ) : activePage === "watch" ? (
-        <KairosWatch
+        <CorredorPage
           data={watchData}
           loadState={watchLoadState}
-          hydroClimate={hydroClimate}
-          hydroClimateLoadState={hydroClimateLoadState}
-          exposureContext={exposureContext}
-          exposureLoadState={exposureLoadState}
-          ledgerRows={ledgerRows}
-          sarContext={sarContext}
-          sarLoadState={sarLoadState}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
         />
@@ -392,11 +389,12 @@ export default function App() {
           exposureContext={exposureContext}
         />
       ) : (
-        <TechnicalDashboard
+        <EvidenciaPage
           availableDates={availableDates}
           comparisonRecords={comparisonRecords}
           record={selectedRecord}
           ledger={selectedLedger}
+          ledgerRows={ledgerRows}
           hydroClimateContext={selectedHydroClimateContext}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
@@ -568,7 +566,7 @@ function getInitialPage() {
   return "decision";
 }
 
-function Header({ activePage, setActivePage, statusText }) {
+function Header({ activePage, activeState, setActivePage }) {
   return (
     <header className="top-nav">
       <button
@@ -580,38 +578,11 @@ function Header({ activePage, setActivePage, statusText }) {
         Azuero Kairós
       </button>
 
-      <nav className="view-nav" aria-label="Navegación principal">
-        <button
-          className={activePage === "decision" ? "active" : ""}
-          type="button"
-          onClick={() => setActivePage("decision")}
-        >
-          Decisión
-        </button>
-        <button
-          className={activePage === "watch" ? "active" : ""}
-          type="button"
-          onClick={() => setActivePage("watch")}
-        >
-          Corredor
-        </button>
-        <button
-          className={activePage === "cases" ? "active" : ""}
-          type="button"
-          onClick={() => setActivePage("cases")}
-        >
-          Acción
-        </button>
-        <button
-          className={activePage === "technical" ? "active" : ""}
-          type="button"
-          onClick={() => setActivePage("technical")}
-        >
-          Evidencia
-        </button>
-      </nav>
-
-      <p className="run-status">{statusText}</p>
+      <Navigation
+        activePage={activePage}
+        activeState={activeState}
+        onNavigate={setActivePage}
+      />
     </header>
   );
 }

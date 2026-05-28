@@ -1,259 +1,131 @@
-# Azuero Kairós - DESIGN.md
+# Azuero Kairós — DESIGN.md v2
 
-## Direction
+## Metáfora visual
 
-**Design direction:** Atlas de decisión territorial.
+Azuero Kairós es una bitácora de campo activa.
+No un dashboard. No un centro de control.
+Una estación de observación territorial donde los datos
+Sentinel-2 se convierten en decisiones documentadas.
 
-Azuero Kairós is not a generic agricultural dashboard. It is a decision system for Azuero that turns Copernicus evidence into a clear operational answer:
-
-- interpret
-- review
-- do not infer
-
-The product should feel like an editorial atlas, a living technical file, and a premium institutional startup tool. It must be warm, rigorous, and territorial, not decorative.
-
-The interface must make restraint feel deliberate. "No inferir" is a product
-strength because it prevents false certainty.
+El pergamino es el canvas. El río es el dato.
+La decisión es una anotación oficial sobre el territorio.
 
 ## Product Posture
 
-Decision first, evidence second.
-
-The first screen must answer whether the observation is usable for a cautious interpretation. Technical data belongs behind the decision or in supporting sections. More data is not better unless it changes a decision, changes a priority, or explains uncertainty.
-
-Azuero Kairós must never look like a data scraper, an agricultural stock template, a generic SaaS dashboard, or a pile of charts searching for a conclusion.
-
-Data appears only after it has a job: change the decision, change the priority,
-or explain uncertainty.
-
-## Audience
-
-Primary users:
-
-- technical reviewers
-- institutions
-- territorial decision makers
-- food security stakeholders
-- hackathon judges
-
-Secondary users:
-
-- producers
-- territorial technicians
-- non-specialist local actors who need a clear next step
-
-The interface must be readable for producers and credible for technical evaluators.
-
-## Visual Character
-
-The UI should feel:
-
-- premium
-- institutional
-- scientific
-- calm
-- warm
-- Azuero-rooted without folklore
-- technical without becoming cryptic
-- startup-polished without feeling like a generic SaaS kit
-
-Avoid:
-
-- fake maps
-- decorative satellites
-- generic green agriculture styling
-- overloaded dashboards
-- AI slop
-- fake real-time indicators
-- visual claims stronger than the evidence
+Decisión primero, evidencia después.
+La primera pantalla responde en menos de 10 segundos
+si la observación es usable, requiere revisión,
+o no debe inferirse.
 
 ## Palette
 
-Use a warm Azuero palette:
+### Valores exactos
 
-- deep institutional blue for structure, titles, and confidence
-- cream / sand paper backgrounds
-- terracotta for **NO INFERIR** and risk of bad inference
-- mineral green for **USABLE**
-- amber / ochre for **REVISAR**, context, and caution
-- muted river blue / turquoise for hydrological evidence
-- stone gray for borders, dividers, and technical surfaces
+| Token                | Hex       | Uso                                      |
+|----------------------|-----------|------------------------------------------|
+| --bg-base            | #ede4cc   | Fondo principal (pergamino)              |
+| --bg-surface         | #f5eedd   | Superficies elevadas, cards              |
+| --bg-archive         | #e0d4b8   | Evidencia, zonas de archivo              |
+| --text-primary       | #1d3557   | Navy — texto principal, títulos          |
+| --text-secondary     | #6b5040   | Marrón cálido — labels, contexto         |
+| --text-muted         | #9a8878   | Texto terciario, límites                 |
+| --border             | #d4c4a0   | Separadores, bordes de cards             |
+| --state-usable       | #4a8fa0   | USABLE — teal río                        |
+| --state-no-inferir   | #b84c2c   | NO INFERIR — terracota                   |
+| --state-revisar      | #e8922e   | REVISAR — ámbar/sol                      |
+| --state-ok           | #1d3557   | Sistema OK — navy                        |
+| --accent             | #4a8fa0   | Interactivo, hover, activo               |
 
-Rules:
+### Reglas irrompibles de color
+- Terracota es solo para evidencia insuficiente o riesgo de mala inferencia.
+- Teal es solo para confianza usable confirmada.
+- Ámbar es para revisión, contexto, o precaución.
+- Sin colores neón. Sin verde agrícola genérico.
+- El navy nunca se usa como color de estado — solo como color estructural.
 
-- Terracotta is for insufficient evidence or bad-inference risk.
-- Green is only for usable confidence.
-- Amber is for review, context, or priority.
-- Avoid neon colors.
-- Avoid one-note green agriculture visuals.
+## Tipografía
 
-## Main Screens
+### Stack
+- **Serif (display):** Playfair Display o Lora — headlines, nombres de sección
+- **Monoespaciada (datos):** JetBrains Mono o IBM Plex Mono — 
+  porcentajes, fechas, IDs, valores técnicos, ledger
+- **Sans-serif (UI):** Inter — navegación, labels, botones
 
-### Decision Mode
+### Regla tipográfica central
+Todo valor numérico técnico usa monoespaciada.
+Los labels de sección usan sans-serif en mayúsculas con letter-spacing 0.12em.
+Los headlines de decisión usan serif.
 
-Purpose: explain the decision in less than 10 seconds.
+## Componentes visuales clave
 
-Show:
+### 1. Confidence Compass (gauge circular)
+- SVG puro, sin librerías de charts
+- Arco de 270° que se llena según validPercent
+- Zona 0–30%: color --state-no-inferir
+- Zona 30–60%: color --state-revisar  
+- Zona 60–100%: color --state-usable
+- Centro: porcentaje en JetBrains Mono, 48px
+- Animación: 600ms ease-out al cambiar de fecha
+- Estética: brújula cartográfica, no velocímetro sci-fi
 
-- confidence state
-- valid evidence percentage
-- date
-- AOI
-- short explanation
-- next action
-- official-run identity
-- minimal context badges only when they explain priority
+### 2. Decision Stamp (sello de decisión)
+- Elemento visual tipo tampón de caucho sobre papel
+- Texto: USABLE / REVISAR / NO INFERIR
+- Color: el del estado correspondiente
+- Border: irregular, textura de ink stamp (SVG path o CSS)
+- Animación de entrada: scale 0.8→1.0 + opacity, 300ms
+- No es un badge genérico. Es un sello oficial.
 
-Do not lead with:
+### 3. Gate Chain (cadena de compuertas)
+- Diagrama de flujo fluvial — curvas orgánicas, no líneas rectas
+- 4 nodos: API → Calidad → Inferencia → Acción
+- Nodos pasados: color --state-usable con glow sutil
+- Nodo de falla: color --state-no-inferir con ícono prohibición
+- SVG inline, no librería de diagramas
 
-- raw JSON paths
-- CSV paths
-- MNDWI / NDTI
-- sample counts
-- SAR metrics
-- rainfall matrices
-- exposure placeholders
+### 4. Azuero Lens (el corredor del río)
+- Ilustración SVG del corredor Río La Villa
+- Estilo consistente con el logo: capas de color planas,
+  forma orgánica, sin pretender ser mapa exacto
+- Tres nodos como markers con anillos de sonar pulsantes
+- Color de anillo = estado Sentinel-2 del nodo
+- Hover en nodo: ficha de campo flotante con datos clave
+- Disclaimer obligatorio: "Vista esquemática. No es imagen satelital."
+- NO es un mapa de GIS. NO es 3D. Es una ilustración interactiva.
 
-Decision mode is an executive report, not a table.
+## Screens
 
-### Technical Data Mode
+### Decisión
+Executive report. Confidence Compass + Decision Stamp + Gate Chain.
+No raw JSON paths. No MNDWI en la vista principal.
 
-Purpose: show evidence and traceability.
+### Corredor (Kairós Watch)
+Azuero Lens como hero full-width.
+Matriz 3 nodos × 5 fechas debajo.
+Layer toggles: S-2 / SAR / CLMS / HYDRO.
 
-Show:
+### Acción (Kairós Cases)
+Tarjetas de expedición por caso.
+Estado, prioridad, acción recomendada, brecha de evidencia.
 
-- AOI
-- sensor
-- resolution
-- API status
-- ledger status
-- validPercent
-- sampleCount
-- noDataCount
-- MNDWI
-- NDTI
-- raw JSON path
-- processed CSV
-- brief path
-- auxiliary context layers
-- scientific limits
+### Evidencia
+Archivo de auditoría.
+Fondo --bg-archive. Ledger en monoespaciada.
+Qué sabemos / Qué no sabemos / Por qué / Qué sigue.
 
-Technical mode may be dense, but it must stay ordered and auditable.
+## Animaciones
 
-### Kairós Watch
-
-Purpose: show subcorridor/date confidence patterns.
-
-Watch is not an alert board. It shows when Copernicus evidence is usable, reviewable, or not inferable across dates and nodes.
-
-Auxiliary layers may appear here only as context:
-
-- SAR physical context
-- HydroClimate rainfall context
-- Exposure readiness / pending status
-
-They must not override the main Sentinel-2 confidence classification.
-
-### Kairós Cases
-
-Purpose: turn evidence layers into operational decision cases.
-
-Cases are the workflow/action view. They should show:
-
-- node
-- date
-- decision label
-- priority
-- recommended workflow
-- evidence gaps
-- verification status
-- lab escalation status
-
-Action buttons may preview evidence, generate a static brief preview, or prepare
-a verification request. They must not persist data, create backend state, invoke
-AI, or imply chemical confirmation.
-
-Lab escalation must remain disabled by default unless an authorized workflow
-exists. The copy should say that it requires territorial verification or
-competent authority.
-
-## Component Principles
-
-### Decision Card
-
-The main state should dominate:
-
-- **USABLE**
-- **REVISAR**
-- **NO INFERIR**
-
-The card should be sparse and decisive. It should answer what to do next.
-
-### Context Badges
-
-Context badges are small. They may explain why a technician should review, verify, or wait, but they must not create a new risk class.
-
-Allowed examples:
-
-- "Lluvia antecedente: revisar contexto territorial."
-- "SAR context available."
-- "Exposure layer pending official land-cover pull."
-
-### Evidence Identity
-
-Evidence identity must remain visible:
-
-- source
-- AOI
-- date
-- sensor
-- API status
-- ledger status
-
-### Limits Cards
-
-Scientific limits should be calm but visible. They protect the product from overclaiming.
-
-## Language
-
-Use:
-
-- "La observación Sentinel no tiene suficiente evidencia válida para una inferencia responsable."
-- "Usar para interpretación exploratoria con límites explícitos."
-- "Revisar contexto territorial."
-- "Solicitar verificación territorial."
-- "Capa auxiliar de contexto."
-- "Evidencia pendiente."
-- "Cadena auditable de evidencia."
-
-Avoid:
-
-- "detecta contaminación"
-- "agua segura"
-- "crisis validada"
-- "alerta de contaminación"
-- "pesticidas detectados"
-- "metales pesados detectados"
-- "patógenos detectados"
-- "IA detectó"
-- "confirmado por satélite"
-- "sensor fusion validated model"
-- "riesgo químico estimado"
-- "probabilidad de contaminación"
-
-## Scientific Limits
-
-Azuero Kairós does not detect contamination, water safety, pesticides, pathogens, heavy metals, dissolved chemical conditions, or crisis validation. Chemical or sanitary claims require laboratory analysis or authorized verification.
+- Compass fill: 600ms ease-out
+- Decision Stamp entrada: 300ms scale + opacity
+- Sonar rings en Lens: 4s pulse, infinite, staggered por nodo
+- Status bar color transition: 400ms ease
+- Hover states: 150ms ease
 
 ## Non-Negotiables
 
-- No chemical claims.
-- No water-safety claims.
-- No fake maps.
-- No AI slop.
-- No generic SaaS dashboard.
-- No data layer without a decision reason.
-- Do not let auxiliary context override Sentinel-2 confidence.
-- Preserve traceability.
-- Preserve uncertainty.
-- Make "do not infer" a strength, not a failure.
+- Sin reclamaciones químicas, de seguridad del agua, o de IA.
+- Sin mapas falsos. El Lens es ilustración esquemática declarada.
+- Sin dashboard genérico. Sin verde agrícola. Sin neón.
+- Sin capa de datos sin razón de decisión.
+- "No inferir" es una fortaleza del producto, no una falla.
+- Preservar trazabilidad. Preservar incertidumbre.

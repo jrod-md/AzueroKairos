@@ -1,0 +1,47 @@
+:root {
+  /* Backgrounds */
+  --bg-base: #ede4cc;
+  --bg-surface: #f5eedd;
+  --bg-archive: #e0d4b8;
+
+  /* Text */
+  --text-primary: #1d3557;
+  --text-secondary: #6b5040;
+  --text-muted: #9a8878;
+
+  /* Borders */
+  --border: #d4c4a0;
+  --border-subtle: rgba(212, 196, 160, 0.5);
+
+  /* State colors */
+  --state-usable: #4a8fa0;
+  --state-usable-bg: rgba(74, 143, 160, 0.08);
+  --state-no-inferir: #b84c2c;
+  --state-no-inferir-bg: rgba(184, 76, 44, 0.08);
+  --state-revisar: #e8922e;
+  --state-revisar-bg: rgba(232, 146, 46, 0.08);
+
+  /* Typography */
+  --font-display: 'Lora', 'Georgia', serif;
+  --font-data: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+  --font-ui: 'Inter', system-ui, sans-serif;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 40px;
+  --space-2xl: 64px;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-compass: 600ms ease-out;
+  --transition-stamp: 300ms ease;
+  --transition-status: 400ms ease;
+}
