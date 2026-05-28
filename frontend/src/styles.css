@@ -3678,6 +3678,33 @@ select {
   text-align: right;
 }
 
+.local-ai-controls .assistant-status-chip {
+  display: inline-flex;
+  max-width: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid color-mix(in oklch, var(--river) 12%, transparent);
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: color-mix(in oklch, var(--paper) 76%, transparent);
+  color: var(--river-soft);
+  text-align: center;
+  white-space: normal;
+}
+
+.local-ai-controls .assistant-status-chip.ai_ready {
+  border-color: color-mix(in oklch, var(--usable) 34%, transparent);
+  background: color-mix(in oklch, var(--usable) 8%, var(--paper));
+  color: color-mix(in oklch, var(--usable) 62%, var(--river));
+}
+
+.local-ai-controls .assistant-status-chip.not_configured {
+  border-color: color-mix(in oklch, var(--stone) 46%, transparent);
+  background: color-mix(in oklch, var(--stone) 10%, var(--paper));
+  color: var(--muted);
+}
+
 .local-ai-controls button {
   min-height: 36px;
   border: 0;

@@ -68,17 +68,8 @@ const HYDROCLIMATE_LIMITS =
 const HYDROCLIMATE_INSIGHT =
   "La lluvia antecedente no confirma riesgo. Ayuda a priorizar dónde revisar cuando la evidencia satelital es baja.";
 
-const LOCAL_AI_CONFIG = {
-  enabled:
-    String(import.meta.env.VITE_KAIROS_AI_ENABLED ?? "").toLowerCase() === "true",
-  endpoint: String(import.meta.env.VITE_KAIROS_AI_ENDPOINT ?? "").trim(),
-  model: String(import.meta.env.VITE_KAIROS_AI_MODEL ?? "").trim(),
-};
-
-const LOCAL_AI_TIMEOUT_MS = 8000;
-
-const LOCAL_AI_BRIEF_INSTRUCTIONS =
-  "Devuelve solo JSON estricto con decision_summary, evidence_used, evidence_gaps, limits, recommended_action y artifact_refs. Redacta en español sobrio. No decidas, no clasifiques, no crees evidencia y no cambies la clasificacion Sentinel-2. Usa solo el paquete recibido.";
+const EVIDENCE_BRIEF_ENDPOINT = "/api/evidence-brief";
+const EVIDENCE_BRIEF_TIMEOUT_MS = 15000;
 
 const CASES_INSIGHT =
   "Cada caso traduce capas de evidencia en una acción responsable.";
@@ -2663,49 +2654,51 @@ function LocalEvidenceAssistant({
     status: "fallback",
     message: "",
     brief: null,
+    model: "",
   });
 
   useEffect(() => {
-    setAssistantState({ status: "fallback", message: "", brief: null });
+    setAssistantState({ status: "fallback", message: "", brief: null, model: "" });
   }, [record.date, record.aoi, record.confidence_class]);
 
-  const localStatus = getLocalAiStatus();
   const displayedBrief = assistantState.brief || fallbackBrief;
-  const usingFallback = assistantState.status !== "local_ready";
+  const usingFallback = assistantState.status !== "ai_ready";
   const isLoading = assistantState.status === "loading";
+  const statusChipLabel = getAssistantStatusChipLabel(assistantState.status);
 
   async function handlePrepareBrief() {
-    if (!localStatus.ready) {
-      setAssistantState({
-        status: "fallback",
-        message: localStatus.message,
-        brief: null,
-      });
-      return;
-    }
-
     setAssistantState({
       status: "loading",
-      message: "Consultando modelo local configurado.",
+      message: "Preparando brief asistido desde el paquete cerrado.",
       brief: null,
+      model: "",
     });
 
     try {
-      const candidate = await requestLocalEvidenceBrief(evidencePacket);
+      const candidate = await requestEvidenceBrief(evidencePacket);
+      if (candidate?.mode === "fallback") {
+        throw new Error(candidate.reason || "fallback");
+      }
       const validated = validateAssistantBrief(candidate);
       if (!validated.ok) {
         throw new Error(validated.reason);
       }
       setAssistantState({
-        status: "local_ready",
+        status: "ai_ready",
         message: "Brief asistido preparado desde el paquete cerrado.",
         brief: validated.brief,
+        model: cleanAssistantString(candidate.model),
       });
     } catch (error) {
+      const reason = safeUiMessage(error);
+      const isMissingModel = reason === "missing_key";
       setAssistantState({
-        status: "fallback",
-        message: `Respuesta local descartada; ${safeUiMessage(error)}. Usando resumen determinístico.`,
+        status: isMissingModel ? "not_configured" : "fallback",
+        message: isMissingModel
+          ? "Modelo no configurado; usando resumen determinístico."
+          : `Respuesta asistida descartada; ${reason}. Usando resumen determinístico.`,
         brief: null,
+        model: "",
       });
     }
   }
@@ -2715,17 +2708,18 @@ function LocalEvidenceAssistant({
       <div className="local-ai-head">
         <div>
           <p className="small-label">Asistente de Evidencia Kairós</p>
-          <h2>IA local opcional, no decisoria</h2>
+          <h2>IA opcional, no decisoria</h2>
           <p>
-            La IA no decide ni crea evidencia; solo organiza un paquete de evidencia ya
-            auditado.
+            La IA no decide ni crea evidencia; organiza un paquete de evidencia ya auditado.
           </p>
         </div>
         <div className="local-ai-controls">
-          <span>{localStatus.message}</span>
+          <span className={`assistant-status-chip ${assistantState.status}`}>
+            {statusChipLabel}
+          </span>
           <button
             type="button"
-            disabled={isLoading || !localStatus.ready}
+            disabled={isLoading}
             onClick={handlePrepareBrief}
           >
             {isLoading ? "Preparando..." : "Preparar brief asistido"}
@@ -2734,8 +2728,11 @@ function LocalEvidenceAssistant({
       </div>
 
       <div className="local-ai-state-row">
-        <span>{usingFallback ? "Usando resumen determinístico" : "Brief asistido activo"}</span>
+        <span>{usingFallback ? "Resumen determinístico activo" : "Brief asistido activo"}</span>
         {assistantState.message ? <p>{assistantState.message}</p> : null}
+        {!usingFallback && assistantState.model ? (
+          <p>Modelo: {assistantState.model}</p>
+        ) : null}
       </div>
 
       <div className="local-ai-brief">
@@ -2800,7 +2797,7 @@ function buildSafeEvidencePacket({
     limits: [
       "Sentinel-2 mantiene la decision primaria.",
       "SAR, CLMS e HydroClimate son contexto auxiliar.",
-      "La IA local solo reorganiza el paquete cerrado de evidencia.",
+      "La IA asistida solo reorganiza el paquete cerrado de evidencia.",
       SCIENTIFIC_LIMITS,
     ],
   };
@@ -2833,26 +2830,24 @@ function buildDeterministicAssistantBrief(packet, organizerModel) {
   };
 }
 
-async function requestLocalEvidenceBrief(evidencePacket) {
-  const endpoint = LOCAL_AI_CONFIG.endpoint;
+async function requestEvidenceBrief(evidencePacket) {
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), LOCAL_AI_TIMEOUT_MS);
+  const timeout = window.setTimeout(() => controller.abort(), EVIDENCE_BRIEF_TIMEOUT_MS);
 
   try {
-    const response = await fetch(endpoint, {
+    const response = await fetch(EVIDENCE_BRIEF_ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       signal: controller.signal,
       body: JSON.stringify({
-        model: LOCAL_AI_CONFIG.model || undefined,
         evidence_packet: evidencePacket,
-        instructions: LOCAL_AI_BRIEF_INSTRUCTIONS,
       }),
     });
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
     const payload = await response.json();
+    if (payload?.mode === "fallback") return payload;
     return extractAssistantPayload(payload);
   } finally {
     window.clearTimeout(timeout);
@@ -2961,41 +2956,10 @@ function containsUnsafeAssistantClaim(value) {
   return fragments.some((parts) => parts.every((part) => text.includes(part)));
 }
 
-function getLocalAiStatus() {
-  if (!LOCAL_AI_CONFIG.enabled) {
-    return { ready: false, message: "Modelo local no configurado" };
-  }
-  if (!LOCAL_AI_CONFIG.endpoint) {
-    return { ready: false, message: "IA local opcional no configurada" };
-  }
-  if (!isLocalEndpointAllowed(LOCAL_AI_CONFIG.endpoint)) {
-    return { ready: false, message: "Endpoint local no permitido" };
-  }
-  return {
-    ready: true,
-    message: LOCAL_AI_CONFIG.model
-      ? `Modelo local configurado: ${LOCAL_AI_CONFIG.model}`
-      : "Modelo local configurado",
-  };
-}
-
-function isLocalEndpointAllowed(endpoint) {
-  try {
-    const base =
-      typeof window !== "undefined" ? window.location.origin : "http://localhost";
-    const url = new URL(endpoint, base);
-    const host = url.hostname.toLowerCase();
-    return (
-      host === "localhost" ||
-      host === "127.0.0.1" ||
-      host === "::1" ||
-      host.startsWith("192.168.") ||
-      host.startsWith("10.") ||
-      /^172\.(1[6-9]|2\d|3[0-1])\./.test(host)
-    );
-  } catch {
-    return false;
-  }
+function getAssistantStatusChipLabel(status) {
+  if (status === "ai_ready") return "IA conectada";
+  if (status === "not_configured") return "Modelo no configurado";
+  return "Resumen determinístico";
 }
 
 function buildPacketSarSummary(data, selectedDate) {
