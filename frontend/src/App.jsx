@@ -138,6 +138,7 @@ export default function App() {
   const [activeDetailTab, setActiveDetailTab] = useState("resumen");
   const [activeCaseId, setActiveCaseId] = useState(null);
   const [casePanelMode, setCasePanelMode] = useState("evidence");
+  const [decisionBarVisible, setDecisionBarVisible] = useState(false);
   const [loadState, setLoadState] = useState({ status: "loading", message: "" });
   const [watchLoadState, setWatchLoadState] = useState({
     status: "loading",
@@ -274,6 +275,24 @@ export default function App() {
     return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
+  useEffect(() => {
+    let frame = 0;
+
+    function handleScroll() {
+      if (frame) window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        setDecisionBarVisible(window.scrollY > 150);
+      });
+    }
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
   const selectedRecord = useMemo(() => {
     return (
       observations.find((record) => record.date === selectedDate) ??
@@ -318,6 +337,7 @@ export default function App() {
 
   const availableDates = observations.map((record) => record.date);
   const statusText = buildRunStatus(ledgerRows);
+  const selectedState = getStateMeta(selectedRecord);
 
   return (
     <main className="app-shell">
@@ -327,6 +347,14 @@ export default function App() {
         statusText={statusText}
       />
 
+      <StickyDecisionBar
+        ledger={selectedLedger}
+        onOpenEvidence={() => setPageAndHash("technical")}
+        record={selectedRecord}
+        state={selectedState}
+        visible={decisionBarVisible}
+      />
+
       {activePage === "decision" ? (
         <DecisionLanding
           availableDates={availableDates}
@@ -334,13 +362,8 @@ export default function App() {
           comparisonRecords={comparisonRecords}
           record={selectedRecord}
           ledger={selectedLedger}
-          hydroClimateContext={selectedHydroClimateContext}
-          watchData={watchData}
-          watchLoadState={watchLoadState}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
-          activeDetailTab={activeDetailTab}
-          setActiveDetailTab={setActiveDetailTab}
         />
       ) : activePage === "technical" ? (
         <TechnicalDashboard
@@ -594,15 +617,11 @@ function DecisionLanding({
   comparisonRecords,
   record,
   ledger,
-  hydroClimateContext,
-  watchData,
-  watchLoadState,
   selectedDate,
   setSelectedDate,
-  activeDetailTab,
-  setActiveDetailTab,
 }) {
   const state = getStateMeta(record);
+  const gates = buildDecisionGates(record, ledger, state);
   const evidenceStatus = [
     ["API", record.api_status === "OK" ? "OK" : record.api_status || "pendiente"],
     ["Ledger", ledger?.evidence_status ? "OK" : "sin registro"],
@@ -617,7 +636,7 @@ function DecisionLanding({
       >
         <article className="decision-primary-panel">
           <div className="decision-workflow-top">
-            <span>Decision</span>
+            <span>Decision Gate</span>
             <label>
               <span>Fecha</span>
               <select
@@ -650,12 +669,13 @@ function DecisionLanding({
               type="button"
               onClick={() => setPageAndHash("technical")}
             >
-              Ver trazabilidad
+              Ver evidencia
             </button>
           </div>
         </article>
 
         <aside className="decision-support-panel" aria-label="Estatus compacto de evidencia">
+          <DecisionGateChain gates={gates} />
           <CompactEvidenceStatus items={evidenceStatus} />
           <OfficialContrastStrip records={comparisonRecords} />
           <p className="decision-support-note">
@@ -801,6 +821,53 @@ function DecisionLanding({
         <ModulesStrip />
       </div>
     </>
+  );
+}
+
+function StickyDecisionBar({ record, ledger, state, visible, onOpenEvidence }) {
+  if (!visible) return null;
+
+  const apiLabel = record.api_status === "OK" ? "API OK" : record.api_status || "API pendiente";
+  const ledgerLabel = ledger?.evidence_status ? "Ledger OK" : "Ledger pendiente";
+
+  return (
+    <aside className={`sticky-decision-bar tone-${state.tone}`} aria-label="Decision fija">
+      <div className="sticky-decision-main">
+        <span>{record.date}</span>
+        <strong>{state.label}</strong>
+      </div>
+      <div className="sticky-decision-meta">
+        <span>{formatPercent(record.validPercent)} valido</span>
+        <span>{apiLabel}</span>
+        <span>{ledgerLabel}</span>
+      </div>
+      <button type="button" onClick={onOpenEvidence}>
+        Ver evidencia
+      </button>
+    </aside>
+  );
+}
+
+function DecisionGateChain({ gates }) {
+  return (
+    <section className="decision-gate-chain" aria-label="Cadena de decision">
+      <div className="decision-gate-heading">
+        <span>Cadena de compuertas</span>
+        <strong>La decision es la interfaz</strong>
+      </div>
+      <ol>
+        {gates.map((gate, index) => (
+          <li className={`decision-gate tone-${gate.tone}`} key={gate.label}>
+            <b>{index + 1}</b>
+            <div>
+              <span>{gate.label}</span>
+              <strong>{gate.status}</strong>
+              <p>{gate.detail}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
   );
 }
 
@@ -1469,7 +1536,7 @@ function KairosWatch({
         <div className="section-heading compact">
           <div>
             <p className="small-label">Patron Sentinel-2</p>
-            <h2>2025-06-10 abre la brecha; 2025-06-30 da contraste usable</h2>
+            <h2>2025-06-10 abre la brecha; 2025-06-30 confirma contraste usable.</h2>
           </div>
           <p>
             Cada celda resume confianza de observacion por nodo y fecha.
@@ -1562,11 +1629,12 @@ function ClmsCorridorStrip({ data, loadState }) {
           {nodes.map((node) => (
             <article className="clms-corridor-node" key={node.node_id}>
               <strong>{node.node_name || node.display_name || node.node_id}</strong>
+              <ClmsStackedBar node={node} />
               <dl>
-                <ClmsMiniMetric label="Agri." value={node.cropland_agriculture_pct} />
-                <ClmsMiniMetric label="Veg." value={node.tree_vegetation_pct} />
-                <ClmsMiniMetric label="Agua" value={node.water_wetland_pct} />
-                <ClmsMiniMetric label="Urb./suelo" value={node.built_bare_other_pct} />
+                <ClmsMiniMetric label="Agricultura" value={node.cropland_agriculture_pct} />
+                <ClmsMiniMetric label="Vegetacion" value={node.tree_vegetation_pct} />
+                <ClmsMiniMetric label="Agua/humedal" value={node.water_wetland_pct} />
+                <ClmsMiniMetric label="Urbano/suelo" value={node.built_bare_other_pct} />
               </dl>
             </article>
           ))}
@@ -1575,6 +1643,27 @@ function ClmsCorridorStrip({ data, loadState }) {
         <p className="availability-note">Contexto CLMS no disponible para esta demo.</p>
       )}
     </section>
+  );
+}
+
+function ClmsStackedBar({ node }) {
+  const segments = [
+    ["agriculture", node.cropland_agriculture_pct],
+    ["vegetation", node.tree_vegetation_pct],
+    ["water", node.water_wetland_pct],
+    ["built", node.built_bare_other_pct],
+  ];
+
+  return (
+    <div className="clms-stack" aria-label="Distribucion territorial CLMS">
+      {segments.map(([key, value]) => (
+        <span
+          className={`clms-stack-segment ${key}`}
+          key={key}
+          style={{ width: percentWidth(value) }}
+        />
+      ))}
+    </div>
   );
 }
 
@@ -1599,22 +1688,25 @@ function HydroClimateWatchSection({ data, loadState, selectedDate }) {
   }
   const selectedRows = observations.filter((row) => row.date === selectedDate);
   const flaggedRows = observations.filter(isHydroReviewContext);
-  const visibleRows = (selectedRows.length ? selectedRows : flaggedRows).slice(0, 6);
+  const visibleRows = (selectedRows.length ? selectedRows : flaggedRows).slice(0, 3);
+  const detailRows = flaggedRows
+    .filter((row) => row.date !== selectedDate)
+    .slice(0, 9);
 
   return (
     <section className="hydro-context-section" aria-label="Kairós HydroClimate">
       <div className="section-heading compact">
         <div>
           <p className="small-label">Contexto hidroclimático</p>
-          <h2>Resumen de contexto</h2>
+          <h2>Resumen por nodo para {selectedDate}</h2>
         </div>
-        <p>Solo contexto auxiliar para priorizar revision territorial.</p>
+        <p>Contexto auxiliar; no cambia la decision Sentinel-2.</p>
       </div>
 
-      <div className="hydro-context-grid">
+      <div className="hydro-context-list">
         {visibleRows.map((observation) => (
           <article
-            className={`hydro-context-card ${hydroStatusTone(
+            className={`hydro-context-row ${hydroStatusTone(
               observation.hydroclimate_status,
             )}`}
             key={`${observation.node_id}-${observation.date}`}
@@ -1644,6 +1736,42 @@ function HydroClimateWatchSection({ data, loadState, selectedDate }) {
           </article>
         ))}
       </div>
+
+      {detailRows.length ? (
+        <details className="hydro-detail-toggle">
+          <summary>Ver fechas con lluvia antecedente</summary>
+          <div className="hydro-context-list compact">
+            {detailRows.map((observation) => (
+              <article
+                className={`hydro-context-row ${hydroStatusTone(
+                  observation.hydroclimate_status,
+                )}`}
+                key={`${observation.node_id}-${observation.date}-detail`}
+              >
+                <div className="hydro-card-top">
+                  <div>
+                    <span>{observation.node_display_name || observation.node_id}</span>
+                    <strong>{observation.date}</strong>
+                  </div>
+                </div>
+                <dl className="hydro-rain-grid">
+                  <div>
+                    <dt>72h</dt>
+                    <dd>{formatRainMm(observation.rain_72h_mm)}</dd>
+                  </div>
+                  <div>
+                    <dt>7d</dt>
+                    <dd>{formatRainMm(observation.rain_7d_mm)}</dd>
+                  </div>
+                </dl>
+                <span className="hydro-status-chip">
+                  {translateHydroStatus(observation.hydroclimate_status)}
+                </span>
+              </article>
+            ))}
+          </div>
+        </details>
+      ) : null}
 
       <div className="hydro-context-notes">
         <p>{HYDROCLIMATE_INSIGHT}</p>
@@ -1801,10 +1929,11 @@ function KairosCases({
             <p>Corredor conserva el panorama regional. Esta vista organiza la accion.</p>
           </div>
 
-          <div className="case-card-grid">
+          <div className="case-queue-list">
             {cases.map((caseItem) => (
               <DecisionCaseCard
                 caseItem={caseItem}
+                exposureContext={exposureContext}
                 isActive={selectedCase?.case_id === caseItem.case_id}
                 key={caseItem.case_id}
                 onSelect={selectCase}
@@ -1831,41 +1960,37 @@ function KairosCases({
   );
 }
 
-function DecisionCaseCard({ caseItem, isActive, onSelect }) {
+function DecisionCaseCard({ caseItem, exposureContext, isActive, onSelect }) {
   const tone = decisionCaseTone(caseItem);
   const verificationEnabled = canRequestVerification(caseItem);
   const actionLabel = actionQueueLabel(caseItem);
+  const evidenceGaps = caseEvidenceGaps(caseItem, exposureContext);
+  const gapSummary = evidenceGaps[0] ?? "Sin brecha registrada.";
 
   return (
-    <article className={`case-card tone-${tone} ${isActive ? "active" : ""}`}>
-      <div className="case-card-top">
-        <div>
-          <span>{caseItem.node_display_name || caseItem.node_id}</span>
-          <strong>{caseItem.date}</strong>
+    <article className={`case-card case-queue-row tone-${tone} ${isActive ? "active" : ""}`}>
+      <button
+        className="case-row-main"
+        type="button"
+        onClick={() => onSelect(caseItem, "evidence")}
+      >
+        <div className="case-row-priority">
+          <b>{caseItem.priority_level || "normal"}</b>
+          <span>{actionLabel}</span>
         </div>
-        <b className="case-priority-pill">{caseItem.priority_level || "normal"}</b>
-      </div>
-
-      <div className="case-label-row">
+        <div>
+          <span className="case-row-node">{caseItem.node_display_name || caseItem.node_id}</span>
+          <strong className="case-row-date">{caseItem.date}</strong>
+        </div>
         <span className={`case-label tone-${tone}`}>{caseItem.decision_label}</span>
-        <span>{actionLabel}</span>
-      </div>
-
-      <div className="case-meta-grid">
-        <CaseFact label="Workflow" value={caseItem.recommended_workflow} />
-        <CaseFact label="Verificación" value={caseItem.field_verification_status} />
-        <CaseFact label="Laboratorio" value={caseItem.lab_escalation_status} />
-      </div>
-
-      <div className="case-gap-box">
-        <span>Brechas de evidencia</span>
-        <ul>
-          {splitEvidenceGaps(caseItem.evidence_gaps).map((gap) => (
-            <li key={gap}>{gap}</li>
-          ))}
-        </ul>
-      </div>
-
+        <strong className="case-row-percent">
+          {formatCasePercent(caseItem.primary_validPercent)} valido
+        </strong>
+        <p className="case-row-action">
+          {caseItem.recommended_action || caseItem.recommended_workflow}
+        </p>
+        <p className="case-row-gap">{gapSummary}</p>
+      </button>
       <div className="case-actions" aria-label="Acciones del caso">
         <button type="button" onClick={() => onSelect(caseItem, "evidence")}>
           Ver evidencia
@@ -1878,12 +2003,12 @@ function DecisionCaseCard({ caseItem, isActive, onSelect }) {
           disabled={!verificationEnabled}
           title={
             verificationEnabled
-              ? "Abre una vista de solicitud sin guardar datos."
+              ? "Abre una vista de verificacion sin guardar datos."
               : "Disponible solo para NO INFERIR o REVISAR."
           }
           onClick={() => onSelect(caseItem, "verification")}
         >
-          Solicitar verificación
+          Vista de verificacion
         </button>
       </div>
       <p className="case-lab-copy">{LAB_ESCALATION_COPY}</p>
@@ -1896,6 +2021,7 @@ function CaseActionPanel({ caseItem, exposureContext, mode }) {
     exposureContext?.data_status === "exposure_available"
       ? "CLMS disponible"
       : caseItem?.exposure_status || "pendiente";
+  const evidenceGaps = caseEvidenceGaps(caseItem, exposureContext);
 
   if (!caseItem) {
     return (
@@ -1927,9 +2053,9 @@ function CaseActionPanel({ caseItem, exposureContext, mode }) {
 
   if (mode === "verification") {
     return (
-      <aside className="case-action-panel" aria-label="Solicitud de verificación">
+      <aside className="case-action-panel" aria-label="Vista de verificacion territorial">
         <span>Verificación territorial</span>
-        <h3>Solicitud preparada, no persistida</h3>
+        <h3>Ficha de verificacion, no persistida</h3>
         <p>
           Este flujo documenta que el caso requiere revisión territorial. No guarda
           datos, no abre backend y no reemplaza la autoridad técnica.
@@ -1938,7 +2064,7 @@ function CaseActionPanel({ caseItem, exposureContext, mode }) {
           <CaseDataPair label="Nodo" value={caseItem.node_display_name || caseItem.node_id} />
           <CaseDataPair label="Fecha" value={caseItem.date} />
           <CaseDataPair label="Estado" value={caseItem.field_verification_status} />
-          <CaseDataPair label="Laboratorio" value={caseItem.lab_escalation_status} />
+          <CaseDataPair label="Limite externo" value={caseItem.lab_escalation_status} />
         </dl>
         <p className="case-panel-limit">{LAB_ESCALATION_COPY}</p>
       </aside>
@@ -1957,7 +2083,7 @@ function CaseActionPanel({ caseItem, exposureContext, mode }) {
             caseItem.primary_validPercent,
           )}`}
         />
-          <CaseDataPair label="Exposicion" value={exposureLabel} />
+        <CaseDataPair label="Contexto CLMS" value={exposureLabel} />
         <CaseDataPair
           label="HydroClimate"
           value={translateHydroStatus(caseItem.hydroclimate_status)}
@@ -1967,7 +2093,7 @@ function CaseActionPanel({ caseItem, exposureContext, mode }) {
       <div className="case-panel-gaps">
         <strong>Brechas</strong>
         <ul>
-          {splitEvidenceGaps(caseItem.evidence_gaps).map((gap) => (
+          {evidenceGaps.map((gap) => (
             <li key={gap}>{gap}</li>
           ))}
         </ul>
@@ -2042,33 +2168,59 @@ function TechnicalDashboard({
       </div>
 
       <EvidencePipeline compact={false} />
-      <TechnicalAuditReceipt record={record} ledger={ledger} state={state} />
-      <EvidencePassport
-        comparisonRecords={comparisonRecords}
-        ledger={ledger}
-        record={record}
-        state={state}
-      />
-      <ClmsExposureContextBlock
-        data={exposureContext}
-        loadState={exposureLoadState}
-      />
 
-      <div className="technical-hero-grid">
-        <DecisionCard record={record} state={state} />
-        <MeaningPanel record={record} ledger={ledger} state={state} />
-      </div>
+      <EvidenceDisclosure eyebrow="Recibo de trazabilidad" open title="Cadena verificable">
+        <TechnicalAuditReceipt record={record} ledger={ledger} state={state} />
+      </EvidenceDisclosure>
 
-      <ConfidenceThresholdVisual record={record} compact />
-      <TerritorialMap record={record} state={state} variant="technical" />
-      <ComparisonSection records={comparisonRecords} />
-      <MetricsSection record={record} />
-      <SarTechnicalNote data={sarContext} loadState={sarLoadState} />
-      <HydroClimateTechnicalNote row={hydroClimateContext} />
-      <TechnicalTraceability record={record} ledger={ledger} />
-      <BriefPreview record={record} ledger={ledger} state={state} />
-      <ScientificLimits />
+      <EvidenceDisclosure eyebrow="Metricas Sentinel-2" open title="Calidad de observacion">
+        <MetricsSection record={record} />
+        <ConfidenceThresholdVisual record={record} compact />
+        <ComparisonSection records={comparisonRecords} />
+      </EvidenceDisclosure>
+
+      <EvidenceDisclosure eyebrow="Artefactos" title="Rutas, brief y pasaporte completo">
+        <TechnicalTraceability record={record} ledger={ledger} />
+        <BriefPreview record={record} ledger={ledger} state={state} />
+        <EvidencePassport
+          comparisonRecords={comparisonRecords}
+          ledger={ledger}
+          record={record}
+          state={state}
+        />
+      </EvidenceDisclosure>
+
+      <EvidenceDisclosure eyebrow="Contexto CLMS" title="Territorio auxiliar">
+        <ClmsExposureContextBlock
+          data={exposureContext}
+          loadState={exposureLoadState}
+        />
+      </EvidenceDisclosure>
+
+      <EvidenceDisclosure eyebrow="HydroClimate" title="Contexto de lluvia">
+        <HydroClimateTechnicalNote row={hydroClimateContext} />
+      </EvidenceDisclosure>
+
+      <EvidenceDisclosure eyebrow="SAR" title="Nota tecnica Sentinel-1">
+        <SarTechnicalNote data={sarContext} loadState={sarLoadState} />
+      </EvidenceDisclosure>
+
+      <EvidenceDisclosure eyebrow="Limites cientificos" title="Frontera de inferencia">
+        <ScientificLimits />
+      </EvidenceDisclosure>
     </section>
+  );
+}
+
+function EvidenceDisclosure({ eyebrow, title, children, open = false }) {
+  return (
+    <details className="evidence-disclosure" open={open}>
+      <summary>
+        <span>{eyebrow}</span>
+        <strong>{title}</strong>
+      </summary>
+      <div className="evidence-disclosure-body">{children}</div>
+    </details>
   );
 }
 
@@ -2092,12 +2244,6 @@ function TechnicalAuditReceipt({ record, ledger, state }) {
     ["confidence class", record.confidence_class],
     ["decision status", record.decision],
     ["Decisión pública", `${state.label}: ${state.decision}`],
-    ["raw JSON path", record.raw_json_path || ledger?.raw_json_path],
-    ["processed CSV path", ledger?.processed_csv_path],
-    ["brief path", record.brief_path || ledger?.brief_path],
-    ["run_id", ledger?.run_id],
-    ["commit hash", ledger?.git_commit],
-    ["generated_at", ledger?.generated_at_utc],
   ];
 
   return (
@@ -2400,6 +2546,12 @@ function TechnicalTraceability({ record, ledger }) {
           label="ledger status"
           value={ledger?.evidence_status ?? "sin registro"}
         />
+        <TraceItem label="run_id" value={ledger?.run_id ?? "pendiente"} />
+        <TraceItem label="commit hash" value={ledger?.git_commit ?? "pendiente"} />
+        <TraceItem
+          label="generated_at"
+          value={ledger?.generated_at_utc ?? "pendiente"}
+        />
       </div>
     </section>
   );
@@ -2578,6 +2730,70 @@ function getStateMeta(record) {
   };
 }
 
+function buildDecisionGates(record, ledger, state) {
+  const apiOk = record.api_status === "OK";
+  const qualityTone =
+    record.confidence_class === "usable"
+      ? "pass"
+      : record.confidence_class === "do_not_infer"
+        ? "fail"
+        : "review";
+  const qualityStatus =
+    qualityTone === "pass"
+      ? `PASA, ${formatPercent(record.validPercent)} valido`
+      : qualityTone === "fail"
+        ? `FALLA, ${formatPercent(record.validPercent)} valido`
+        : `REVISAR, ${formatPercent(record.validPercent)} valido`;
+  const inferenceStatus =
+    record.confidence_class === "usable"
+      ? "USABLE con limites"
+      : record.confidence_class === "do_not_infer"
+        ? "NO INFERIR"
+        : state.label;
+
+  return [
+    {
+      label: "API / adquisicion",
+      status: apiOk ? "OK" : record.api_status || "pendiente",
+      tone: apiOk ? "pass" : "review",
+      detail: "Confirma ejecucion tecnica de la consulta Sentinel-2.",
+    },
+    {
+      label: "Calidad de observacion",
+      status: qualityStatus,
+      tone: qualityTone,
+      detail:
+        qualityTone === "pass"
+          ? "La fraccion valida supera el umbral de interpretacion exploratoria."
+          : qualityTone === "fail"
+            ? "La fraccion valida no sostiene una inferencia responsable."
+            : "La fraccion valida requiere revision antes de interpretar.",
+    },
+    {
+      label: "Inferencia",
+      status: inferenceStatus,
+      tone: qualityTone,
+      detail: record.reason_es || state.explanation,
+    },
+    {
+      label: "Accion",
+      status: decisionActionShort(record),
+      tone: "neutral",
+      detail: record.recommended_action_es || state.nextAction,
+    },
+  ];
+}
+
+function decisionActionShort(record) {
+  if (record.confidence_class === "do_not_infer") {
+    return "nueva adquisicion o verificacion territorial";
+  }
+  if (record.confidence_class === "usable") {
+    return "interpretacion hidro-sedimentaria exploratoria";
+  }
+  return "revision y verificacion territorial";
+}
+
 function findLedgerForRecord(rows, record) {
   return rows.find(
     (row) =>
@@ -2608,8 +2824,8 @@ function buildRunStatus(ledgerRows) {
     String(row.evidence_status ?? "").includes("official_api_ok"),
   );
   return hasOkLedger
-    ? "Official Copernicus run · Evidence ledger OK"
-    : "Official Copernicus run · Ledger pendiente";
+    ? "Ejecucion Copernicus oficial · Ledger OK"
+    : "Ejecucion Copernicus oficial · Ledger pendiente";
 }
 
 function normalizeRecord(record) {
@@ -2833,10 +3049,14 @@ function translateHydroStatus(status) {
 
 function translateContextAction(value) {
   const labels = {
+    "Use rainfall as background context only; keep Sentinel confidence classification unchanged.":
+      "Contexto auxiliar; no cambia la decision Sentinel-2",
     "Use rainfall as background context only":
-      "Usar lluvia solo como contexto de fondo.",
+      "Contexto auxiliar; no cambia la decision Sentinel-2",
+    "Review antecedent rainfall context before interpreting runoff-sensitive satellite observations.":
+      "Revisar lluvia antecedente antes de interpretar observaciones sensibles a escorrentia",
     "Review antecedent rainfall context":
-      "Revisar contexto de lluvia antecedente.",
+      "Revisar lluvia antecedente antes de interpretar observaciones sensibles a escorrentia",
   };
   return labels[value] || value || "Contexto no disponible.";
 }
@@ -2885,6 +3105,21 @@ function canRequestVerification(caseItem) {
   return label === "NO INFERIR" || label === "REVISAR";
 }
 
+function caseEvidenceGaps(caseItem, exposureContext) {
+  const gaps = splitEvidenceGaps(caseItem?.evidence_gaps);
+  if (exposureContext?.data_status !== "exposure_available") {
+    return gaps;
+  }
+
+  return gaps.map((gap) => {
+    const normalized = stripAccents(gap).toLowerCase();
+    if (normalized.includes("exposicion") || normalized.includes("clms")) {
+      return "CLMS disponible como contexto territorial auxiliar.";
+    }
+    return gap;
+  });
+}
+
 function splitEvidenceGaps(value) {
   if (!value) return ["Sin brechas registradas."];
   return String(value)
@@ -2893,11 +3128,21 @@ function splitEvidenceGaps(value) {
     .filter(Boolean);
 }
 
+function stripAccents(value) {
+  return String(value).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
 function formatCasePercent(value) {
   if (value === undefined || value === null || value === "") return "pendiente";
   const numeric = Number(value);
   if (!Number.isFinite(numeric)) return String(value);
   return formatPercent(numeric);
+}
+
+function percentWidth(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric <= 0) return "0%";
+  return `${Math.min(100, Math.max(0, numeric))}%`;
 }
 
 function formatNumber(value, options) {
