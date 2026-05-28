@@ -135,7 +135,6 @@ export default function App() {
   const [exposureContext, setExposureContext] = useState(null);
   const [selectedDate, setSelectedDate] = useState(DEFAULT_DATE);
   const [activePage, setActivePage] = useState(getInitialPage);
-  const [activeDetailTab, setActiveDetailTab] = useState("resumen");
   const [activeCaseId, setActiveCaseId] = useState(null);
   const [casePanelMode, setCasePanelMode] = useState("evidence");
   const [decisionBarVisible, setDecisionBarVisible] = useState(false);
@@ -365,19 +364,16 @@ export default function App() {
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
         />
-      ) : activePage === "technical" ? (
-        <TechnicalDashboard
-          availableDates={availableDates}
-          comparisonRecords={comparisonRecords}
-          record={selectedRecord}
-          ledger={selectedLedger}
-          hydroClimateContext={selectedHydroClimateContext}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-          sarContext={sarContext}
-          sarLoadState={sarLoadState}
+      ) : activePage === "watch" ? (
+        <KairosWatch
+          data={watchData}
+          loadState={watchLoadState}
+          hydroClimate={hydroClimate}
+          hydroClimateLoadState={hydroClimateLoadState}
           exposureContext={exposureContext}
           exposureLoadState={exposureLoadState}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
         />
       ) : activePage === "cases" ? (
         <KairosCases
@@ -390,15 +386,18 @@ export default function App() {
           exposureContext={exposureContext}
         />
       ) : (
-        <KairosWatch
-          data={watchData}
-          loadState={watchLoadState}
-          hydroClimate={hydroClimate}
-          hydroClimateLoadState={hydroClimateLoadState}
-          exposureContext={exposureContext}
-          exposureLoadState={exposureLoadState}
+        <TechnicalDashboard
+          availableDates={availableDates}
+          comparisonRecords={comparisonRecords}
+          record={selectedRecord}
+          ledger={selectedLedger}
+          hydroClimateContext={selectedHydroClimateContext}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
+          sarContext={sarContext}
+          sarLoadState={sarLoadState}
+          exposureContext={exposureContext}
+          exposureLoadState={exposureLoadState}
         />
       )}
     </main>
@@ -584,13 +583,6 @@ function Header({ activePage, setActivePage, statusText }) {
           Decisión
         </button>
         <button
-          className={activePage === "technical" ? "active" : ""}
-          type="button"
-          onClick={() => setActivePage("technical")}
-        >
-          Evidencia
-        </button>
-        <button
           className={activePage === "watch" ? "active" : ""}
           type="button"
           onClick={() => setActivePage("watch")}
@@ -603,6 +595,13 @@ function Header({ activePage, setActivePage, statusText }) {
           onClick={() => setActivePage("cases")}
         >
           Acción
+        </button>
+        <button
+          className={activePage === "technical" ? "active" : ""}
+          type="button"
+          onClick={() => setActivePage("technical")}
+        >
+          Evidencia
         </button>
       </nav>
 
@@ -622,12 +621,6 @@ function DecisionLanding({
 }) {
   const state = getStateMeta(record);
   const gates = buildDecisionGates(record, ledger, state);
-  const evidenceStatus = [
-    ["API", record.api_status === "OK" ? "OK" : record.api_status || "pendiente"],
-    ["Ledger", ledger?.evidence_status ? "OK" : "sin registro"],
-    ["Brief", record.brief_path || ledger?.brief_path ? "disponible" : "pendiente"],
-  ];
-
   return (
     <>
       <section
@@ -676,7 +669,6 @@ function DecisionLanding({
 
         <aside className="decision-support-panel" aria-label="Estatus compacto de evidencia">
           <DecisionGateChain gates={gates} />
-          <CompactEvidenceStatus items={evidenceStatus} />
           <OfficialContrastStrip records={comparisonRecords} />
           <p className="decision-support-note">
             API OK confirma ejecucion tecnica; no confirma evidencia suficiente
@@ -695,133 +687,6 @@ function DecisionLanding({
     </>
   );
 
-  const showHydroBadge = isHydroReviewContext(hydroClimateContext);
-
-  return (
-    <>
-      <section className="decision-hero" aria-label="Reporte de decisión">
-        <article className={`report-panel tone-${state.tone}`}>
-          <div className="report-controls">
-            <span>Reporte de decisión</span>
-            <label>
-              <span>Fecha</span>
-              <select
-                value={selectedDate}
-                onChange={(event) => setSelectedDate(event.target.value)}
-              >
-                {availableDates.map((date) => (
-                  <option key={date} value={date}>
-                    {date}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-
-          <p className="risk-note">Una mala inferencia también es un riesgo.</p>
-
-          <div className="decision-content" key={record.date}>
-            <div className="decision-word">{state.label}</div>
-            <div className="evidence-percent">
-              <strong>{formatPercent(record.validPercent)}</strong>
-              <span>evidencia válida</span>
-            </div>
-
-            <div className="record-facts" aria-label="Metadatos de la observación">
-              <span>Fecha: {record.date}</span>
-              <span>AOI: {record.aoi}</span>
-            </div>
-
-            {showHydroBadge ? (
-              <div
-                className={`hydro-decision-badge ${hydroStatusTone(
-                  hydroClimateContext.hydroclimate_status,
-                )}`}
-              >
-                Lluvia antecedente: revisar contexto territorial.
-              </div>
-            ) : null}
-
-            <p className="plain-explanation">{state.explanation}</p>
-
-            <div className="next-step-box">
-              <span>Qué debe pasar ahora</span>
-              <p>{state.nextAction}</p>
-            </div>
-
-            <EvidencePassport
-              comparisonRecords={comparisonRecords}
-              ledger={ledger}
-              record={record}
-              state={state}
-            />
-          </div>
-        </article>
-
-        <aside className="why-panel instrument-panel">
-          <div className="why-copy">
-            <p className="small-label">Por qué importa</p>
-            <h2>La confianza cambia la decisión.</h2>
-            <CompactComparison records={comparisonRecords} />
-            <p className="insight-text">
-              El sistema no fuerza alertas. Decide cuándo Copernicus puede usarse y
-              cuándo no.
-            </p>
-          </div>
-          <ConfidenceThresholdVisual record={record} />
-          <TerritorialMap record={record} state={state} />
-          <AzueroCorridorEvidenceView
-            data={watchData}
-            loadState={watchLoadState}
-            selectedDate={selectedDate}
-          />
-        </aside>
-      </section>
-
-      <div className="decision-timeline-row">
-        <ObservationTimeline
-          records={observations}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDate}
-        />
-      </div>
-
-      <KairosFieldLite record={record} />
-
-      <div className="decision-below-fold">
-        <section className="detail-tabs" aria-label="Detalle de la decisión">
-          <div className="tab-list" role="tablist" aria-label="Secciones de detalle">
-            {DETAIL_TABS.map((tab) => (
-              <button
-                key={tab.id}
-                className={activeDetailTab === tab.id ? "active" : ""}
-                type="button"
-                role="tab"
-                aria-selected={activeDetailTab === tab.id}
-                onClick={() => setActiveDetailTab(tab.id)}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="tab-panel" role="tabpanel">
-            {activeDetailTab === "resumen" ? (
-              <SummaryTab record={record} />
-            ) : null}
-            {activeDetailTab === "evidencia" ? <EvidenceTab record={record} /> : null}
-            {activeDetailTab === "trazabilidad" ? (
-              <TraceabilityTab record={record} ledger={ledger} />
-            ) : null}
-            {activeDetailTab === "limites" ? <LimitsTab /> : null}
-          </div>
-        </section>
-
-        <DecisionLimitsNotice />
-        <ModulesStrip />
-      </div>
-    </>
-  );
 }
 
 function StickyDecisionBar({ record, ledger, state, visible, onOpenEvidence }) {
@@ -2167,19 +2032,21 @@ function TechnicalDashboard({
         />
       </div>
 
-      <EvidencePipeline compact={false} />
+      <EvidenceDisclosure eyebrow="Cadena auditable" open title="CDSE a decision publica">
+        <EvidencePipeline compact={false} />
+      </EvidenceDisclosure>
 
       <EvidenceDisclosure eyebrow="Recibo de trazabilidad" open title="Cadena verificable">
         <TechnicalAuditReceipt record={record} ledger={ledger} state={state} />
       </EvidenceDisclosure>
 
-      <EvidenceDisclosure eyebrow="Metricas Sentinel-2" open title="Calidad de observacion">
+      <EvidenceDisclosure eyebrow="Metricas Sentinel-2 detalladas" title="Calidad de observacion">
         <MetricsSection record={record} />
         <ConfidenceThresholdVisual record={record} compact />
         <ComparisonSection records={comparisonRecords} />
       </EvidenceDisclosure>
 
-      <EvidenceDisclosure eyebrow="Artefactos" title="Rutas, brief y pasaporte completo">
+      <EvidenceDisclosure eyebrow="Artefactos y rutas" title="Brief y pasaporte completo">
         <TechnicalTraceability record={record} ledger={ledger} />
         <BriefPreview record={record} ledger={ledger} state={state} />
         <EvidencePassport
@@ -3048,17 +2915,15 @@ function translateHydroStatus(status) {
 }
 
 function translateContextAction(value) {
-  const labels = {
-    "Use rainfall as background context only; keep Sentinel confidence classification unchanged.":
-      "Contexto auxiliar; no cambia la decision Sentinel-2",
-    "Use rainfall as background context only":
-      "Contexto auxiliar; no cambia la decision Sentinel-2",
-    "Review antecedent rainfall context before interpreting runoff-sensitive satellite observations.":
-      "Revisar lluvia antecedente antes de interpretar observaciones sensibles a escorrentia",
-    "Review antecedent rainfall context":
-      "Revisar lluvia antecedente antes de interpretar observaciones sensibles a escorrentia",
-  };
-  return labels[value] || value || "Contexto no disponible.";
+  if (!value) return "Contexto no disponible.";
+  const normalized = stripAccents(value).toLowerCase();
+  if (normalized.includes("antecedent") || normalized.includes("lluvia antecedente")) {
+    return "Revisar lluvia antecedente antes de interpretar observaciones sensibles a escorrentia.";
+  }
+  if (normalized.includes("rainfall") || normalized.includes("contexto auxiliar")) {
+    return "Contexto auxiliar; no cambia la clasificacion Sentinel-2.";
+  }
+  return value;
 }
 
 function sortHydroObservation(a, b) {
