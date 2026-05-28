@@ -2367,6 +2367,15 @@ function TechnicalDashboard({
         />
       </div>
 
+      <EvidenceOrganizer
+        exposureContext={exposureContext}
+        hydroClimateContext={hydroClimateContext}
+        ledger={ledger}
+        record={record}
+        sarContext={sarContext}
+        state={state}
+      />
+
       <EvidenceDisclosure eyebrow="Cadena auditable" open title="CDSE a decision publica">
         <EvidencePipeline compact={false} />
       </EvidenceDisclosure>
@@ -2424,6 +2433,173 @@ function EvidenceDisclosure({ eyebrow, title, children, open = false }) {
       <div className="evidence-disclosure-body">{children}</div>
     </details>
   );
+}
+
+function EvidenceOrganizer({
+  record,
+  ledger,
+  state,
+  sarContext,
+  exposureContext,
+  hydroClimateContext,
+}) {
+  const model = buildEvidenceOrganizerModel({
+    record,
+    ledger,
+    state,
+    sarContext,
+    exposureContext,
+    hydroClimateContext,
+  });
+
+  return (
+    <section className={`evidence-organizer tone-${state.tone}`} aria-label="Resumen de evidencia">
+      <div className="evidence-organizer-head">
+        <div>
+          <p className="small-label">Resumen de evidencia</p>
+          <h2>{model.title}</h2>
+        </div>
+        <span>{model.badge}</span>
+      </div>
+
+      <div className="evidence-organizer-body">
+        {model.sections.map((section) => (
+          <article className="organizer-section" key={section.heading}>
+            <h3>{section.heading}</h3>
+            <ul>
+              {section.items.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function buildEvidenceOrganizerModel({
+  record,
+  ledger,
+  state,
+  sarContext,
+  exposureContext,
+  hydroClimateContext,
+}) {
+  const decisionLabel = state.label;
+  const apiStatus = record.api_status || "pendiente";
+  const validEvidence = formatPercent(record.validPercent);
+  const isNoInfer = record.confidence_class === "do_not_infer";
+  const isUsable = record.confidence_class === "usable";
+  const decisionReason = isNoInfer
+    ? `API ${apiStatus} confirma ejecucion tecnica; no confirma evidencia suficiente para inferir. La fraccion valida Sentinel-2 es ${validEvidence}.`
+    : isUsable
+      ? `La observacion permite interpretacion hidro-sedimentaria exploratoria con limites explicitos porque la fraccion valida Sentinel-2 es ${validEvidence}.`
+      : `La fraccion valida Sentinel-2 es ${validEvidence}; la observacion requiere revision antes de interpretar.`;
+  const action = record.recommended_action_es || record.recommended_action || state.nextAction || state.action;
+
+  return {
+    title: `${decisionLabel} para ${record.date}`,
+    badge: "organizado desde JSON publico",
+    sections: [
+      {
+        heading: "Qué sabemos",
+        items: compactItems([
+          `Fecha ${record.date}; AOI ${record.aoi || "no disponible"}.`,
+          `Sentinel-2 es la capa primaria y reporta ${validEvidence} de evidencia valida.`,
+          `API ${apiStatus}; ledger ${ledger?.evidence_status || "sin registro"}.`,
+          `Decision publicada: ${decisionLabel}.`,
+        ]),
+      },
+      {
+        heading: "Qué no sabemos",
+        items: compactItems([
+          isNoInfer
+            ? "No hay evidencia valida suficiente para una inferencia responsable."
+            : "La lectura no debe extenderse mas alla de confianza de observacion.",
+          "Las capas auxiliares no cambian la clasificacion Sentinel-2.",
+          "La verificacion territorial, laboratorio o autoridad competente quedan fuera de esta interfaz.",
+        ]),
+      },
+      {
+        heading: `Por qué la decisión es ${decisionLabel}`,
+        items: compactItems([
+          decisionReason,
+          record.reason_es || record.reason || state.explanation,
+          isUsable
+            ? "La interpretacion queda limitada a lectura exploratoria con trazabilidad."
+            : null,
+        ]),
+      },
+      {
+        heading: "Qué acción responsable sigue",
+        items: compactItems([
+          action,
+          isNoInfer
+            ? "Mantener NO INFERIR hasta contar con evidencia Sentinel-2 suficiente o verificacion territorial."
+            : "Mantener limites visibles al usar la observacion.",
+        ]),
+      },
+      {
+        heading: "Artefactos de trazabilidad",
+        items: compactItems([
+          ledger?.processed_csv_path
+            ? `CSV procesado: ${ledger.processed_csv_path}`
+            : "CSV procesado: no disponible.",
+          ledger?.brief_path || record.brief_path
+            ? `Brief: ${ledger?.brief_path || record.brief_path}`
+            : "Brief: no disponible.",
+          ledger?.raw_json_path || record.raw_json_path
+            ? `JSON fuente registrado: ${ledger?.raw_json_path || record.raw_json_path}`
+            : "JSON fuente: no disponible.",
+          ledger?.run_id ? `run_id: ${ledger.run_id}` : null,
+        ]),
+      },
+      {
+        heading: "Capas auxiliares",
+        items: compactItems([
+          buildOrganizerSarText(sarContext, record.date),
+          buildOrganizerClmsText(exposureContext),
+          buildOrganizerHydroText(hydroClimateContext),
+          "Estas capas aportan contexto auxiliar; la decision Sentinel-2 se mantiene.",
+        ]),
+      },
+    ],
+  };
+}
+
+function compactItems(items) {
+  return items.filter((item) => typeof item === "string" && item.trim());
+}
+
+function buildOrganizerSarText(data, selectedDate) {
+  if (data?.data_status !== "sar_context_available") {
+    return "SAR: contexto auxiliar no disponible para esta demo.";
+  }
+  const rows = getSarRows(data).filter((row) => row.target_date === selectedDate);
+  if (!rows.length) return "SAR: sin ventana registrada para la fecha seleccionada.";
+  const available = rows.filter(
+    (row) => row.context_status === "sar_context_available",
+  ).length;
+  return `SAR: ${available}/${rows.length} ventanas con continuidad auxiliar; no se usa como evidencia principal.`;
+}
+
+function buildOrganizerClmsText(data) {
+  if (data?.data_status !== "exposure_available") {
+    return "CLMS 2020: contexto territorial no disponible para esta demo.";
+  }
+  const nodes = Array.isArray(data.summary_by_node)
+    ? data.summary_by_node
+    : Array.isArray(data.nodes)
+      ? data.nodes
+      : [];
+  return `CLMS 2020: contexto territorial auxiliar disponible para ${nodes.length || 0} nodos.`;
+}
+
+function buildOrganizerHydroText(row) {
+  if (!row) return "HydroClimate: contexto de lluvia antecedente no disponible.";
+  const status = translateHydroStatus(row.hydroclimate_status || row.context_status);
+  return `HydroClimate: ${status}; 72h ${formatRainMm(row.rain_72h_mm)}, 7d ${formatRainMm(row.rain_7d_mm)}.`;
 }
 
 function TechnicalAuditReceipt({ record, ledger, state }) {
