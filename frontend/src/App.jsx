@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import Navigation from "./components/Navigation/Navigation.jsx";
 import StatusBar from "./components/StatusBar/StatusBar.jsx";
 import TerritorialMap from "./components/TerritorialMap.jsx";
 import DecisionStamp from "./components/DecisionStamp/DecisionStamp.jsx";
@@ -14,6 +13,19 @@ const CORRIDOR_NODE_ORDER = [
   "la_villa_central",
   "la_villa_este",
 ];
+
+const NAV_ITEMS = [
+  { id: "impact", label: "Impacto" },
+  { id: "decision", label: "Decisión" },
+  { id: "watch", label: "Corredor" },
+  { id: "cases", label: "Acción" },
+  { id: "technical", label: "Evidencia" },
+];
+
+const IMPACT_CONTRAST_DATES = {
+  weak: "2025-06-10",
+  usable: "2025-06-30",
+};
 
 const STATE_META = {
   usable: {
@@ -327,6 +339,18 @@ export default function App() {
     );
   }, [observations]);
 
+  const impactMetrics = useMemo(
+    () =>
+      buildImpactMetrics({
+        observations,
+        watchData,
+        sarContext,
+        hydroClimate,
+        exposureContext,
+      }),
+    [observations, watchData, sarContext, hydroClimate, exposureContext],
+  );
+
   if (loadState.status === "loading") {
     return <LoadingScreen />;
   }
@@ -363,7 +387,9 @@ export default function App() {
         visible={decisionBarVisible}
       />
 
-      {activePage === "decision" ? (
+      {activePage === "impact" ? (
+        <ImpactLab metrics={impactMetrics} />
+      ) : activePage === "decision" ? (
         <DecisionPage
           observations={observations}
           comparisonRecords={comparisonRecords}
@@ -540,7 +566,9 @@ async function loadExposureContext() {
 
 function setPageAndHash(page) {
   const nextHash =
-    page === "technical"
+    page === "impact"
+      ? "#impacto"
+      : page === "technical"
       ? "#evidencia"
       : page === "watch"
         ? "#corredor"
@@ -555,6 +583,9 @@ function setPageAndHash(page) {
 
 function getInitialPage() {
   const hash = typeof window !== "undefined" ? window.location.hash : "";
+  if (hash === "" || hash === "#impacto" || hash === "#impact") {
+    return "impact";
+  }
   if (hash === "#datos-tecnicos" || hash === "#technical" || hash === "#evidencia") {
     return "technical";
   }
@@ -564,27 +595,253 @@ function getInitialPage() {
   if (hash === "#kairos-cases" || hash === "#accion") {
     return "cases";
   }
-  return "decision";
+  return "impact";
 }
 
 function Header({ activePage, activeState, setActivePage }) {
+  const normalizedState = String(activeState ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "_");
+
   return (
     <header className="top-nav">
       <button
         className="brand-button"
         type="button"
-        onClick={() => setActivePage("decision")}
-        aria-label="Ir a la decisión pública"
+        onClick={() => setActivePage("impact")}
+        aria-label="Ir al laboratorio de impacto"
       >
         Azuero Kairós
       </button>
 
-      <Navigation
-        activePage={activePage}
-        activeState={activeState}
-        onNavigate={setActivePage}
-      />
+      <nav
+        className="az-navigation"
+        aria-label="Navegación principal"
+        data-active-state={normalizedState}
+      >
+        <div className="az-navigation__pill">
+          <div className="az-navigation__tabs">
+            {NAV_ITEMS.map((item) => (
+              <button
+                className={`az-navigation__tab${
+                  activePage === item.id ? " is-active" : ""
+                }`}
+                key={item.id}
+                onClick={() => setActivePage(item.id)}
+                type="button"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <div className="az-navigation__status" aria-label="Estado oficial del ledger">
+            <span className="az-navigation__dot" aria-hidden="true" />
+            <span>COPERNICUS OFICIAL · LEDGER OK</span>
+          </div>
+        </div>
+      </nav>
     </header>
+  );
+}
+
+function ImpactLab({ metrics }) {
+  const [badInferenceCostUnits, setBadInferenceCostUnits] = useState(100);
+  const [verificationCostUnits, setVerificationCostUnits] = useState(22);
+  const criticalCases = metrics.regionalReviewCount;
+  const baselineRiskUnits = criticalCases * Number(badInferenceCostUnits || 0);
+  const kairosReviewUnits = criticalCases * Number(verificationCostUnits || 0);
+  const relativeExposureReductionPercent =
+    baselineRiskUnits > 0
+      ? ((baselineRiskUnits - kairosReviewUnits) / baselineRiskUnits) * 100
+      : 0;
+
+  const realMetricCards = [
+    {
+      label: "EVIDENCIA VALIDADA",
+      value: `${formatMultiplier(metrics.evidenceUpliftRatio)}x`,
+      text: `${formatMultiplier(
+        metrics.evidenceUpliftRatio,
+      )}x más evidencia válida al esperar una adquisición usable.`,
+    },
+    {
+      label: "API OK NO BASTA",
+      value: `${metrics.apiOkBlockedCount} de ${metrics.officialObservationCount}`,
+      text: `${metrics.apiOkBlockedCount} de ${
+        metrics.officialObservationCount
+      } observaciones oficiales ${
+        metrics.apiOkBlockedCount === 1 ? "bloqueada" : "bloqueadas"
+      } de inferencia aunque la API estaba OK`,
+    },
+    {
+      label: "CARGA REGIONAL",
+      value: `${metrics.regionalReviewCount} de ${metrics.regionalObservationCount}`,
+      text: `${metrics.regionalReviewCount} de ${
+        metrics.regionalObservationCount
+      } casos regionales ${
+        metrics.regionalReviewCount === 1 ? "enviado" : "enviados"
+      } a revisión antes de interpretación`,
+    },
+  ];
+
+  return (
+    <section className="impact-lab" aria-label="Kairós Impact Lab">
+      <div className="impact-hero">
+        <div className="impact-hero__copy">
+          <p className="small-label">Kairós Impact Lab</p>
+          <h1>Impacto del piloto: evitar inferencias débiles, no prometer certezas falsas.</h1>
+          <p>API OK no basta: Kairós exige evidencia válida antes de interpretar.</p>
+        </div>
+
+        <article className="impact-hero__instrument" aria-label="Evidencia valida al esperar">
+          <span>Contraste oficial Sentinel-2</span>
+          <strong>{formatMultiplier(metrics.evidenceUpliftRatio)}x</strong>
+          <p>más evidencia válida al esperar una adquisición usable.</p>
+          <dl>
+            <div>
+              <dt>{metrics.weakContrast?.date || IMPACT_CONTRAST_DATES.weak}</dt>
+              <dd>{formatMaybePercent(metrics.weakContrast?.validPercent)}</dd>
+            </div>
+            <div>
+              <dt>{metrics.usableContrast?.date || IMPACT_CONTRAST_DATES.usable}</dt>
+              <dd>{formatMaybePercent(metrics.usableContrast?.validPercent)}</dd>
+            </div>
+          </dl>
+        </article>
+      </div>
+
+      <div className="impact-pilot-grid" aria-label="Caso piloto">
+        <article className="impact-pilot-panel">
+          <p className="small-label">Caso piloto</p>
+          <h2>Río La Villa, Azuero, Panamá</h2>
+          <ul>
+            <li>{metrics.nodeCount} nodos</li>
+            <li>{metrics.dateCount} fechas Sentinel-2</li>
+            <li>{metrics.regionalObservationCount} observaciones regionales</li>
+            <li>Contraste crítico: 2025-06-10 vs 2025-06-30</li>
+          </ul>
+        </article>
+
+        <div className="impact-metric-grid">
+          {realMetricCards.map((card) => (
+            <article className="impact-metric-card" key={card.label}>
+              <span>{card.label}</span>
+              <strong>{card.value}</strong>
+              <p>{card.text}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      <section className="impact-contrast-panel" aria-label="Contraste oficial">
+        <div className="impact-section-heading">
+          <p className="small-label">Contraste oficial</p>
+          <h2>La diferencia no es la API, es la evidencia válida.</h2>
+        </div>
+        <div className="impact-contrast-grid">
+          <ImpactContrastCard
+            label="Bloqueo responsable"
+            record={metrics.weakContrast}
+            fallbackDate={IMPACT_CONTRAST_DATES.weak}
+          />
+          <ImpactContrastCard
+            label="Adquisición usable"
+            record={metrics.usableContrast}
+            fallbackDate={IMPACT_CONTRAST_DATES.usable}
+          />
+        </div>
+      </section>
+
+      <section className="impact-aux-strip" aria-label="Cobertura auxiliar">
+        <div>
+          <p className="small-label">Cobertura auxiliar</p>
+          <h2>Contexto disponible, no motor de decisión.</h2>
+        </div>
+        <ImpactCoverageItem label="SAR" coverage={metrics.auxiliaryCoverage.sar} />
+        <ImpactCoverageItem label="CLMS" coverage={metrics.auxiliaryCoverage.clms} />
+        <ImpactCoverageItem label="HydroClimate" coverage={metrics.auxiliaryCoverage.hydro} />
+      </section>
+
+      <section className="impact-simulation" aria-label="Simulación de sensibilidad">
+        <div className="impact-section-heading">
+          <p className="small-label">Opcional</p>
+          <h2>Simulación de sensibilidad: costo relativo de inferir mal</h2>
+          <p>
+            Simulación, no resultado medido. Los supuestos pueden ajustarse. No estima
+            pérdidas agrícolas reales; estima exposición relativa a decisiones basadas en
+            evidencia insuficiente.
+          </p>
+        </div>
+
+        <div className="impact-calculator">
+          <label>
+            <span>Costo relativo de inferir mal</span>
+            <input
+              min="0"
+              onChange={(event) => setBadInferenceCostUnits(Number(event.target.value))}
+              type="number"
+              value={badInferenceCostUnits}
+            />
+          </label>
+          <label>
+            <span>Costo relativo de verificación</span>
+            <input
+              min="0"
+              onChange={(event) => setVerificationCostUnits(Number(event.target.value))}
+              type="number"
+              value={verificationCostUnits}
+            />
+          </label>
+          <div className="impact-formula-card">
+            <span>Casos críticos regionales</span>
+            <strong>{criticalCases}</strong>
+          </div>
+          <div className="impact-formula-card primary">
+            <span>Reducción relativa simulada</span>
+            <strong>{formatPercent(relativeExposureReductionPercent)}</strong>
+          </div>
+        </div>
+
+        <code className="impact-formula">
+          (({formatInteger(baselineRiskUnits)} - {formatInteger(kairosReviewUnits)}) /{" "}
+          {formatInteger(baselineRiskUnits)}) * 100
+        </code>
+      </section>
+
+      <aside className="impact-limits-strip">
+        <strong>Límites del impacto público</strong>
+        <p>
+          Kairós reporta límites de evidencia, no resultados territoriales medidos ni
+          acciones obligatorias. La pantalla muestra cuándo la evidencia Sentinel-2 sostiene
+          o bloquea una interpretación responsable.
+        </p>
+      </aside>
+    </section>
+  );
+}
+
+function ImpactContrastCard({ label, record, fallbackDate }) {
+  const state = getStateMeta(record ?? { confidence_class: "do_not_infer" });
+
+  return (
+    <article className={`impact-contrast-card tone-${state.tone}`}>
+      <span>{label}</span>
+      <h3>{record?.date || fallbackDate}</h3>
+      <strong>{formatMaybePercent(record?.validPercent)}</strong>
+      <p>{record?.confidence_label_es || state.label}</p>
+    </article>
+  );
+}
+
+function ImpactCoverageItem({ label, coverage }) {
+  return (
+    <article className="impact-coverage-item">
+      <span>{label}</span>
+      <strong>
+        {coverage.available}/{coverage.total}
+      </strong>
+      <p>{coverage.note}</p>
+    </article>
   );
 }
 
@@ -1713,8 +1970,8 @@ function ClmsCorridorStrip({ data, loadState }) {
           <h2>CLMS 2020 {available ? "disponible" : "no disponible"}</h2>
         </div>
         <p>
-          Capa auxiliar; no modifica la clasificacion Sentinel-2 ni la decision
-          publica de confianza.
+          Capa auxiliar para contexto territorial; la decision publica de confianza
+          queda separada.
         </p>
       </div>
 
@@ -1783,7 +2040,7 @@ function SarCorridorStrip({ data, loadState }) {
             <p className="small-label">Continuidad SAR</p>
             <h2>Contexto SAR no disponible para esta demo.</h2>
           </div>
-          <p>Capa auxiliar; no modifica la clasificacion Sentinel-2.</p>
+          <p>Capa auxiliar, separada de la decision Sentinel-2.</p>
         </div>
       </section>
     );
@@ -1803,8 +2060,8 @@ function SarCorridorStrip({ data, loadState }) {
           </h2>
         </div>
         <p>
-          SAR no modifica la clasificación Sentinel-2 ni sustituye verificación
-          territorial.
+          SAR se muestra como continuidad auxiliar, separada de la decisión
+          Sentinel-2.
         </p>
       </div>
 
@@ -3072,8 +3329,7 @@ function ClmsExposureContextBlock({ data, loadState }) {
 
   const firstNode = nodes[0] ?? {};
   const claimNote =
-    nodes.find((node) => node.notes)?.notes ||
-    "Capa auxiliar; no modifica la clasificacion Sentinel-2 ni la decision publica de confianza.";
+    "Capa auxiliar para contexto territorial; decision publica de confianza separada.";
   const metadata = [
     ["Dataset", data.source_dataset],
     ["Referencia", data.reference_year],
@@ -3581,6 +3837,143 @@ function getStateMeta(record) {
   };
 }
 
+function buildImpactMetrics({
+  observations,
+  watchData,
+  sarContext,
+  hydroClimate,
+  exposureContext,
+}) {
+  const officialObservations = Array.isArray(observations) ? observations : [];
+  const weakContrast = findOfficialContrastRecord(
+    officialObservations,
+    IMPACT_CONTRAST_DATES.weak,
+  );
+  const usableContrast = findOfficialContrastRecord(
+    officialObservations,
+    IMPACT_CONTRAST_DATES.usable,
+  );
+  const weakValidPercent = Number(weakContrast?.validPercent);
+  const usableValidPercent = Number(usableContrast?.validPercent);
+  const evidenceUpliftRatio =
+    Number.isFinite(weakValidPercent) &&
+    weakValidPercent > 0 &&
+    Number.isFinite(usableValidPercent)
+      ? usableValidPercent / weakValidPercent
+      : 0;
+  const apiOkBlockedCount = officialObservations.filter(
+    (record) => isApiOk(record) && isDoNotInfer(record),
+  ).length;
+
+  const regionalRows = getRegionalRows(watchData);
+  const regionalObservationCount =
+    regionalRows.length || getRegionalNodeCount(watchData, regionalRows) * getRegionalDateCount(watchData, regionalRows);
+  const regionalReviewCount = regionalRows.filter(isDoNotInfer).length;
+
+  return {
+    weakContrast,
+    usableContrast,
+    evidenceUpliftRatio,
+    officialObservationCount: officialObservations.length,
+    apiOkBlockedCount,
+    regionalObservationCount,
+    regionalReviewCount,
+    nodeCount: getRegionalNodeCount(watchData, regionalRows),
+    dateCount: getRegionalDateCount(watchData, regionalRows),
+    auxiliaryCoverage: {
+      sar: buildSarCoverage(sarContext),
+      clms: buildClmsCoverage(exposureContext),
+      hydro: buildHydroCoverage(hydroClimate),
+    },
+  };
+}
+
+function findOfficialContrastRecord(records, date) {
+  return (
+    records.find((record) => record.date === date && record.aoi === "corridor_wide") ??
+    records.find((record) => record.date === date) ??
+    null
+  );
+}
+
+function getRegionalRows(watchData) {
+  if (Array.isArray(watchData?.observations)) return watchData.observations;
+  if (Array.isArray(watchData?.rows)) return watchData.rows;
+  return [];
+}
+
+function getRegionalNodeCount(watchData, rows) {
+  if (Array.isArray(watchData?.nodes) && watchData.nodes.length) {
+    return watchData.nodes.length;
+  }
+  return new Set(rows.map((row) => row.node_id).filter(Boolean)).size;
+}
+
+function getRegionalDateCount(watchData, rows) {
+  if (Array.isArray(watchData?.dates) && watchData.dates.length) {
+    return watchData.dates.length;
+  }
+  return new Set(rows.map((row) => row.date || row.target_date).filter(Boolean)).size;
+}
+
+function buildSarCoverage(sarContext) {
+  const rows = getSarRows(sarContext);
+  const total = asCount(sarContext?.rows_total) || rows.length;
+  const available =
+    asCount(sarContext?.sar_context_available_count) ||
+    rows.filter((row) => row.context_status === "sar_context_available").length;
+
+  return {
+    available,
+    total,
+    note: "Cobertura auxiliar reportada, separada de la decisión Sentinel-2.",
+  };
+}
+
+function buildClmsCoverage(exposureContext) {
+  const nodes = Array.isArray(exposureContext?.nodes) ? exposureContext.nodes : [];
+  const total = nodes.length;
+  const available = nodes.filter(
+    (node) => node.exposure_status === "exposure_available",
+  ).length;
+
+  return {
+    available,
+    total,
+    note: "Cobertura por nodo para contexto territorial auxiliar.",
+  };
+}
+
+function buildHydroCoverage(hydroClimate) {
+  const summary = hydroClimate?.summary ?? {};
+  const counts = summary.context_status_counts ?? {};
+  const rows = Array.isArray(hydroClimate?.rows) ? hydroClimate.rows : [];
+  const total = asCount(summary.rows_total) || rows.length;
+  const unavailable = asCount(counts.data_unavailable) + asCount(counts.api_error);
+
+  return {
+    available: Math.max(0, total - unavailable),
+    total,
+    note: "Filas de lluvia antecedente como contexto auxiliar.",
+  };
+}
+
+function isApiOk(record) {
+  return String(record?.api_status ?? "").toUpperCase() === "OK";
+}
+
+function isDoNotInfer(record) {
+  const normalizedClass = String(record?.confidence_class ?? record?.decision ?? "")
+    .trim()
+    .toLowerCase();
+  const normalizedLabel = String(record?.confidence_label_es ?? record?.decision_label ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "_");
+
+  return normalizedClass === "do_not_infer" || normalizedLabel === "NO_INFERIR";
+}
+
 function buildDecisionGates(record, ledger, state) {
   const apiOk = record.api_status === "OK";
   const qualityTone =
@@ -3863,6 +4256,21 @@ function formatPercent(value) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}%`;
+}
+
+function formatMaybePercent(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "pendiente";
+  return formatPercent(numeric);
+}
+
+function formatMultiplier(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return "0.0";
+  return formatNumber(numeric, {
+    minimumFractionDigits: 1,
+    maximumFractionDigits: 1,
+  });
 }
 
 function formatInteger(value) {

@@ -140,6 +140,492 @@ button {
   text-align: right;
 }
 
+@keyframes az-navigation-dot-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.9);
+  }
+}
+
+.az-navigation {
+  display: inline-flex;
+  justify-self: center;
+  max-width: 100%;
+}
+
+.az-navigation__pill {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  gap: var(--space-sm);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px;
+  background: var(--bg-archive);
+  box-shadow: 0 14px 34px color-mix(in oklch, var(--text-primary) 12%, transparent);
+}
+
+.az-navigation__tabs {
+  display: inline-flex;
+  gap: 3px;
+}
+
+.az-navigation__tab {
+  min-height: 34px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 14px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 760;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.az-navigation__tab:active {
+  transform: translateY(1px);
+}
+
+.az-navigation__tab.is-active {
+  background: var(--text-primary);
+  color: var(--bg-surface);
+}
+
+.az-navigation__status {
+  display: inline-flex;
+  min-height: 30px;
+  align-items: center;
+  gap: 8px;
+  border-left: 1px solid var(--border-subtle);
+  padding: 0 11px 0 13px;
+  color: var(--text-muted);
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 680;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.az-navigation__dot {
+  width: 2px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--state-usable);
+  animation: az-navigation-dot-pulse 2.4s ease-out infinite;
+}
+
+.impact-lab {
+  display: grid;
+  gap: var(--space-xl);
+  padding-bottom: var(--space-xl);
+}
+
+.impact-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.72fr);
+  gap: var(--space-xl);
+  min-height: min(560px, calc(100vh - 110px));
+  align-items: stretch;
+}
+
+.impact-hero__copy,
+.impact-hero__instrument,
+.impact-pilot-panel,
+.impact-metric-card,
+.impact-contrast-panel,
+.impact-aux-strip,
+.impact-simulation,
+.impact-limits-strip {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: color-mix(in oklch, var(--bg-surface) 92%, transparent);
+  box-shadow: 0 24px 70px color-mix(in oklch, var(--text-primary) 11%, transparent);
+}
+
+.impact-hero__copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: clamp(30px, 5vw, 72px);
+  background:
+    radial-gradient(circle at 16% 18%, color-mix(in oklch, var(--state-usable) 16%, transparent), transparent 20rem),
+    linear-gradient(145deg, var(--bg-surface), var(--bg-base));
+}
+
+.impact-hero__copy h1 {
+  max-width: 12ch;
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 8vw, 7.8rem);
+  font-weight: 760;
+  line-height: 0.88;
+  letter-spacing: 0;
+}
+
+.impact-hero__copy p:last-child {
+  max-width: 52ch;
+  margin: var(--space-lg) 0 0;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: clamp(1rem, 1.4vw, 1.28rem);
+  line-height: 1.55;
+}
+
+.impact-hero__instrument {
+  position: relative;
+  display: grid;
+  overflow: hidden;
+  align-content: center;
+  justify-items: center;
+  padding: var(--space-xl);
+  text-align: center;
+}
+
+.impact-hero__instrument::before,
+.impact-hero__instrument::after {
+  content: "";
+  position: absolute;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  pointer-events: none;
+}
+
+.impact-hero__instrument::before {
+  inset: 36px;
+}
+
+.impact-hero__instrument::after {
+  inset: 70px;
+  border-style: dashed;
+}
+
+.impact-hero__instrument span,
+.impact-metric-card span,
+.impact-coverage-item span,
+.impact-formula-card span {
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 780;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.impact-hero__instrument strong {
+  z-index: 1;
+  margin-top: var(--space-sm);
+  color: var(--state-usable);
+  font-family: var(--font-data);
+  font-size: clamp(5rem, 9vw, 9rem);
+  font-weight: 680;
+  line-height: 0.9;
+}
+
+.impact-hero__instrument p {
+  z-index: 1;
+  max-width: 24ch;
+  margin: var(--space-md) auto var(--space-lg);
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 1.18rem;
+  line-height: 1.35;
+}
+
+.impact-hero__instrument dl {
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: min(100%, 360px);
+  gap: var(--space-sm);
+  margin: 0;
+}
+
+.impact-hero__instrument div,
+.impact-contrast-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: color-mix(in oklch, var(--bg-base) 64%, transparent);
+}
+
+.impact-hero__instrument dt,
+.impact-hero__instrument dd {
+  margin: 0;
+  font-family: var(--font-data);
+}
+
+.impact-hero__instrument dt {
+  padding-top: 10px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.impact-hero__instrument dd {
+  padding: 4px 10px 12px;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+  font-weight: 760;
+}
+
+.impact-pilot-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.72fr) minmax(0, 1fr);
+  gap: var(--space-lg);
+}
+
+.impact-pilot-panel,
+.impact-metric-card,
+.impact-contrast-panel,
+.impact-aux-strip,
+.impact-simulation,
+.impact-limits-strip {
+  padding: var(--space-lg);
+}
+
+.impact-pilot-panel h2,
+.impact-section-heading h2,
+.impact-aux-strip h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: clamp(1.55rem, 2.4vw, 2.4rem);
+  line-height: 1.05;
+}
+
+.impact-pilot-panel ul {
+  display: grid;
+  gap: 10px;
+  margin: var(--space-lg) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.impact-pilot-panel li {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 10px;
+  color: var(--text-secondary);
+  font-family: var(--font-data);
+  font-size: 13px;
+}
+
+.impact-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+.impact-metric-card {
+  min-height: 180px;
+  transition:
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.impact-metric-card strong {
+  display: block;
+  margin-top: var(--space-md);
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: clamp(2rem, 4vw, 3.8rem);
+  line-height: 1;
+}
+
+.impact-metric-card p,
+.impact-section-heading p,
+.impact-coverage-item p,
+.impact-limits-strip p {
+  margin: var(--space-md) 0 0;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.impact-metric-card:hover {
+  border-color: color-mix(in oklch, var(--state-usable) 45%, var(--border));
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-2px);
+}
+
+.impact-section-heading {
+  display: grid;
+  max-width: 760px;
+  gap: var(--space-xs);
+}
+
+.impact-contrast-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.impact-contrast-card {
+  padding: var(--space-lg);
+}
+
+.impact-contrast-card span {
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 780;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.impact-contrast-card h3 {
+  margin: var(--space-md) 0 var(--space-xs);
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 1rem;
+}
+
+.impact-contrast-card strong {
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: clamp(2.4rem, 6vw, 5.6rem);
+  line-height: 1;
+}
+
+.impact-contrast-card p {
+  margin: var(--space-md) 0 0;
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.impact-contrast-card.tone-stop strong,
+.impact-contrast-card.tone-stop p {
+  color: var(--state-no-inferir);
+}
+
+.impact-contrast-card.tone-usable strong,
+.impact-contrast-card.tone-usable p {
+  color: var(--state-usable);
+}
+
+.impact-contrast-card.tone-review strong,
+.impact-contrast-card.tone-review p {
+  color: var(--state-revisar);
+}
+
+.impact-aux-strip {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) repeat(3, minmax(150px, 0.55fr));
+  gap: var(--space-md);
+  align-items: stretch;
+  background: var(--bg-archive);
+}
+
+.impact-coverage-item {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  background: color-mix(in oklch, var(--bg-surface) 58%, transparent);
+}
+
+.impact-coverage-item strong {
+  display: block;
+  margin-top: var(--space-sm);
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 1.7rem;
+}
+
+.impact-simulation {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.impact-calculator {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+.impact-calculator label,
+.impact-formula-card {
+  display: grid;
+  gap: var(--space-sm);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  background: color-mix(in oklch, var(--bg-base) 62%, transparent);
+}
+
+.impact-calculator label span {
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 780;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.impact-calculator input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 1rem;
+}
+
+.impact-formula-card strong {
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.impact-formula-card.primary {
+  background: var(--state-usable-bg);
+}
+
+.impact-formula-card.primary strong {
+  color: var(--state-usable);
+}
+
+.impact-formula {
+  display: block;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-md);
+  color: var(--text-secondary);
+  font-family: var(--font-data);
+  font-size: 12px;
+  white-space: normal;
+}
+
+.impact-limits-strip {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.32fr) minmax(0, 1fr);
+  gap: var(--space-lg);
+  align-items: center;
+  background: color-mix(in oklch, var(--state-revisar-bg) 44%, var(--bg-surface));
+}
+
+.impact-limits-strip strong {
+  color: var(--state-revisar);
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+}
+
 .sticky-decision-bar {
   position: fixed;
   z-index: 30;
@@ -4512,7 +4998,10 @@ select {
 @media (max-width: 1180px) {
   .decision-hero,
   .decision-workflow-hero,
-  .technical-hero-grid {
+  .technical-hero-grid,
+  .impact-hero,
+  .impact-pilot-grid,
+  .impact-aux-strip {
     grid-template-columns: 1fr;
     min-height: 0;
   }
@@ -4589,6 +5078,11 @@ select {
   .technical-status-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .impact-metric-grid,
+  .impact-calculator {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 760px) {
@@ -4603,6 +5097,7 @@ select {
   }
 
   .view-nav,
+  .az-navigation,
   .run-status {
     justify-self: start;
   }
@@ -4614,6 +5109,53 @@ select {
 
   .run-status {
     text-align: left;
+  }
+
+  .az-navigation,
+  .az-navigation__pill {
+    width: 100%;
+  }
+
+  .az-navigation__pill {
+    align-items: stretch;
+    flex-direction: column;
+    border-radius: var(--radius-lg);
+  }
+
+  .az-navigation__tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .az-navigation__status {
+    justify-content: center;
+    border-top: 1px solid var(--border-subtle);
+    border-left: 0;
+    padding: 8px 10px 4px;
+    white-space: normal;
+    text-align: center;
+  }
+
+  .impact-hero__copy,
+  .impact-hero__instrument,
+  .impact-pilot-panel,
+  .impact-metric-card,
+  .impact-contrast-panel,
+  .impact-aux-strip,
+  .impact-simulation,
+  .impact-limits-strip {
+    padding: var(--space-md);
+  }
+
+  .impact-hero__copy h1 {
+    max-width: 13ch;
+  }
+
+  .impact-metric-grid,
+  .impact-contrast-grid,
+  .impact-calculator,
+  .impact-limits-strip {
+    grid-template-columns: 1fr;
   }
 
   .report-panel {
