@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import Navigation from "./components/Navigation/Navigation.jsx";
 import StatusBar from "./components/StatusBar/StatusBar.jsx";
 import TerritorialMap from "./components/TerritorialMap.jsx";
+import DecisionStamp from "./components/DecisionStamp/DecisionStamp.jsx";
 import DecisionPage from "./pages/Decision/DecisionPage.jsx";
 import CorredorPage from "./pages/Corredor/CorredorPage.jsx";
 import EvidenciaPage from "./pages/Evidencia/EvidenciaPage.jsx";
@@ -1604,11 +1605,9 @@ function LensLayerPill({ label, value, tone = "aux" }) {
 
 function findLensLedger(rows, selectedDate) {
   if (!Array.isArray(rows)) return null;
-  return (
-    rows.find((row) => row.date === selectedDate && row.aoi === "corridor_wide") ??
-    rows.find((row) => row.date === selectedDate) ??
-    null
-  );
+  return pickPreferredLedgerRow(
+    rows.filter((row) => row.date === selectedDate && row.aoi === "corridor_wide"),
+  ) ?? pickPreferredLedgerRow(rows.filter((row) => row.date === selectedDate));
 }
 
 function findSarLensRow(data, nodeId, selectedDate) {
@@ -2107,7 +2106,6 @@ function KairosCases({
             {cases.map((caseItem) => (
               <DecisionCaseCard
                 caseItem={caseItem}
-                exposureContext={exposureContext}
                 isActive={selectedCase?.case_id === caseItem.case_id}
                 key={caseItem.case_id}
                 onSelect={selectCase}
@@ -2134,56 +2132,44 @@ function KairosCases({
   );
 }
 
-function DecisionCaseCard({ caseItem, exposureContext, isActive, onSelect }) {
+function DecisionCaseCard({ caseItem, isActive, onSelect }) {
   const tone = decisionCaseTone(caseItem);
-  const verificationEnabled = canRequestVerification(caseItem);
-  const actionLabel = actionQueueLabel(caseItem);
-  const evidenceGaps = caseEvidenceGaps(caseItem, exposureContext);
-  const gapSummary = evidenceGaps[0] ?? "Sin brecha registrada.";
+  const priority = casePriorityBadge(caseItem);
+  const stampState = decisionCaseStampState(caseItem);
+  const actionText = caseItem.recommended_action || caseItem.recommended_workflow;
 
   return (
     <article className={`case-card case-queue-row tone-${tone} ${isActive ? "active" : ""}`}>
-      <button
-        className="case-row-main"
-        type="button"
-        onClick={() => onSelect(caseItem, "evidence")}
-      >
-        <div className="case-row-priority">
-          <b>{caseItem.priority_level || "normal"}</b>
-          <span>{actionLabel}</span>
+      <span className="case-priority-pill">{priority}</span>
+
+      <div className="case-card-row case-card-row--top">
+        <div className="case-card-identity">
+          <h3>{caseItem.node_display_name || caseItem.node_id}</h3>
+          <span>{caseItem.date}</span>
         </div>
-        <div>
-          <span className="case-row-node">{caseItem.node_display_name || caseItem.node_id}</span>
-          <strong className="case-row-date">{caseItem.date}</strong>
+
+        <div className="case-card-state">
+          <span className="case-row-stamp">
+            <DecisionStamp
+              animated={false}
+              scale={0.65}
+              size="small"
+              state={stampState}
+            />
+          </span>
+          <strong className="case-row-percent">
+            {formatCasePercent(caseItem.primary_validPercent)}
+          </strong>
         </div>
-        <span className={`case-label tone-${tone}`}>{caseItem.decision_label}</span>
-        <strong className="case-row-percent">
-          {formatCasePercent(caseItem.primary_validPercent)} valido
-        </strong>
-        <p className="case-row-action">
-          {caseItem.recommended_action || caseItem.recommended_workflow}
-        </p>
-        <p className="case-row-gap">{gapSummary}</p>
-      </button>
-      <div className="case-actions" aria-label="Acciones del caso">
-        <button type="button" onClick={() => onSelect(caseItem, "evidence")}>
-          Ver evidencia
-        </button>
-        <button type="button" onClick={() => onSelect(caseItem, "brief")}>
-          Ver brief compacto
-        </button>
-        <button
-          type="button"
-          disabled={!verificationEnabled}
-          title={
-            verificationEnabled
-              ? "Abre una vista de verificacion sin guardar datos."
-              : "Disponible solo para NO INFERIR o REVISAR."
-          }
-          onClick={() => onSelect(caseItem, "verification")}
-        >
-          Vista de verificacion
-        </button>
+      </div>
+
+      <div className="case-card-row case-card-row--bottom">
+        <p className="case-row-action">{actionText}</p>
+        <div className="case-actions" aria-label="Acciones del caso">
+          <button type="button" onClick={() => onSelect(caseItem, "evidence")}>
+            Ver evidencia
+          </button>
+        </div>
       </div>
       <p className="case-lab-copy">{LAB_ESCALATION_COPY}</p>
     </article>
@@ -3660,11 +3646,28 @@ function decisionActionShort(record) {
 }
 
 function findLedgerForRecord(rows, record) {
-  return rows.find(
-    (row) =>
-      row.date === record.date &&
-      row.aoi === record.aoi &&
-      Number(row.resolution_m) === Number(record.resolution_m),
+  return pickPreferredLedgerRow(
+    rows.filter(
+      (row) =>
+        row.date === record.date &&
+        row.aoi === record.aoi &&
+        Number(row.resolution_m) === Number(record.resolution_m),
+    ),
+  );
+}
+
+function pickPreferredLedgerRow(rows) {
+  if (!Array.isArray(rows) || !rows.length) return null;
+  const preferredEventOrder = [
+    "confidence_decision_computed",
+    "brief_generated",
+    "processed_metrics_created",
+    "raw_observation_received",
+  ];
+  return (
+    preferredEventOrder
+      .map((eventType) => rows.find((row) => row.event_type === eventType))
+      .find(Boolean) ?? rows[0]
   );
 }
 
@@ -4007,16 +4010,19 @@ function decisionCaseTone(caseItem) {
   return "usable";
 }
 
-function actionQueueLabel(caseItem) {
-  const label = String(caseItem?.decision_label ?? "").toUpperCase();
-  if (label === "NO INFERIR") return "verificacion recomendada";
-  if (label === "USABLE") return "lectura demostrativa con limites";
-  return "revision recomendada";
+function decisionCaseStampState(caseItem) {
+  const label = String(caseItem?.decision_label ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, "_");
+  if (label === "NO_INFERIR") return "NO_INFERIR";
+  if (label === "REVISAR") return "REVISAR";
+  return "USABLE";
 }
 
-function canRequestVerification(caseItem) {
-  const label = String(caseItem?.decision_label ?? "").toUpperCase();
-  return label === "NO INFERIR" || label === "REVISAR";
+function casePriorityBadge(caseItem) {
+  const priority = stripAccents(String(caseItem?.priority_level ?? "")).toLowerCase();
+  return priority === "alta" ? "ALTA" : "MEDIA";
 }
 
 function caseEvidenceGaps(caseItem, exposureContext) {

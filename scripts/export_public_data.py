@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import re
 import sys
@@ -28,6 +29,9 @@ from azuero_kairos.confidence_engine import (  # noqa: E402
 DEFAULT_PROCESSED_CSV = PROJECT_ROOT / "outputs/processed_csv/sentinel2_stats_confidence.csv"
 DEFAULT_LEDGER_CSV = PROJECT_ROOT / "outputs/ledger/evidence_ledger.csv"
 DEFAULT_PUBLIC_DATA_DIR = PROJECT_ROOT / "frontend/public/data"
+HASH_PAYLOAD_SCHEMA = (
+    "event_type,observation_date,aoi_or_node_id,artifact_ref,status,source_layer,decision_class"
+)
 
 OBSERVATION_FIELDS = [
     "date",
@@ -77,7 +81,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     ledger_rows = read_csv_rows(ledger_csv) if ledger_csv.exists() else []
-    ledger_by_key = {row_key(row): row for row in ledger_rows}
+    ledger_by_key = build_ledger_index(ledger_rows)
     observations = build_public_observations(processed_csv, ledger_by_key)
     public_ledger = build_public_ledger_rows(ledger_rows)
 
@@ -148,25 +152,83 @@ def build_public_observations(
 def build_public_ledger_rows(ledger_rows: list[dict[str, str]]) -> list[dict[str, Any]]:
     public_rows: list[dict[str, Any]] = []
     for row in ledger_rows:
-        public_row: dict[str, Any] = {}
-        for key, value in row.items():
-            if key == "api_error":
-                public_row[key] = sanitize_text(value)
-            elif key.endswith("_path"):
-                public_row[key] = relative_artifact_path(value)
-            elif key in {
-                "resolution_m",
-                "validPercent",
-                "sampleCount",
-                "noDataCount",
-                "mndwi_mean",
-                "ndti_mean",
-            }:
-                public_row[key] = as_number(value)
-            else:
-                public_row[key] = clean(value)
+        artifact_ref = relative_artifact_path(row.get("artifact_ref"))
+        public_hash = hash_public_event_payload(row, artifact_ref)
+        public_row = {
+            "run_id": clean(row.get("run_id")),
+            "generated_at_utc": clean(row.get("generated_at_utc")),
+            "git_commit": clean(row.get("git_commit")),
+            "event_index": as_number(row.get("event_index")),
+            "event_type": clean(row.get("event_type")) or "audit_event",
+            "event_label": clean(row.get("event_label_es")) or clean(row.get("event_label")),
+            "artifact_ref": artifact_ref,
+            "status": clean(row.get("status")) or clean(row.get("evidence_status")),
+            "source_layer": clean(row.get("source_layer")) or "sentinel_2",
+            "decision_class": clean(row.get("decision_class")) or clean(row.get("confidence_class")),
+            "event_hash": public_hash,
+            "hash_short": public_hash[:12],
+            "hash_method": "event_payload_sha256",
+            "hash_payload_schema": HASH_PAYLOAD_SCHEMA,
+            "artifact_hash": clean(row.get("artifact_hash")),
+            "artifact_hash_method": clean(row.get("artifact_hash_method")),
+            "artifact_available_in_repo": as_bool(row.get("artifact_available_in_repo")),
+            "public_runtime_available": as_bool(row.get("public_runtime_available")),
+            "sanitization_note": clean(row.get("sanitization_note"))
+            or "Public ledger exposes metadata only; no secrets, headers, credentials, or raw API responses.",
+            "date": clean(row.get("date")),
+            "aoi": clean(row.get("aoi")),
+            "resolution_m": as_number(row.get("resolution_m")),
+            "confidence_class": clean(row.get("confidence_class")),
+            "decision": clean(row.get("decision")),
+            "validPercent": as_number(row.get("validPercent")),
+            "sampleCount": as_number(row.get("sampleCount")),
+            "noDataCount": as_number(row.get("noDataCount")),
+            "mndwi_mean": as_number(row.get("mndwi_mean")),
+            "ndti_mean": as_number(row.get("ndti_mean")),
+            "api_status": clean(row.get("api_status")),
+            "api_error": sanitize_text(row.get("api_error")),
+            "raw_json_path": relative_artifact_path(row.get("raw_json_path")),
+            "processed_csv_path": relative_artifact_path(row.get("processed_csv_path")),
+            "brief_path": relative_artifact_path(row.get("brief_path")),
+            "evidence_status": clean(row.get("evidence_status")),
+        }
         public_rows.append(public_row)
     return public_rows
+
+
+def build_ledger_index(
+    ledger_rows: list[dict[str, str]],
+) -> dict[tuple[str, str, str], dict[str, str]]:
+    indexed: dict[tuple[str, str, str], dict[str, str]] = {}
+    rank = {
+        "confidence_decision_computed": 0,
+        "brief_generated": 1,
+        "processed_metrics_created": 2,
+        "raw_observation_received": 3,
+    }
+    current_rank: dict[tuple[str, str, str], int] = {}
+
+    for row in ledger_rows:
+        key = row_key(row)
+        event_rank = rank.get(clean(row.get("event_type")), 9)
+        if key not in indexed or event_rank < current_rank[key]:
+            indexed[key] = row
+            current_rank[key] = event_rank
+    return indexed
+
+
+def hash_public_event_payload(row: dict[str, str], artifact_ref: str) -> str:
+    payload = {
+        "event_type": clean(row.get("event_type")) or "audit_event",
+        "observation_date": clean(row.get("date")),
+        "aoi_or_node_id": clean(row.get("aoi")),
+        "artifact_ref": artifact_ref,
+        "status": clean(row.get("status")) or clean(row.get("evidence_status")),
+        "source_layer": clean(row.get("source_layer")) or "sentinel_2",
+        "decision_class": clean(row.get("decision_class")) or clean(row.get("confidence_class")),
+    }
+    payload_text = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload_text.encode("utf-8")).hexdigest()
 
 
 def available_brief_path(ledger_row: dict[str, str], observation_row: dict[str, str]) -> str:
@@ -240,6 +302,10 @@ def as_number(value: Any) -> int | float | str:
     if number.is_integer():
         return int(number)
     return number
+
+
+def as_bool(value: Any) -> bool:
+    return clean(value).lower() == "true"
 
 
 def resolve_project_path(value: Any) -> Path:
