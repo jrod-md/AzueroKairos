@@ -3,7 +3,6 @@ import StatusBar from "./components/StatusBar/StatusBar.jsx";
 import TerritorialMap from "./components/TerritorialMap.jsx";
 import DecisionStamp from "./components/DecisionStamp/DecisionStamp.jsx";
 import DecisionPage from "./pages/Decision/DecisionPage.jsx";
-import CorredorPage from "./pages/Corredor/CorredorPage.jsx";
 import EvidenciaPage from "./pages/Evidencia/EvidenciaPage.jsx";
 
 const DEFAULT_DATE = "2025-06-10";
@@ -26,6 +25,13 @@ const IMPACT_CONTRAST_DATES = {
   weak: "2025-06-10",
   usable: "2025-06-30",
 };
+
+const WORKBENCH_LAYERS = [
+  { id: "s2", label: "S-2 DECISIÓN" },
+  { id: "sar", label: "S-1 SAR" },
+  { id: "clms", label: "CLMS" },
+  { id: "hydro", label: "HYDRO" },
+];
 
 const STATE_META = {
   usable: {
@@ -75,13 +81,13 @@ const METRIC_HELP = {
 };
 
 const SCIENTIFIC_LIMITS =
-  "Azuero Kairós limita la decisión pública a confianza de observación Sentinel. No hace afirmaciones químicas, sanitarias, de aptitud de uso ni de respuesta institucional.";
+  "Azuero Kairós limita la decisión pública a confianza de observación Sentinel. No extiende la interfaz a conclusiones fuera de esa evidencia ni a respuesta institucional.";
 
 const SAR_LIMITS =
   "Sentinel-1 SAR fue evaluado como contexto auxiliar, pero este corte no produjo observaciones útiles. No se usa como evidencia principal en la decisión pública.";
 
 const HYDROCLIMATE_LIMITS =
-  "El contexto hidroclimático solo orienta revisión; no cambia la decisión Sentinel-2.";
+  "El contexto hidroclimático solo orienta revisión; la decisión Sentinel-2 se mantiene separada.";
 
 const HYDROCLIMATE_INSIGHT =
   "La lluvia antecedente no confirma riesgo. Ayuda a priorizar dónde revisar cuando la evidencia satelital es baja.";
@@ -158,6 +164,8 @@ export default function App() {
   const [activePage, setActivePage] = useState(getInitialPage);
   const [activeCaseId, setActiveCaseId] = useState(null);
   const [casePanelMode, setCasePanelMode] = useState("evidence");
+  const [workbenchNodeId, setWorkbenchNodeId] = useState(CORRIDOR_NODE_ORDER[0]);
+  const [workbenchLayer, setWorkbenchLayer] = useState("s2");
   const [decisionBarVisible, setDecisionBarVisible] = useState(false);
   const [loadState, setLoadState] = useState({ status: "loading", message: "" });
   const [watchLoadState, setWatchLoadState] = useState({
@@ -399,11 +407,19 @@ export default function App() {
           setSelectedDate={setSelectedDate}
         />
       ) : activePage === "watch" ? (
-        <CorredorPage
+        <CorredorWorkbench
           data={watchData}
+          exposureContext={exposureContext}
+          hydroClimate={hydroClimate}
           loadState={watchLoadState}
+          onNavigate={setPageAndHash}
+          sarContext={sarContext}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
+          selectedLayer={workbenchLayer}
+          selectedNodeId={workbenchNodeId}
+          setSelectedLayer={setWorkbenchLayer}
+          setSelectedNodeId={setWorkbenchNodeId}
         />
       ) : activePage === "cases" ? (
         <KairosCases
@@ -842,6 +858,336 @@ function ImpactCoverageItem({ label, coverage }) {
       </strong>
       <p>{coverage.note}</p>
     </article>
+  );
+}
+
+function CorredorWorkbench({
+  data,
+  exposureContext,
+  hydroClimate,
+  loadState,
+  onNavigate,
+  sarContext,
+  selectedDate,
+  selectedLayer,
+  selectedNodeId,
+  setSelectedDate,
+  setSelectedLayer,
+  setSelectedNodeId,
+}) {
+  const ready = loadState.status === "ready" && data;
+  const observations = ready ? data.observations ?? data.rows ?? [] : [];
+  const dates = ready ? data.dates ?? [] : [];
+  const nodes = useMemo(
+    () => orderCorridorNodes(ready ? data.nodes ?? [] : [], observations),
+    [data, observations, ready],
+  );
+  const observationMap = useMemo(
+    () =>
+      new Map(
+        observations.map((observation) => [
+          `${observation.node_id}|${observation.date}`,
+          observation,
+        ]),
+      ),
+    [observations],
+  );
+
+  if (!ready) {
+    return (
+      <section className="corredor-workbench empty" aria-label="Corredor">
+        <div className="corredor-workbench__empty">
+          <p className="small-label">Corredor</p>
+          <h1>Banco de evidencia territorial</h1>
+          <p>
+            {loadState.message ||
+              "El corredor estará disponible cuando exista kairos_watch.json."}
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  const activeDate = dates.includes(selectedDate)
+    ? selectedDate
+    : dates[0] ?? selectedDate;
+  const activeNode = nodes.find((node) => node.node_id === selectedNodeId) ?? nodes[0];
+  const activeNodeId = activeNode?.node_id ?? "";
+  const selectedObservation = observationMap.get(`${activeNodeId}|${activeDate}`);
+  const selectedState = selectedObservation
+    ? getStateMeta(selectedObservation)
+    : {
+        label: "SIN DATO",
+        tone: "review",
+        action: "Seleccionar otro nodo o fecha con observación pública.",
+      };
+  const sarRow = findSarLensRow(sarContext, activeNodeId, activeDate);
+  const clmsRow = findClmsLensRow(exposureContext, activeNodeId);
+  const hydroRow = findHydroLensRow(hydroClimate, activeNodeId, activeDate);
+  const inspector = buildWorkbenchInspector({
+    clmsRow,
+    hydroRow,
+    layer: selectedLayer,
+    observation: selectedObservation,
+    sarRow,
+    state: selectedState,
+  });
+  const evidenceGaps = buildWorkbenchEvidenceGaps({
+    clmsRow,
+    hydroRow,
+    observation: selectedObservation,
+    sarRow,
+  });
+  const nextAction = buildWorkbenchNextAction(selectedObservation);
+
+  function selectWorkbenchCell(nodeId, date) {
+    setSelectedNodeId(nodeId);
+    setSelectedDate(date);
+  }
+
+  return (
+    <section className="corredor-workbench" aria-label="Corredor Layer Workbench">
+      <div className="corredor-workbench__hero">
+        <div>
+          <p className="small-label">Corredor</p>
+          <h1>Layer Workbench del Río La Villa</h1>
+          <p>
+            Selecciona un nodo, una fecha y una capa. Cada control cambia la evidencia
+            visible en el inspector.
+          </p>
+        </div>
+        <aside className="corredor-workbench__legend" aria-label="Leyenda compacta">
+          <span>
+            <b>Sentinel-2</b> capa primaria de decisión.
+          </span>
+          <span>
+            <b>SAR / CLMS / HydroClimate</b> contexto auxiliar.
+          </span>
+        </aside>
+      </div>
+
+      <div className="corredor-layer-tabs" aria-label="Capas de evidencia">
+        {WORKBENCH_LAYERS.map((layer) => (
+          <button
+            aria-pressed={selectedLayer === layer.id}
+            className={selectedLayer === layer.id ? "is-active" : ""}
+            key={layer.id}
+            onClick={() => setSelectedLayer(layer.id)}
+            type="button"
+          >
+            {layer.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="corredor-workbench__grid">
+        <section className="corredor-map-panel" aria-label="Esquema del corredor">
+          <div className="corredor-map-panel__surface">
+            <svg
+              className="corredor-map-svg"
+              viewBox="0 0 920 300"
+              role="img"
+              aria-label="Vista esquemática del Río La Villa con tres nodos"
+            >
+              <path
+                className="corredor-map-mountains far"
+                d="M20 92 C95 42 168 80 230 55 C314 22 390 72 470 48 C570 18 666 68 742 40 C818 17 872 52 900 34 L900 118 L20 118 Z"
+              />
+              <path
+                className="corredor-map-mountains near"
+                d="M20 128 C104 94 168 128 254 92 C348 56 424 126 522 88 C620 50 694 118 784 78 C838 54 878 80 900 68 L900 146 L20 146 Z"
+              />
+              <path
+                className="corredor-map-terrain left"
+                d="M30 216 C112 154 198 184 274 140 C344 100 418 142 398 210 C370 274 250 252 180 264 C98 278 50 258 30 216 Z"
+              />
+              <path
+                className="corredor-map-terrain right"
+                d="M500 202 C586 136 664 168 736 126 C816 80 900 130 882 206 C860 286 740 256 660 270 C574 284 506 262 500 202 Z"
+              />
+              <path
+                className="corredor-map-river-shadow"
+                d="M56 190 C162 116 270 230 402 160 C542 84 650 136 864 104"
+              />
+              <path
+                className="corredor-map-river"
+                d="M56 190 C162 116 270 230 402 160 C542 84 650 136 864 104"
+              />
+            </svg>
+
+            <div className="corredor-node-buttons">
+              {nodes.map((node, index) => {
+                const observation = observationMap.get(`${node.node_id}|${activeDate}`);
+                const state = observation ? getStateMeta(observation) : selectedState;
+                const layerSummary = buildWorkbenchNodeLayerSummary({
+                  clmsRow: findClmsLensRow(exposureContext, node.node_id),
+                  hydroRow: findHydroLensRow(hydroClimate, node.node_id, activeDate),
+                  layer: selectedLayer,
+                  observation,
+                  sarRow: findSarLensRow(sarContext, node.node_id, activeDate),
+                  state,
+                });
+                const selected = node.node_id === activeNodeId;
+                return (
+                  <button
+                    className={`corredor-node-button tone-${state.tone}${
+                      selected ? " is-selected" : ""
+                    }`}
+                    key={node.node_id}
+                    onClick={() => setSelectedNodeId(node.node_id)}
+                    style={{ "--node-left": `${[18, 50, 82][index] ?? 50}%` }}
+                    type="button"
+                  >
+                    <span className="corredor-node-button__dot" aria-hidden="true" />
+                    <b>{node.display_name || node.node_id}</b>
+                    <em>{layerSummary}</em>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <p className="corredor-disclaimer">
+            Vista esquemática de evidencia territorial. No es imagen satelital ni mapa
+            geoespacial exacto.
+          </p>
+        </section>
+
+        <WorkbenchInspector
+          activeDate={activeDate}
+          activeNode={activeNode}
+          evidenceGaps={evidenceGaps}
+          inspector={inspector}
+          nextAction={nextAction}
+          onNavigate={onNavigate}
+          selectedLayer={selectedLayer}
+          state={selectedState}
+        />
+      </div>
+
+      <section className="corredor-matrix-section" aria-label="Matriz regional">
+        <div className="section-heading compact">
+          <div>
+            <p className="small-label">Matriz regional</p>
+            <h2>Haz clic en una celda para inspeccionar nodo y fecha.</h2>
+          </div>
+          <p>
+            La matriz cambia la selección del banco de trabajo; la capa activa decide
+            qué evidencia se ve en el inspector.
+          </p>
+        </div>
+
+        <div className="corredor-matrix-wrap">
+          <table className="corredor-matrix">
+            <thead>
+              <tr>
+                <th scope="col">Nodo</th>
+                {dates.map((date) => (
+                  <th scope="col" key={date}>
+                    {date}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {nodes.map((node) => (
+                <tr key={node.node_id}>
+                  <th scope="row">
+                    <strong>{node.display_name || node.node_id}</strong>
+                    <span>{node.node_id}</span>
+                  </th>
+                  {dates.map((date) => {
+                    const observation = observationMap.get(`${node.node_id}|${date}`);
+                    const state = observation
+                      ? getStateMeta(observation)
+                      : { label: "SIN DATO", tone: "review" };
+                    const selected = node.node_id === activeNodeId && date === activeDate;
+                    return (
+                      <td key={`${node.node_id}-${date}`}>
+                        <button
+                          className={`corredor-matrix-cell tone-${state.tone}${
+                            selected ? " is-selected" : ""
+                          }`}
+                          onClick={() => selectWorkbenchCell(node.node_id, date)}
+                          title={
+                            observation
+                              ? `${formatPercent(observation.validPercent)} evidencia válida`
+                              : "Sin observación pública"
+                          }
+                          type="button"
+                        >
+                          <span>{state.label}</span>
+                          <strong>
+                            {observation
+                              ? formatPercent(observation.validPercent)
+                              : "sin dato"}
+                          </strong>
+                        </button>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  );
+}
+
+function WorkbenchInspector({
+  activeDate,
+  activeNode,
+  evidenceGaps,
+  inspector,
+  nextAction,
+  onNavigate,
+  selectedLayer,
+  state,
+}) {
+  return (
+    <aside className={`workbench-inspector tone-${state.tone}`} aria-label="Inspector de evidencia">
+      <div className="workbench-inspector__header">
+        <p className="small-label">Inspector</p>
+        <h2>{activeNode?.display_name || activeNode?.node_id || "Nodo sin dato"}</h2>
+        <span>{activeDate}</span>
+      </div>
+
+      <div className="workbench-inspector__state">
+        <span>{workbenchLayerLabel(selectedLayer)}</span>
+        <strong>{inspector.headline}</strong>
+        <p>{inspector.summary}</p>
+      </div>
+
+      <dl className="workbench-inspector__readings">
+        {inspector.items.map((item) => (
+          <div key={item.label}>
+            <dt>{item.label}</dt>
+            <dd>{item.value}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <div className="workbench-question-block">
+        <span>Brechas de evidencia</span>
+        <ul>
+          {evidenceGaps.map((gap) => (
+            <li key={gap}>{gap}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="workbench-question-block next">
+        <span>Siguiente paso</span>
+        <p>{nextAction.text}</p>
+        {nextAction.page ? (
+          <button type="button" onClick={() => onNavigate(nextAction.page)}>
+            {nextAction.button}
+          </button>
+        ) : null}
+      </div>
+    </aside>
   );
 }
 
@@ -1335,7 +1681,7 @@ function KairosFieldLite({ record }) {
 
         <p className="field-lite-disclaimer">
           Esta verificación documenta condiciones visibles y contexto territorial.
-          No sustituye análisis externo ni decisión de autoridad competente.
+          No sustituye revisión externa ni procedimientos de campo.
         </p>
       </article>
     </section>
@@ -2130,7 +2476,7 @@ function HydroClimateWatchSection({ data, loadState, selectedDate }) {
           <p className="small-label">Contexto hidroclimático</p>
           <h2>Resumen por nodo para {selectedDate}</h2>
         </div>
-        <p>Contexto auxiliar; no cambia la decision Sentinel-2.</p>
+        <p>Contexto auxiliar; decisión Sentinel-2 separada.</p>
       </div>
 
       <div className="hydro-context-list">
@@ -2382,7 +2728,7 @@ function KairosCases({
         <span>Limite de alcance</span>
         <p>
           {data.claim_firewall ||
-            "No hace afirmaciones químicas, sanitarias, de aptitud de uso ni de respuesta institucional."}
+            "No extiende la interfaz a conclusiones fuera de confianza observacional ni a respuesta institucional."}
         </p>
       </section>
     </section>
@@ -2743,8 +3089,8 @@ function buildEvidenceOrganizerModel({
           isNoInfer
             ? "No hay evidencia valida suficiente para una inferencia responsable."
             : "La lectura no debe extenderse mas alla de confianza de observacion.",
-          "Las capas auxiliares no cambian la clasificacion Sentinel-2.",
-          "La verificacion territorial, laboratorio o autoridad competente quedan fuera de esta interfaz.",
+          "Las capas auxiliares se presentan separadas de la clasificacion Sentinel-2.",
+          "La verificacion territorial y los analisis externos quedan fuera de esta interfaz.",
         ]),
       },
       {
@@ -3625,7 +3971,7 @@ function HydroClimateTechnicalNote({ row }) {
     <p className="sar-technical-note" aria-label="Nota tecnica HydroClimate">
       HydroClimate: {translateHydroStatus(row.hydroclimate_status)}. 72h{" "}
       {formatRainMm(row.rain_72h_mm)}, 7d {formatRainMm(row.rain_7d_mm)}. Contexto
-      auxiliar; no cambia la decision Sentinel-2.
+      auxiliar; decision Sentinel-2 separada.
     </p>
   );
 }
@@ -3956,6 +4302,197 @@ function buildHydroCoverage(hydroClimate) {
     total,
     note: "Filas de lluvia antecedente como contexto auxiliar.",
   };
+}
+
+function buildWorkbenchInspector({
+  clmsRow,
+  hydroRow,
+  layer,
+  observation,
+  sarRow,
+  state,
+}) {
+  if (layer === "sar") {
+    return buildSarWorkbenchInspector(sarRow);
+  }
+  if (layer === "clms") {
+    return buildClmsWorkbenchInspector(clmsRow);
+  }
+  if (layer === "hydro") {
+    return buildHydroWorkbenchInspector(hydroRow);
+  }
+  return buildS2WorkbenchInspector(observation, state);
+}
+
+function buildS2WorkbenchInspector(observation, state) {
+  return {
+    headline: state.label,
+    summary:
+      observation?.reason_es ||
+      state.explanation ||
+      "Sentinel-2 es la capa primaria de decisión pública.",
+    items: [
+      ["Decisión", observation?.decision_label_es || state.decision || state.label],
+      ["Evidencia válida", formatMaybePercent(observation?.validPercent)],
+      ["API CDSE", observation?.api_status || "sin dato"],
+      ["Clasificación", observation?.confidence_label_es || state.label],
+      ["Acción", observation?.recommended_action_es || state.action || "sin dato"],
+    ].map(([label, value]) => ({ label, value })),
+  };
+}
+
+function buildSarWorkbenchInspector(row) {
+  const status = translateSarStatus(row?.context_status);
+  return {
+    headline: row ? status : "SAR sin fila pública",
+    summary: row
+      ? "Continuidad radar reportada como contexto auxiliar para el nodo y fecha seleccionados."
+      : "No existe fila SAR pública para esta selección.",
+    items: [
+      ["Estado", status],
+      ["Fecha SAR", row?.matched_acquisition_date || "sin adquisición"],
+      [
+        "Ventana",
+        row?.sar_window_start && row?.sar_window_end
+          ? `${row.sar_window_start} a ${row.sar_window_end}`
+          : "sin ventana",
+      ],
+      ["Ancho ventana", row?.window_days ? `+/-${row.window_days} días` : "sin dato"],
+      ["API", row?.api_status || "sin dato"],
+    ].map(([label, value]) => ({ label, value })),
+  };
+}
+
+function buildClmsWorkbenchInspector(row) {
+  return {
+    headline: row?.exposure_status === "exposure_available" ? "CLMS disponible" : "CLMS sin nodo público",
+    summary: row
+      ? "Composición territorial del nodo como contexto auxiliar."
+      : "No existe contexto CLMS público para este nodo.",
+    items: [
+      ["Referencia", row?.reference_year || "sin dato"],
+      ["Cultivo/agricultura", formatMaybePercent(row?.cropland_agriculture_pct)],
+      ["Árbol/vegetación", formatMaybePercent(row?.tree_vegetation_pct)],
+      ["Agua/humedal", formatMaybePercent(row?.water_wetland_pct)],
+      ["Urbano/suelo", formatMaybePercent(row?.built_bare_other_pct)],
+    ].map(([label, value]) => ({ label, value })),
+  };
+}
+
+function buildHydroWorkbenchInspector(row) {
+  const status = formatWorkbenchHydroStatus(row?.context_status || row?.hydroclimate_status);
+  return {
+    headline: row ? status : "HydroClimate sin fila pública",
+    summary: row
+      ? "Lluvia antecedente reportada como contexto auxiliar para priorizar revisión."
+      : "No existe fila HydroClimate pública para esta selección.",
+    items: [
+      ["Estado", status],
+      ["24h", formatRainMm(row?.rain_24h_mm)],
+      ["72h", formatRainMm(row?.rain_72h_mm)],
+      ["7 días", formatRainMm(row?.rain_7d_mm)],
+      ["14 días", formatRainMm(row?.rain_14d_mm)],
+    ].map(([label, value]) => ({ label, value })),
+  };
+}
+
+function buildWorkbenchEvidenceGaps({ clmsRow, hydroRow, observation, sarRow }) {
+  const gaps = [];
+  if (!observation) {
+    gaps.push("No hay observación Sentinel-2 pública para esta selección.");
+  } else if (isDoNotInfer(observation)) {
+    gaps.push("Sentinel-2 no alcanza evidencia válida suficiente para interpretar.");
+  } else if (observation.confidence_class === "low_confidence") {
+    gaps.push("Sentinel-2 requiere revisión antes de interpretar.");
+  }
+
+  if (!sarRow || sarRow.context_status !== "sar_context_available") {
+    gaps.push("SAR auxiliar no aporta contexto disponible para esta ventana.");
+  }
+  if (!clmsRow || clmsRow.exposure_status !== "exposure_available") {
+    gaps.push("CLMS auxiliar no está disponible para este nodo.");
+  }
+  if (!hydroRow) {
+    gaps.push("HydroClimate auxiliar no tiene fila pública para este nodo/fecha.");
+  }
+
+  return gaps.length
+    ? gaps
+    : ["Los JSON públicos no registran brecha auxiliar adicional para esta selección."];
+}
+
+function buildWorkbenchNextAction(observation) {
+  if (!observation) {
+    return {
+      text: "Cambiar nodo o fecha hasta encontrar una observación pública.",
+      button: "",
+      page: "",
+    };
+  }
+  if (isDoNotInfer(observation)) {
+    return {
+      text:
+        observation.recommended_action_es ||
+        "Esperar una nueva adquisición o solicitar verificación territorial.",
+      button: "Ver Acción",
+      page: "cases",
+    };
+  }
+  if (observation.confidence_class === "low_confidence") {
+    return {
+      text: "Revisar evidencia auxiliar y abrir trazabilidad antes de interpretar.",
+      button: "Ver Evidencia",
+      page: "technical",
+    };
+  }
+  return {
+    text: "Abrir trazabilidad para ver la cadena pública de evidencia.",
+    button: "Ver Evidencia",
+    page: "technical",
+  };
+}
+
+function buildWorkbenchNodeLayerSummary({
+  clmsRow,
+  hydroRow,
+  layer,
+  observation,
+  sarRow,
+  state,
+}) {
+  if (layer === "sar") {
+    return sarRow ? translateSarStatus(sarRow.context_status) : "SAR sin fila";
+  }
+  if (layer === "clms") {
+    return clmsRow?.exposure_status === "exposure_available"
+      ? `CLMS ${formatMaybePercent(clmsRow.water_wetland_pct)} agua/humedal`
+      : "CLMS sin dato";
+  }
+  if (layer === "hydro") {
+    return hydroRow
+      ? formatWorkbenchHydroStatus(hydroRow.context_status || hydroRow.hydroclimate_status)
+      : "Hydro sin fila";
+  }
+  return observation
+    ? `${state.label} · ${formatPercent(observation.validPercent)}`
+    : "sin Sentinel-2";
+}
+
+function workbenchLayerLabel(layer) {
+  return WORKBENCH_LAYERS.find((item) => item.id === layer)?.label || "S-2 DECISIÓN";
+}
+
+function formatWorkbenchHydroStatus(status) {
+  const labels = {
+    normal_context: "contexto normal",
+    antecedent_rain_review: "revisión por lluvia antecedente",
+    antecedent_rain: "lluvia antecedente",
+    heavy_rain_context: "lluvia alta antecedente",
+    dry_or_low_rain: "lluvia baja",
+    data_unavailable: "datos pendientes",
+    api_error: "error API",
+  };
+  return labels[status] || status || "sin dato";
 }
 
 function isApiOk(record) {
@@ -4381,7 +4918,7 @@ function translateContextAction(value) {
     return "Revisar lluvia antecedente antes de interpretar observaciones sensibles a escorrentia.";
   }
   if (normalized.includes("rainfall") || normalized.includes("contexto auxiliar")) {
-    return "Contexto auxiliar; no cambia la clasificacion Sentinel-2.";
+    return "Contexto auxiliar; clasificacion Sentinel-2 separada.";
   }
   return value;
 }
