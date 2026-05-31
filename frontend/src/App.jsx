@@ -130,6 +130,13 @@ const CASES_INSIGHT =
 const LAB_ESCALATION_COPY =
   "Requiere verificación territorial o autoridad competente.";
 
+const ACTION_QUEUE_FILTERS = [
+  { id: "all", label: "Todos" },
+  { id: "urgent", label: "Urgentes" },
+  { id: "verification", label: "Verificación" },
+  { id: "usable", label: "Usables" },
+];
+
 export default function App() {
   const [observations, setObservations] = useState([]);
   const [ledgerRows, setLedgerRows] = useState([]);
@@ -425,6 +432,8 @@ export default function App() {
           casePanelMode={casePanelMode}
           setCasePanelMode={setCasePanelMode}
           exposureContext={exposureContext}
+          onNavigate={setPageAndHash}
+          setSelectedDate={setSelectedDate}
         />
       ) : activePage === "passport" ? (
         <PassportPage
@@ -1420,19 +1429,36 @@ function KairosCases({
   casePanelMode,
   setCasePanelMode,
   exposureContext,
+  onNavigate,
+  setSelectedDate,
 }) {
+  const [queueFilter, setQueueFilter] = useState("all");
   const ready = loadState.status === "ready" && data;
   const cases = useMemo(() => {
     if (!ready) return [];
     return [...(data.cases ?? [])].sort(sortDecisionCase);
   }, [data, ready]);
+  const filteredCases = useMemo(
+    () => filterActionQueueCases(cases, queueFilter),
+    [cases, queueFilter],
+  );
+  const queueMetrics = useMemo(() => buildActionQueueMetrics(cases), [cases]);
   const summary = ready ? data.summary ?? {} : {};
   const selectedCase =
-    cases.find((caseItem) => caseItem.case_id === activeCaseId) ?? cases[0] ?? null;
+    filteredCases.find((caseItem) => caseItem.case_id === activeCaseId) ??
+    filteredCases[0] ??
+    cases[0] ??
+    null;
 
   function selectCase(caseItem, mode) {
     setActiveCaseId(caseItem.case_id);
     setCasePanelMode(mode);
+  }
+
+  function openPassport(caseItem) {
+    setActiveCaseId(caseItem.case_id);
+    setSelectedDate(caseItem.date);
+    onNavigate("passport");
   }
 
   if (!ready) {
@@ -1460,48 +1486,87 @@ function KairosCases({
     <section className="cases-screen" aria-label="Accion">
       <div className="cases-hero">
         <div>
-          <p className="small-label">Accion</p>
-          <h1>Cola de decision territorial</h1>
-          <p>{CASES_INSIGHT}</p>
+          <p className="small-label">Action Queue v2</p>
+          <h1>Cola operativa para no inferir de más.</h1>
+          <p>
+            {CASES_INSIGHT} La cola separa urgencia, verificación, evidencia
+            auxiliar y comprobante público antes de cualquier uso externo.
+          </p>
         </div>
         <article className="cases-insight-card">
-          <span>Cola de decision</span>
+          <span>Estado de cola</span>
           <dl>
             <div>
               <dt>Total casos</dt>
               <dd>{summary.total_cases ?? cases.length}</dd>
             </div>
             <div>
-              <dt>Verificación</dt>
-              <dd>{summary.field_verification_recommended_count ?? 0}</dd>
+              <dt>Urgentes</dt>
+              <dd>{queueMetrics.urgent}</dd>
             </div>
             <div>
-              <dt>Brechas</dt>
-              <dd>{summary.evidence_gap_count ?? 0}</dd>
+              <dt>Verificación</dt>
+              <dd>{queueMetrics.verification}</dd>
             </div>
           </dl>
         </article>
       </div>
 
+      <section className="action-command-strip" aria-label="Triage de acción">
+        <article>
+          <span>Próximo caso</span>
+          <strong>{selectedCase?.node_display_name || selectedCase?.node_id || "sin caso"}</strong>
+          <p>{selectedCase ? buildActionQueueLane(selectedCase).label : "No hay caso activo."}</p>
+        </article>
+        <article>
+          <span>Bloqueo responsable</span>
+          <strong>{queueMetrics.noInfer}</strong>
+          <p>casos donde la evidencia primaria no sostiene interpretación.</p>
+        </article>
+        <article>
+          <span>Passport</span>
+          <strong>{queueMetrics.passportReady}</strong>
+          <p>casos listos para comprobante público y trazabilidad.</p>
+        </article>
+      </section>
+
       <div className="case-board-layout">
         <section className="case-board-section" aria-label="Tablero de casos">
-          <div className="section-heading compact">
+          <div className="action-queue-toolbar">
             <div>
-              <p className="small-label">Cola de casos</p>
-              <h2>Acciones recomendadas por nodo y fecha</h2>
+              <p className="small-label">Cola v2</p>
+              <h2>Priorizar, preparar, documentar.</h2>
             </div>
-            <p>Corredor conserva el panorama regional. Esta vista organiza la accion.</p>
+            <div className="action-queue-filters" aria-label="Filtros de cola">
+              {ACTION_QUEUE_FILTERS.map((filter) => (
+                <button
+                  className={queueFilter === filter.id ? "is-active" : ""}
+                  key={filter.id}
+                  onClick={() => setQueueFilter(filter.id)}
+                  type="button"
+                >
+                  <span>{filter.label}</span>
+                  <strong>{getActionQueueFilterCount(filter.id, queueMetrics)}</strong>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="case-queue-list">
-            {cases.map((caseItem) => (
+            {filteredCases.map((caseItem) => (
               <DecisionCaseCard
                 caseItem={caseItem}
                 isActive={selectedCase?.case_id === caseItem.case_id}
                 key={caseItem.case_id}
+                onPassport={openPassport}
                 onSelect={selectCase}
               />
             ))}
+            {!filteredCases.length ? (
+              <div className="case-queue-empty">
+                No hay casos para este filtro.
+              </div>
+            ) : null}
           </div>
         </section>
 
@@ -1523,11 +1588,12 @@ function KairosCases({
   );
 }
 
-function DecisionCaseCard({ caseItem, isActive, onSelect }) {
+function DecisionCaseCard({ caseItem, isActive, onPassport, onSelect }) {
   const tone = decisionCaseTone(caseItem);
   const priority = casePriorityBadge(caseItem);
   const stampState = decisionCaseStampState(caseItem);
   const actionText = caseItem.recommended_action || caseItem.recommended_workflow;
+  const lane = buildActionQueueLane(caseItem);
 
   return (
     <article className={`case-card case-queue-row tone-${tone} ${isActive ? "active" : ""}`}>
@@ -1555,10 +1621,22 @@ function DecisionCaseCard({ caseItem, isActive, onSelect }) {
       </div>
 
       <div className="case-card-row case-card-row--bottom">
-        <p className="case-row-action">{actionText}</p>
+        <div className="case-row-body">
+          <span className={`case-lane-chip lane-${lane.id}`}>{lane.label}</span>
+          <p className="case-row-action">{actionText}</p>
+        </div>
         <div className="case-actions" aria-label="Acciones del caso">
           <button type="button" onClick={() => onSelect(caseItem, "evidence")}>
-            Ver evidencia
+            Evidencia
+          </button>
+          <button type="button" onClick={() => onSelect(caseItem, "verification")}>
+            Verificar
+          </button>
+          <button type="button" onClick={() => onSelect(caseItem, "brief")}>
+            Brief
+          </button>
+          <button type="button" onClick={() => onPassport(caseItem)}>
+            Passport
           </button>
         </div>
       </div>
@@ -1583,15 +1661,23 @@ function CaseActionPanel({ caseItem, exposureContext, mode }) {
     );
   }
 
+  const lane = buildActionQueueLane(caseItem);
+  const actionPlan = buildCaseActionPlan(caseItem, evidenceGaps);
+
   if (mode === "brief") {
     return (
       <aside className="case-action-panel" aria-label="Vista de brief de confianza">
         <span>Brief compacto</span>
         <h3>{caseItem.decision_label}: {caseItem.node_display_name}</h3>
+        <div className="case-panel-modebar">
+          <span className={`case-lane-chip lane-${lane.id}`}>{lane.label}</span>
+          <strong>{actionPlan.owner}</strong>
+        </div>
         <div className="case-brief-preview">
           <p>{caseItem.decision_action}</p>
           <p>{caseItem.recommended_workflow}</p>
         </div>
+        <ActionQueuePlan actionPlan={actionPlan} />
         <dl className="case-panel-facts">
           <CaseDataPair label="Fecha" value={caseItem.date} />
           <CaseDataPair label="Prioridad" value={caseItem.priority_level} />
@@ -1611,6 +1697,7 @@ function CaseActionPanel({ caseItem, exposureContext, mode }) {
           Este flujo documenta que el caso requiere revisión territorial. No guarda
           datos, no abre backend y no reemplaza la autoridad técnica.
         </p>
+        <ActionQueueChecklist items={actionPlan.checklist} />
         <dl className="case-panel-facts">
           <CaseDataPair label="Nodo" value={caseItem.node_display_name || caseItem.node_id} />
           <CaseDataPair label="Fecha" value={caseItem.date} />
@@ -1626,6 +1713,10 @@ function CaseActionPanel({ caseItem, exposureContext, mode }) {
     <aside className="case-action-panel" aria-label="Evidencia del caso">
       <span>Evidencia del caso</span>
       <h3>{caseItem.node_display_name || caseItem.node_id}</h3>
+      <div className="case-panel-modebar">
+        <span className={`case-lane-chip lane-${lane.id}`}>{lane.label}</span>
+        <strong>{actionPlan.window}</strong>
+      </div>
       <dl className="case-panel-facts">
         <CaseDataPair label="Fecha" value={caseItem.date} />
         <CaseDataPair
@@ -1649,7 +1740,41 @@ function CaseActionPanel({ caseItem, exposureContext, mode }) {
           ))}
         </ul>
       </div>
+      <ActionQueuePlan actionPlan={actionPlan} />
     </aside>
+  );
+}
+
+function ActionQueuePlan({ actionPlan }) {
+  return (
+    <div className="action-plan-card" aria-label="Plan operativo">
+      <span>Plan operativo</span>
+      <strong>{actionPlan.title}</strong>
+      <p>{actionPlan.summary}</p>
+      <dl>
+        <div>
+          <dt>Responsable</dt>
+          <dd>{actionPlan.owner}</dd>
+        </div>
+        <div>
+          <dt>Ventana</dt>
+          <dd>{actionPlan.window}</dd>
+        </div>
+      </dl>
+    </div>
+  );
+}
+
+function ActionQueueChecklist({ items }) {
+  return (
+    <div className="action-checklist" aria-label="Checklist no persistido">
+      {items.map((item) => (
+        <label key={item}>
+          <input type="checkbox" />
+          <span>{item}</span>
+        </label>
+      ))}
+    </div>
   );
 }
 
@@ -2312,6 +2437,98 @@ function translateHydroStatus(status) {
     data_unavailable: "datos pendientes",
   };
   return labels[status] || status || "sin dato";
+}
+
+function buildActionQueueMetrics(cases) {
+  return {
+    all: cases.length,
+    urgent: cases.filter(isUrgentCase).length,
+    verification: cases.filter(isVerificationCase).length,
+    usable: cases.filter(isUsableCase).length,
+    noInfer: cases.filter(isCaseNoInfer).length,
+    passportReady: cases.filter(isPassportReadyCase).length,
+  };
+}
+
+function filterActionQueueCases(cases, filter) {
+  if (filter === "urgent") return cases.filter(isUrgentCase);
+  if (filter === "verification") return cases.filter(isVerificationCase);
+  if (filter === "usable") return cases.filter(isUsableCase);
+  return cases;
+}
+
+function getActionQueueFilterCount(filter, metrics) {
+  if (filter === "urgent") return metrics.urgent;
+  if (filter === "verification") return metrics.verification;
+  if (filter === "usable") return metrics.usable;
+  return metrics.all;
+}
+
+function buildActionQueueLane(caseItem) {
+  if (isUrgentCase(caseItem)) {
+    return {
+      id: "urgent",
+      label: "Verificación prioritaria",
+    };
+  }
+  if (isCaseNoInfer(caseItem)) {
+    return {
+      id: "blocked",
+      label: "Bloqueo de inferencia",
+    };
+  }
+  return {
+    id: "usable",
+    label: "Lectura usable con límites",
+  };
+}
+
+function buildCaseActionPlan(caseItem, evidenceGaps) {
+  const noInfer = isCaseNoInfer(caseItem);
+  const rainContext = caseItem?.hydroclimate_status === "antecedent_rain";
+  const owner = noInfer ? "Revisión territorial" : "Archivo de evidencia";
+  const window = noInfer
+    ? rainContext
+      ? "antes de usar la escena"
+      : "antes de interpretar"
+    : "al compartir el passport";
+
+  return {
+    checklist: [
+      "Separar evidencia observacional de verificación territorial.",
+      "Conservar fecha, nodo, porcentaje válido y estado del ledger.",
+      "Registrar brechas sin convertirlas en conclusión territorial.",
+      "Escalar a autoridad competente solo si el contexto lo justifica.",
+    ],
+    owner,
+    summary: noInfer
+      ? "Preparar revisión y esperar nueva adquisición antes de usar la escena como evidencia interpretativa."
+      : "Conservar trazabilidad y compartir solo como lectura exploratoria con límites visibles.",
+    title: noInfer ? "No usar para interpretación" : "Compartir con trazabilidad",
+    window,
+    gaps: evidenceGaps,
+  };
+}
+
+function isUrgentCase(caseItem) {
+  const priority = stripAccents(caseItem?.priority_level || "").toLowerCase();
+  return isCaseNoInfer(caseItem) && (priority === "alta" || caseItem?.hydroclimate_status === "antecedent_rain");
+}
+
+function isVerificationCase(caseItem) {
+  return String(caseItem?.field_verification_status || "").toLowerCase() === "recomendada";
+}
+
+function isUsableCase(caseItem) {
+  return String(caseItem?.decision_label || "").toUpperCase() === "USABLE";
+}
+
+function isCaseNoInfer(caseItem) {
+  return String(caseItem?.decision_label || "").toUpperCase() === "NO INFERIR";
+}
+
+function isPassportReadyCase(caseItem) {
+  return Boolean(caseItem?.ledger_status) && Boolean(caseItem?.claim_firewall);
 }
 
 function sortDecisionCase(a, b) {

@@ -1440,11 +1440,11 @@ button {
 }
 
 .cases-hero h1 {
-  max-width: 13ch;
+  max-width: 17ch;
   margin: 6px 0 0;
   color: var(--river);
-  font-size: clamp(2.35rem, 4.8vw, 4.9rem);
-  line-height: 0.96;
+  font-size: clamp(2.25rem, 3.9vw, 3.85rem);
+  line-height: 1;
 }
 
 .cases-hero > div > h1 + p {
@@ -1514,6 +1514,51 @@ button {
   font-weight: 880;
 }
 
+.action-command-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.action-command-strip article {
+  display: grid;
+  min-height: 132px;
+  align-content: space-between;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 18px;
+  background: color-mix(in oklch, var(--paper) 78%, transparent);
+  box-shadow: var(--shadow-soft);
+}
+
+.action-command-strip span,
+.action-queue-toolbar .small-label,
+.case-lane-chip,
+.action-plan-card > span {
+  color: var(--muted);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 840;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.action-command-strip strong {
+  color: var(--river);
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  line-height: 1.04;
+}
+
+.action-command-strip p {
+  margin: 0;
+  color: var(--river-soft);
+  font-size: 0.92rem;
+  font-weight: 720;
+  line-height: 1.38;
+}
+
 .cases-empty-card p {
   margin: 12px 0 0;
   color: var(--river-soft);
@@ -1535,6 +1580,56 @@ button {
   padding: 20px;
 }
 
+.action-queue-toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 0.6fr) minmax(360px, 1fr);
+  gap: 16px;
+  align-items: end;
+}
+
+.action-queue-toolbar h2 {
+  margin: 4px 0 0;
+  color: var(--river);
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 2.2vw, 2.1rem);
+  line-height: 1.05;
+}
+
+.action-queue-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.action-queue-filters button {
+  display: grid;
+  min-height: 58px;
+  align-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  background: color-mix(in oklch, var(--bg-base) 58%, transparent);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  text-align: left;
+}
+
+.action-queue-filters button.is-active {
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+  color: var(--bg-surface);
+}
+
+.action-queue-filters span {
+  font-size: 0.72rem;
+  font-weight: 780;
+}
+
+.action-queue-filters strong {
+  font-family: var(--font-data);
+  font-size: 1.05rem;
+}
+
 .case-queue-list {
   display: grid;
   gap: 10px;
@@ -1547,17 +1642,17 @@ button {
   min-width: 0;
   min-height: 0;
   gap: 10px;
-  border: 1px solid var(--border);
-  border-left: 4px solid var(--case-state-color, var(--border));
+  border: 1px solid color-mix(in oklch, var(--case-state-color, var(--border)) 38%, var(--border));
   border-radius: var(--radius-md);
   padding: 14px 16px 12px;
-  background: var(--bg-surface);
+  background:
+    linear-gradient(180deg, var(--case-state-bg, transparent), transparent 48%),
+    var(--bg-surface);
   color: var(--text-primary);
 }
 
 .case-card.active {
-  border-color: var(--border);
-  border-left-color: var(--case-state-color, var(--border));
+  border-color: color-mix(in oklch, var(--case-state-color, var(--text-primary)) 54%, var(--border));
   box-shadow: 0 0 0 3px color-mix(in oklch, var(--case-state-color, var(--text-primary)) 12%, transparent);
 }
 
@@ -1596,10 +1691,15 @@ button {
 }
 
 .case-card-row--bottom {
-  grid-template-columns: minmax(0, 3fr) minmax(112px, 2fr);
-  align-items: flex-end;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, auto);
+  align-items: end;
   border-top: 1px solid var(--border-subtle);
   padding-top: 10px;
+}
+
+.case-row-body {
+  display: grid;
+  gap: 7px;
 }
 
 .case-card-identity {
@@ -1672,8 +1772,33 @@ button {
   -webkit-line-clamp: 2;
 }
 
+.case-lane-chip {
+  display: inline-flex;
+  width: max-content;
+  max-width: 100%;
+  border: 1px solid var(--case-state-color, var(--border));
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: var(--case-state-bg, var(--bg-archive));
+  color: var(--case-state-color, var(--text-secondary));
+  line-height: 1.1;
+}
+
+.case-lane-chip.lane-usable {
+  --case-state-color: var(--state-usable);
+  --case-state-bg: var(--state-usable-bg);
+}
+
+.case-lane-chip.lane-urgent,
+.case-lane-chip.lane-blocked {
+  --case-state-color: var(--state-no-inferir);
+  --case-state-bg: var(--state-no-inferir-bg);
+}
+
 .case-queue-row .case-actions {
-  justify-content: flex-end;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  justify-content: stretch;
   margin-top: 0;
   padding-top: 0;
 }
@@ -1731,7 +1856,8 @@ button {
   font-family: var(--font-ui);
   font-size: 12px;
   font-weight: 720;
-  white-space: normal;
+  text-align: center;
+  white-space: nowrap;
   overflow-wrap: anywhere;
   transition:
     background-color var(--transition-fast),
@@ -1784,6 +1910,83 @@ button {
   font-size: 0.96rem;
   font-weight: 730;
   line-height: 1.48;
+}
+
+.case-panel-modebar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.case-panel-modebar strong {
+  color: var(--river-soft);
+  font-family: var(--font-data);
+  font-size: 0.82rem;
+}
+
+.action-plan-card,
+.action-checklist {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+  border: 1px solid color-mix(in oklch, var(--river) 8%, transparent);
+  border-radius: 18px;
+  padding: 14px;
+  background: color-mix(in oklch, var(--paper-soft) 62%, transparent);
+}
+
+.action-plan-card strong {
+  color: var(--river);
+  font-family: var(--font-display);
+  font-size: 1.24rem;
+  line-height: 1.08;
+}
+
+.action-plan-card p {
+  margin: 0;
+  color: var(--river-soft);
+  font-size: 0.9rem;
+  font-weight: 720;
+  line-height: 1.42;
+}
+
+.action-plan-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.action-plan-card div {
+  border-top: 1px solid color-mix(in oklch, var(--river) 9%, transparent);
+  padding-top: 8px;
+}
+
+.action-checklist label {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+  color: var(--river-soft);
+  font-size: 0.87rem;
+  font-weight: 720;
+  line-height: 1.38;
+}
+
+.action-checklist input {
+  accent-color: var(--state-revisar);
+  margin-top: 2px;
+}
+
+.case-queue-empty {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  text-align: center;
 }
 
 .case-panel-facts {
@@ -1897,6 +2100,8 @@ button {
   .corredor-workbench__hero,
   .corredor-workbench__grid,
   .cases-hero,
+  .action-command-strip,
+  .action-queue-toolbar,
   .case-board-layout {
     grid-template-columns: 1fr;
     min-height: 0;
@@ -1990,6 +2195,7 @@ button {
   .corredor-matrix-section,
   .corredor-workbench__empty,
   .cases-hero,
+  .action-command-strip article,
   .case-board-section,
   .case-action-panel,
   .cases-limit-note {
@@ -2027,8 +2233,12 @@ button {
   .impact-calculator,
   .impact-limits-strip,
   .cases-hero,
+  .action-command-strip,
+  .action-queue-toolbar,
+  .action-queue-filters,
   .case-board-layout,
-  .cases-insight-card dl {
+  .cases-insight-card dl,
+  .action-plan-card dl {
     grid-template-columns: 1fr;
   }
 
@@ -2090,7 +2300,7 @@ button {
   }
 
   .cases-hero h1 {
-    font-size: clamp(2.2rem, 13vw, 3.4rem);
+    font-size: 2.35rem;
   }
 
   .kairos-cycle-step,
@@ -2106,7 +2316,7 @@ button {
 
   .case-card-row--bottom {
     gap: 8px;
-    grid-template-columns: minmax(0, 1fr) 120px;
+    grid-template-columns: 1fr;
   }
 
   .case-priority-pill {
