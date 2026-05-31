@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./EvidenciaPage.css";
 
 const STATE_LABELS = {
@@ -7,14 +7,33 @@ const STATE_LABELS = {
   do_not_infer: "NO INFERIR",
 };
 
+const ASSISTANT_DISCLAIMER =
+  "La IA no decide ni crea evidencia; organiza un paquete de evidencia ya auditado.";
+
+const ASSISTANT_LENSES = [
+  { id: "brief", label: "Brief" },
+  { id: "field", label: "Campo" },
+  { id: "passport", label: "Passport" },
+];
+
 export default function EvidenciaPage({
   availableDates = [],
+  exposureContext,
+  hydroClimateContext,
   record,
   ledger,
   ledgerRows = [],
+  sarLoadState,
   selectedDate,
   setSelectedDate,
 }) {
+  const [assistantLens, setAssistantLens] = useState("brief");
+  const [assistantState, setAssistantState] = useState({
+    brief: null,
+    mode: "fallback",
+    reason: "not_requested",
+    status: "idle",
+  });
   const stateLabel = getStateLabel(record);
   const ledgerEntries = useMemo(
     () => buildLedgerEntries(ledgerRows.length ? ledgerRows : ledger ? [ledger] : []),
@@ -24,6 +43,73 @@ export default function EvidenciaPage({
     () => buildKnowledgeModel(record, ledger, stateLabel),
     [ledger, record, stateLabel],
   );
+  const evidencePacket = useMemo(
+    () =>
+      buildEvidencePacket({
+        assistantLens,
+        exposureContext,
+        hydroClimateContext,
+        ledger,
+        ledgerEntries,
+        record,
+        sarLoadState,
+        stateLabel,
+      }),
+    [
+      assistantLens,
+      exposureContext,
+      hydroClimateContext,
+      ledger,
+      ledgerEntries,
+      record,
+      sarLoadState,
+      stateLabel,
+    ],
+  );
+  const deterministicBrief = useMemo(
+    () => buildDeterministicEvidenceBrief(evidencePacket, assistantLens),
+    [assistantLens, evidencePacket],
+  );
+  const assistantBrief = assistantState.brief || deterministicBrief;
+  const assistantStatusLabel = getAssistantStatusChipLabel(assistantState);
+
+  useEffect(() => {
+    setAssistantState({
+      brief: null,
+      mode: "fallback",
+      reason: "date_changed",
+      status: "idle",
+    });
+  }, [assistantLens, selectedDate]);
+
+  async function prepareAssistantBrief() {
+    setAssistantState({
+      brief: deterministicBrief,
+      mode: "fallback",
+      reason: "preparing",
+      status: "loading",
+    });
+
+    const result = await requestEvidenceBrief(evidencePacket);
+
+    if (result.mode === "ai" && result.brief) {
+      setAssistantState({
+        brief: result.brief,
+        mode: "ai",
+        model: result.model,
+        reason: "",
+        status: "ready",
+      });
+      return;
+    }
+
+    setAssistantState({
+      brief: deterministicBrief,
+      mode: "fallback",
+      reason: result.reason || "fallback",
+      status: "ready",
+    });
+  }
 
   return (
     <section className="evidencia-page" aria-label="Evidencia">
@@ -53,6 +139,16 @@ export default function EvidenciaPage({
         <DataReadout label="API CDSE" value={record?.api_status || "pendiente"} />
         <DataReadout label="LEDGER" value={ledger?.evidence_status || "sin registro"} />
       </div>
+
+      <EvidenceAssistantPanel
+        assistantBrief={assistantBrief}
+        assistantLens={assistantLens}
+        assistantState={assistantState}
+        assistantStatusLabel={assistantStatusLabel}
+        evidencePacket={evidencePacket}
+        onPrepare={prepareAssistantBrief}
+        setAssistantLens={setAssistantLens}
+      />
 
       <section className="evidencia-page__knowledge" aria-label="Informe de campo">
         {knowledgeModel.map((section) => (
@@ -110,6 +206,119 @@ function DataReadout({ label, value }) {
       <span className="section-label">{label}</span>
       <strong className="data-value">{value}</strong>
     </div>
+  );
+}
+
+function EvidenceAssistantPanel({
+  assistantBrief,
+  assistantLens,
+  assistantState,
+  assistantStatusLabel,
+  evidencePacket,
+  onPrepare,
+  setAssistantLens,
+}) {
+  return (
+    <section className="evidence-assistant" aria-label="Asistente de Evidencia Kairos">
+      <div className="evidence-assistant__header">
+        <div>
+          <p className="section-label">ASISTENTE DE EVIDENCIA KAIROS</p>
+          <h2>Organizar el paquete, no ampliar el alcance.</h2>
+        </div>
+        <div className="evidence-assistant__controls">
+          <span className={`assistant-status assistant-status--${assistantState.mode}`}>
+            {assistantStatusLabel}
+          </span>
+          <button
+            disabled={assistantState.status === "loading"}
+            onClick={onPrepare}
+            type="button"
+          >
+            {assistantState.status === "loading"
+              ? "Preparando..."
+              : "Preparar brief asistido"}
+          </button>
+        </div>
+      </div>
+
+      <p className="evidence-assistant__disclaimer">{ASSISTANT_DISCLAIMER}</p>
+
+      <div className="evidence-assistant__lens" aria-label="Lente del asistente">
+        {ASSISTANT_LENSES.map((lens) => (
+          <button
+            className={assistantLens === lens.id ? "is-active" : ""}
+            key={lens.id}
+            onClick={() => setAssistantLens(lens.id)}
+            type="button"
+          >
+            {lens.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="evidence-assistant__grid">
+        <article className="assistant-packet-card">
+          <p className="section-label">PAQUETE AUDITADO</p>
+          <dl>
+            <AssistantDataPair label="Fecha" value={evidencePacket.selected_date} />
+            <AssistantDataPair label="Decisión" value={evidencePacket.decision_label} />
+            <AssistantDataPair
+              label="ValidPercent"
+              value={formatPercent(evidencePacket.sentinel2.valid_percent)}
+            />
+            <AssistantDataPair label="Ledger" value={evidencePacket.ledger.status} />
+            <AssistantDataPair
+              label="HydroClimate"
+              value={evidencePacket.auxiliary_context.hydroclimate_status}
+            />
+            <AssistantDataPair
+              label="Eventos"
+              value={`${evidencePacket.ledger_events.length} referencias`}
+            />
+          </dl>
+        </article>
+
+        <article className="assistant-brief-card">
+          <div className="assistant-brief-card__top">
+            <div>
+              <p className="section-label">RESUMEN</p>
+              <h3>{assistantBrief.decision_summary}</h3>
+            </div>
+            <span>{assistantState.model || "fallback local"}</span>
+          </div>
+          <p>{assistantBrief.recommended_action}</p>
+        </article>
+      </div>
+
+      <div className="assistant-output-grid" aria-label="Salida del asistente">
+        <AssistantList title="Evidencia usada" items={assistantBrief.evidence_used} />
+        <AssistantList title="Brechas" items={assistantBrief.evidence_gaps} />
+        <AssistantList title="Límites" items={assistantBrief.limits} />
+        <AssistantList title="Artefactos" items={assistantBrief.artifact_refs} mono />
+      </div>
+    </section>
+  );
+}
+
+function AssistantDataPair({ label, value }) {
+  return (
+    <div>
+      <dt>{label}</dt>
+      <dd>{value || "pendiente"}</dd>
+    </div>
+  );
+}
+
+function AssistantList({ items, mono = false, title }) {
+  return (
+    <article className="assistant-list">
+      <p className="section-label">{title}</p>
+      <ul className={mono ? "assistant-list__mono" : ""}>
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </article>
   );
 }
 
@@ -230,6 +439,221 @@ function buildLedgerEntries(rows) {
         hashShort,
       };
     });
+}
+
+function buildEvidencePacket({
+  assistantLens,
+  exposureContext,
+  hydroClimateContext,
+  ledger,
+  ledgerEntries,
+  record,
+  sarLoadState,
+  stateLabel,
+}) {
+  const artifactRefs = uniqueAssistantItems([
+    record?.brief_path,
+    record?.raw_json_path,
+    ledger?.brief_path,
+    ledger?.raw_json_path,
+    ledger?.processed_csv_path,
+    ...ledgerEntries.map((entry) => entry.artifactRef),
+  ]);
+
+  return {
+    assistant_lens: assistantLens,
+    selected_date: record?.date || "sin fecha",
+    aoi: record?.aoi || "sin AOI",
+    decision_label: stateLabel,
+    sentinel2: {
+      api_status: record?.api_status || "pendiente",
+      confidence_class: record?.confidence_class || "do_not_infer",
+      reason: record?.reason_es || record?.reason || "Motivo no disponible.",
+      recommended_action:
+        record?.recommended_action_es ||
+        record?.recommended_action ||
+        "Mantener la salida dentro de los límites de evidencia.",
+      valid_percent: Number(record?.validPercent),
+    },
+    ledger: {
+      hash_short:
+        ledger?.hash_short ||
+        String(ledger?.event_hash || ledger?.artifact_hash || "sin hash").slice(0, 12),
+      status: ledger?.evidence_status || ledger?.status || "sin registro",
+    },
+    ledger_events: ledgerEntries.slice(0, 8).map((entry) => ({
+      artifact_ref: entry.artifactRef,
+      event_label: entry.eventLabel,
+      event_type: entry.eventType,
+      hash_short: entry.hashShort,
+      status: entry.status,
+      timestamp: entry.timestamp,
+    })),
+    auxiliary_context: {
+      exposure_status: exposureContext?.data_status || "pendiente",
+      hydroclimate_status:
+        hydroClimateContext?.hydroclimate_status ||
+        hydroClimateContext?.status ||
+        "sin dato",
+      sar_status: sarLoadState?.status || "pendiente",
+    },
+    boundaries: [
+      "Usar solo evidencia provista por el paquete auditado.",
+      "No cambiar la clasificación Sentinel-2.",
+      "Separar observación, verificación territorial y autoridad competente.",
+    ],
+    artifact_refs: artifactRefs.length ? artifactRefs : ["sin artefacto público"],
+  };
+}
+
+function buildDeterministicEvidenceBrief(packet, assistantLens) {
+  const validPercent = formatPercent(packet.sentinel2.valid_percent);
+  const lensActions = {
+    brief: "Preparar un resumen público con decisión, evidencia usada, brechas y límites visibles.",
+    field: "Preparar una ficha de campo con observaciones visibles y cierre sin inferencia adicional.",
+    passport: "Adjuntar la trazabilidad al Passport manteniendo límites explícitos del paquete.",
+  };
+
+  return {
+    artifact_refs: packet.artifact_refs.slice(0, 6),
+    decision_summary: `${packet.decision_label}: ${packet.sentinel2.reason}`,
+    evidence_gaps: [
+      "Sin verificación territorial registrada en esta interfaz.",
+      "Las capas auxiliares orientan contexto, no sustituyen la decisión Sentinel-2.",
+      "El paquete no contiene resultado externo de autoridad competente.",
+    ],
+    evidence_used: [
+      `Fecha ${packet.selected_date}, AOI ${packet.aoi}.`,
+      `Sentinel-2: ${packet.sentinel2.confidence_class}, ${validPercent}.`,
+      `Ledger: ${packet.ledger.status}, hash ${packet.ledger.hash_short}.`,
+      `HydroClimate: ${packet.auxiliary_context.hydroclimate_status}.`,
+    ],
+    limits: [
+      "Resumen determinístico basado solo en el paquete visible.",
+      "No cambia la decisión primaria ni agrega fuentes nuevas.",
+      "No reemplaza revisión territorial, laboratorio o autoridad competente.",
+    ],
+    recommended_action:
+      lensActions[assistantLens] || packet.sentinel2.recommended_action,
+  };
+}
+
+async function requestEvidenceBrief(evidencePacket) {
+  if (import.meta.env.DEV && typeof window !== "undefined" && window.location.port) {
+    return { mode: "fallback", reason: "endpoint_unavailable" };
+  }
+
+  try {
+    const response = await fetch("/api/evidence-brief", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ evidence_packet: evidencePacket }),
+    });
+
+    if (!response.ok) {
+      return {
+        mode: "fallback",
+        reason: response.status === 404 ? "endpoint_unavailable" : `http_${response.status}`,
+      };
+    }
+
+    const payload = await response.json();
+    if (payload?.mode !== "ai") {
+      return {
+        mode: "fallback",
+        reason: payload?.reason || "provider_unavailable",
+      };
+    }
+
+    const brief = checkAssistantBrief(payload);
+    if (!brief) {
+      return { mode: "fallback", reason: "claim_guard" };
+    }
+
+    return {
+      brief,
+      mode: "ai",
+      model: safeAssistantText(payload.model, 120),
+    };
+  } catch {
+    return { mode: "fallback", reason: "request_failed" };
+  }
+}
+
+function checkAssistantBrief(payload) {
+  if (!payload || typeof payload !== "object") return null;
+  if (containsUnsafeAssistantClaim(payload)) return null;
+
+  const brief = {
+    artifact_refs: cleanAssistantList(payload.artifact_refs),
+    decision_summary: safeAssistantText(payload.decision_summary, 700),
+    evidence_gaps: cleanAssistantList(payload.evidence_gaps),
+    evidence_used: cleanAssistantList(payload.evidence_used),
+    limits: cleanAssistantList(payload.limits),
+    recommended_action: safeAssistantText(payload.recommended_action, 700),
+  };
+
+  if (
+    !brief.artifact_refs.length ||
+    !brief.decision_summary ||
+    !brief.evidence_gaps.length ||
+    !brief.evidence_used.length ||
+    !brief.limits.length ||
+    !brief.recommended_action
+  ) {
+    return null;
+  }
+
+  return brief;
+}
+
+function getAssistantStatusChipLabel(state) {
+  if (state.status === "loading") return "Preparando";
+  if (state.mode === "ai") return "IA conectada";
+  if (state.reason === "missing_key" || state.reason === "endpoint_unavailable") {
+    return "Modelo no configurado";
+  }
+  return "Resumen deterministico";
+}
+
+function cleanAssistantList(value) {
+  if (!Array.isArray(value)) return [];
+  return uniqueAssistantItems(value.map((item) => safeAssistantText(item, 420))).slice(0, 8);
+}
+
+function uniqueAssistantItems(items) {
+  return Array.from(new Set(items.filter(Boolean)));
+}
+
+function safeAssistantText(value, maxLength = 700) {
+  if (typeof value !== "string") return "";
+  return value.trim().replace(/\s+/g, " ").slice(0, maxLength);
+}
+
+function containsUnsafeAssistantClaim(value) {
+  const text = stripMarks(JSON.stringify(value)).toLowerCase();
+  const checks = [
+    ["contamin"],
+    ["quimic"],
+    ["sanitari"],
+    ["potab"],
+    ["agua", "segur"],
+    ["safe", "water"],
+    ["pest" + "ic"],
+    ["metal", "pesad"],
+    ["patog" + "en"],
+    ["cri" + "sis"],
+    ["detect"],
+    ["decid"],
+    ["confir" + "ma"],
+  ];
+  return checks.some((parts) => parts.every((part) => text.includes(part)));
+}
+
+function stripMarks(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
 }
 
 function compareLedgerRows(left, right) {

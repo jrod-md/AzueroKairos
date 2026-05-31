@@ -2557,6 +2557,7 @@ button {
 @media (max-width: 760px) {
   .app-shell {
     width: min(1360px, calc(100% - 24px));
+    width: min(1360px, calc(100svw - 24px));
     padding-top: 14px;
   }
 
@@ -2776,8 +2777,10 @@ button {
   }
 
   .sticky-decision-bar {
-    top: 8px;
+    top: auto;
+    bottom: 8px;
     width: min(420px, calc(100% - 20px));
+    width: min(420px, calc(100svw - 20px));
     grid-template-columns: 1fr;
   }
 
