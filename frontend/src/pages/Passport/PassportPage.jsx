@@ -50,9 +50,11 @@ export default function PassportPage({
   selectedDate,
   setSelectedDate,
 }) {
-  const [copyState, setCopyState] = useState("idle");
-  const [trustCopyState, setTrustCopyState] = useState("idle");
+  const [idCopyState, setIdCopyState] = useState("idle");
+  const [pathCopyState, setPathCopyState] = useState("idle");
+  const [downloadState, setDownloadState] = useState("idle");
   const [trustVerification, setTrustVerification] = useState({
+    passport: null,
     reportStatus: "pendiente",
     status: "loading",
     verificationHash: "",
@@ -62,12 +64,18 @@ export default function PassportPage({
     [decisionCases, ledger, ledgerRows, record],
   );
   const trustPath = useMemo(() => buildTrustPassportPath(passport.id), [passport.id]);
+  const trustDetails = useMemo(
+    () => buildTrustDetails({ fallbackPassport: passport, trustPassport: trustVerification.passport }),
+    [passport, trustVerification.passport],
+  );
+  const checklist = useMemo(() => buildTrustChecklist(trustDetails), [trustDetails]);
 
   useEffect(() => {
     let active = true;
 
     async function loadTrustVerification() {
       setTrustVerification({
+        passport: null,
         reportStatus: "pendiente",
         status: "loading",
         verificationHash: "",
@@ -82,6 +90,7 @@ export default function PassportPage({
         if (!active) return;
 
         setTrustVerification({
+          passport: passportPayload,
           reportStatus: reportPayload?.status || "no disponible",
           status: passportResponse.ok ? "ready" : "missing",
           verificationHash: passportPayload?.verification_hash || "",
@@ -89,6 +98,7 @@ export default function PassportPage({
       } catch {
         if (!active) return;
         setTrustVerification({
+          passport: null,
           reportStatus: "no disponible",
           status: "error",
           verificationHash: "",
@@ -102,33 +112,48 @@ export default function PassportPage({
     };
   }, [trustPath]);
 
-  async function copyPassportPacket() {
-    const packet = buildPortablePacket(passport);
+  async function copyPassportId() {
     if (!navigator?.clipboard?.writeText) {
-      setCopyState("unavailable");
+      setIdCopyState("unavailable");
       return;
     }
 
     try {
-      await navigator.clipboard.writeText(packet);
-      setCopyState("copied");
+      await navigator.clipboard.writeText(passport.id);
+      setIdCopyState("copied");
     } catch {
-      setCopyState("blocked");
+      setIdCopyState("blocked");
     }
   }
 
   async function copyTrustPath() {
     if (!navigator?.clipboard?.writeText) {
-      setTrustCopyState("unavailable");
+      setPathCopyState("unavailable");
       return;
     }
 
     try {
       await navigator.clipboard.writeText(trustPath);
-      setTrustCopyState("copied");
+      setPathCopyState("copied");
     } catch {
-      setTrustCopyState("blocked");
+      setPathCopyState("blocked");
     }
+  }
+
+  function downloadTrustJson() {
+    const payload = trustVerification.passport || buildPortableTrustPayload(trustDetails);
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${passport.id}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setDownloadState("downloaded");
   }
 
   function printPassport() {
@@ -158,15 +183,21 @@ export default function PassportPage({
               {availableDates.map((date) => (
                 <option key={date} value={date}>
                   {date}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button type="button" onClick={copyPassportPacket}>
-            {getCopyButtonLabel(copyState)}
+              </option>
+            ))}
+          </select>
+        </label>
+          <button type="button" onClick={copyPassportId}>
+            {getIdCopyLabel(idCopyState)}
+          </button>
+          <button type="button" onClick={copyTrustPath}>
+            {getPathCopyLabel(pathCopyState)}
+          </button>
+          <button type="button" onClick={downloadTrustJson}>
+            {getDownloadLabel(downloadState)}
           </button>
           <button type="button" onClick={printPassport}>
-            Imprimir
+            Imprimir Passport
           </button>
         </div>
       </header>
@@ -178,23 +209,44 @@ export default function PassportPage({
             <code>{passport.id}</code>
           </div>
 
-          <div className="passport-card__stamp">
-            <DecisionStamp animated={false} scale={0.86} state={passport.stateLabel} />
+          <div className="passport-card__identity">
+            <div className="passport-card__stamp">
+              <DecisionStamp animated={false} scale={0.86} state={passport.stateLabel} />
+            </div>
+            <div className="passport-verification-code" aria-label="Código de verificación">
+              <span>Código</span>
+              <strong>{trustDetails.verificationCode}</strong>
+              <p>Verificable en {trustPath}</p>
+            </div>
           </div>
 
           <dl className="passport-card__facts">
-            <PassportFact label="Fecha" value={passport.date} />
-            <PassportFact label="AOI" value={passport.aoi} />
-            <PassportFact label="Evidencia válida" value={formatPercent(passport.validPercent)} />
-            <PassportFact label="API CDSE" value={passport.apiStatus} />
-            <PassportFact label="Ledger" value={passport.ledgerStatus} />
-            <PassportFact label="Resolución" value={`${passport.resolutionM} m`} />
+            <PassportFact label="Decision ID" value={trustDetails.decisionId} />
+            <PassportFact label="Fecha objetivo" value={trustDetails.targetDate} />
+            <PassportFact label={trustDetails.scopeLabel} value={trustDetails.scopeValue} />
+            <PassportFact label="Confianza" value={trustDetails.confidenceClass} />
+            <PassportFact label="Evidencia válida" value={formatPercent(trustDetails.validPercent)} />
+            <PassportFact label="API CDSE" value={trustDetails.apiStatus} />
+            <PassportFact label="Capa primaria" value={trustDetails.primaryLayer} />
+            <PassportFact label="Ledger hash" value={trustDetails.ledgerHash} />
+            <PassportFact label="Trust hash" value={trustDetails.verificationHash} />
           </dl>
 
-          <div className="passport-card__hash">
-            <span>Huella pública</span>
-            <strong>{passport.chainHashShort}</strong>
-            <p>{passport.hashMethod}</p>
+          <div className="passport-limits-strip">
+            <span>Límite de uso</span>
+            <p>{trustDetails.claimLimit}</p>
+          </div>
+
+          <div className="passport-artifacts" aria-label="Referencias de artefactos">
+            <span>Referencias</span>
+            <ul>
+              {trustDetails.artifactRefs.map((artifact) => (
+                <li key={`${artifact.label}-${artifact.path}`}>
+                  <strong>{artifact.label}</strong>
+                  <code>{artifact.path}</code>
+                </li>
+              ))}
+            </ul>
           </div>
         </article>
 
@@ -223,9 +275,10 @@ export default function PassportPage({
           </div>
 
           <TrustVerificationPanel
-            copyState={trustCopyState}
+            checklist={checklist}
+            copyState={pathCopyState}
+            details={trustDetails}
             onCopy={copyTrustPath}
-            passportId={passport.id}
             trustPath={trustPath}
             verification={trustVerification}
           />
@@ -314,7 +367,7 @@ function PassportFact({ label, value }) {
   );
 }
 
-function TrustVerificationPanel({ copyState, onCopy, passportId, trustPath, verification }) {
+function TrustVerificationPanel({ checklist, copyState, details, onCopy, trustPath, verification }) {
   return (
     <section className="passport-trust" aria-label="Verificación Trust">
       <div className="passport-trust__header">
@@ -327,11 +380,15 @@ function TrustVerificationPanel({ copyState, onCopy, passportId, trustPath, veri
       <dl className="passport-trust__facts">
         <div>
           <dt>Passport ID</dt>
-          <dd>{passportId}</dd>
+          <dd>{details.passportId}</dd>
         </div>
         <div>
-          <dt>Hash</dt>
-          <dd>{verification.verificationHash || "pendiente"}</dd>
+          <dt>Decision ID</dt>
+          <dd>{details.decisionId}</dd>
+        </div>
+        <div>
+          <dt>Trust hash</dt>
+          <dd>{details.verificationHash || "pendiente"}</dd>
         </div>
         <div>
           <dt>Validación</dt>
@@ -344,8 +401,24 @@ function TrustVerificationPanel({ copyState, onCopy, passportId, trustPath, veri
         <input readOnly value={trustPath} />
       </label>
       <button className="passport-trust__copy" type="button" onClick={onCopy}>
-        {getTrustCopyLabel(copyState)}
+        {getPathCopyLabel(copyState)}
       </button>
+      <p>Verificable en {trustPath}</p>
+
+      <ul className="passport-checklist" aria-label="Checklist Trust">
+        {checklist.map((item) => (
+          <li className={item.ready ? "is-ready" : ""} key={item.label}>
+            <span aria-hidden="true">{item.ready ? "✓" : "·"}</span>
+            {item.label}
+          </li>
+        ))}
+      </ul>
+
+      <div className="passport-aux-summary">
+        <span>Contexto auxiliar</span>
+        <p>{details.auxiliarySummary}</p>
+      </div>
+
       <p>{TRUST_LIMIT_COPY}</p>
     </section>
   );
@@ -399,20 +472,6 @@ function buildPassport({ decisionCases, ledger, ledgerRows, record }) {
     tone: stateTone(stateLabel),
     validPercent: record?.validPercent,
   };
-}
-
-function buildPortablePacket(passport) {
-  return [
-    `Passport: ${passport.id}`,
-    `Fecha: ${passport.date}`,
-    `AOI: ${passport.aoi}`,
-    `Decisión: ${passport.stateLabel}`,
-    `Evidencia válida: ${formatPercent(passport.validPercent)}`,
-    `Ledger: ${passport.ledgerStatus}`,
-    `Huella pública: ${passport.chainHashShort}`,
-    `Límite: ${passport.claimLimit}`,
-    `Siguiente paso: ${passport.nextAction}`,
-  ].join("\n");
 }
 
 function normalizeLedgerRows(ledgerRows, ledger) {
@@ -516,18 +575,123 @@ function stateTone(label) {
   return "stop";
 }
 
-function getCopyButtonLabel(state) {
+function buildTrustDetails({ fallbackPassport, trustPassport }) {
+  const auxiliaryLayers = trustPassport?.auxiliary_layers || {};
+  const ledgerRefs = Array.isArray(trustPassport?.ledger_refs)
+    ? trustPassport.ledger_refs
+    : [];
+  const artifactRefs = normalizeArtifactRefs(trustPassport?.artifact_refs);
+  const ledgerHash =
+    ledgerRefs.find((row) => row.event_type === "confidence_decision_computed")?.hash ||
+    ledgerRefs[0]?.hash ||
+    fallbackPassport.chainHashShort;
+  const verificationHash = trustPassport?.verification_hash || "";
+  const scopeValue =
+    trustPassport?.node_name ||
+    trustPassport?.node_id ||
+    trustPassport?.aoi ||
+    fallbackPassport.aoi;
+
+  return {
+    apiStatus: trustPassport?.api_status || fallbackPassport.apiStatus,
+    artifactRefs,
+    auxiliaryLayers,
+    auxiliarySummary: summarizeAuxiliaryLayers(auxiliaryLayers),
+    claimLimit: trustPassport?.claim_limit || fallbackPassport.claimLimit,
+    confidenceClass: trustPassport?.confidence_class || fallbackPassport.stateLabel,
+    decisionId: trustPassport?.decision_id || "pendiente",
+    ledgerHash,
+    passportId: trustPassport?.passport_id || fallbackPassport.id,
+    primaryLayer: trustPassport?.primary_layer || "Sentinel-2",
+    scopeLabel: "AOI / Nodo",
+    scopeValue,
+    targetDate: trustPassport?.target_date || fallbackPassport.date,
+    validPercent: trustPassport?.validPercent ?? fallbackPassport.validPercent,
+    verificationCode: shortHash(verificationHash || ledgerHash || fallbackPassport.id, 12).toUpperCase(),
+    verificationHash,
+  };
+}
+
+function buildTrustChecklist(details) {
+  return [
+    {
+      label: "Sentinel-2 decision present",
+      ready: details.primaryLayer === "Sentinel-2" && Boolean(details.confidenceClass),
+    },
+    {
+      label: "Ledger linked",
+      ready: Boolean(details.ledgerHash && details.ledgerHash !== "pendiente"),
+    },
+    {
+      label: "Trust hash generated",
+      ready: Boolean(details.verificationHash),
+    },
+    {
+      label: "Auxiliary context listed",
+      ready: details.auxiliarySummary !== "sin contexto auxiliar listado",
+    },
+    {
+      label: "Limits included",
+      ready: Boolean(details.claimLimit),
+    },
+  ];
+}
+
+function buildPortableTrustPayload(details) {
+  return {
+    passport_id: details.passportId,
+    decision_id: details.decisionId,
+    target_date: details.targetDate,
+    scope: details.scopeValue,
+    confidence_class: details.confidenceClass,
+    validPercent: details.validPercent,
+    api_status: details.apiStatus,
+    primary_layer: details.primaryLayer,
+    ledger_hash: details.ledgerHash,
+    verification_hash: details.verificationHash,
+    claim_limit: details.claimLimit,
+  };
+}
+
+function normalizeArtifactRefs(value) {
+  if (!value || typeof value !== "object") return [];
+  return Object.entries(value)
+    .map(([label, path]) => ({
+      label,
+      path: String(path || "").trim(),
+    }))
+    .filter((item) => item.path);
+}
+
+function summarizeAuxiliaryLayers(layers) {
+  const entries = ["sar", "clms", "hydroclimate"]
+    .map((key) => {
+      const layer = layers?.[key];
+      if (!layer) return "";
+      const status = layer.status || (layer.available ? "available" : "not listed");
+      return `${key.toUpperCase()}: ${status}`;
+    })
+    .filter(Boolean);
+  return entries.join(" · ") || "sin contexto auxiliar listado";
+}
+
+function getIdCopyLabel(state) {
   if (state === "copied") return "Copiado";
   if (state === "blocked") return "Permiso requerido";
   if (state === "unavailable") return "No disponible";
-  return "Copiar paquete";
+  return "Copiar ID";
 }
 
-function getTrustCopyLabel(state) {
+function getPathCopyLabel(state) {
   if (state === "copied") return "Ruta copiada";
   if (state === "blocked") return "Permiso requerido";
   if (state === "unavailable") return "No disponible";
   return "Copiar ruta Trust";
+}
+
+function getDownloadLabel(state) {
+  if (state === "downloaded") return "JSON descargado";
+  return "Descargar JSON";
 }
 
 function getTrustStatusLabel(verification) {
