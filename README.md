@@ -133,6 +133,32 @@ El validador revisa:
 
 Estado actual de calidad: `12/12` checks, `0` warnings, `0` failures.
 
+## Claim-firewall oficial
+
+El claim-firewall oficial vive en `scripts/validate_public_demo.py`. No es un
+grep suelto sobre todo el repositorio: es una validación enfocada en la
+superficie pública de entrega.
+
+Comando oficial:
+
+```powershell
+python scripts/validate_public_demo.py
+```
+
+Qué protege:
+
+- `/data` y `/trust/v1` no deben exponer secretos, headers, rutas locales ni
+  payloads crudos.
+- Trust Layer no debe contener claims positivos de contaminación, detección
+  química, validación sanitaria, potabilidad, seguridad del agua, crisis,
+  cierre automático, preparación operativa, decisión de autoridad, rendimiento
+  o pérdida medida.
+- Las frases de límite son válidas cuando niegan explícitamente esos alcances,
+  por ejemplo: "no certifica condiciones químicas, sanitarias ni operativas".
+
+Regla de oro: Kairós verifica trazabilidad y confianza de observación; no
+certifica condiciones del territorio.
+
 ## Trust Layer v1
 
 La capa Trust es estática y read-only. Permite verificar un Passport sin base de

@@ -163,6 +163,39 @@ cobertura de seguro ni decisión de autoridad.
 Tampoco dice que las capas auxiliares modifiquen la clasificación Sentinel-2.
 Solo contextualizan.
 
+## Claim-firewall oficial
+
+La entrega usa un claim-firewall explícito para proteger el demo de
+sobrepromesas. La fuente oficial es `scripts/validate_public_demo.py`.
+
+El firewall revisa la superficie pública, especialmente:
+
+- `frontend/public/data`;
+- `frontend/public/trust/v1`;
+- `docs/demo_quality_report.md`.
+
+El comando oficial es:
+
+```powershell
+python scripts/validate_public_demo.py
+```
+
+El firewall falla si encuentra claims positivos de:
+
+- detección de contaminación;
+- detección química;
+- validación sanitaria;
+- potabilidad o seguridad del agua;
+- validación de crisis;
+- cierre automático;
+- preparación operativa;
+- decisiones de autoridad;
+- predicción de rendimiento;
+- reducción medida de pérdidas.
+
+Sí permite frases de límite cuando el texto niega explícitamente el alcance,
+por ejemplo: "no certifica", "no detecta", "no modifica" o "no reemplaza".
+
 ## Validación actual
 
 La entrega fue validada con:

@@ -54,7 +54,21 @@ export default function DecisionPage({
   const contrastRecords = comparisonRecords.filter(Boolean);
 
   return (
-    <section className={`decision-page decision-page--${state.key}`} aria-label="Decisión ejecutiva">
+    <section
+      className={`decision-page decision-page--${state.key}`}
+      aria-labelledby="decision-page-title"
+    >
+      <header className="decision-page__heading">
+        <div>
+          <p className="section-label">DECISIÓN SENTINEL-2</p>
+          <h1 id="decision-page-title">Decisión ejecutiva: {state.label}</h1>
+        </div>
+        <p>
+          {record.date} · {record.aoi || "corridor_wide"} ·{" "}
+          {formatPercent(record.validPercent)} evidencia válida
+        </p>
+      </header>
+
       <DateSelector
         records={observationRecords}
         selectedDate={selectedDate}
