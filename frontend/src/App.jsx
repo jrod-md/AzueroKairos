@@ -145,6 +145,103 @@ const FIELD_QUEUE_FILTERS = [
   { id: "all", label: "Todos" },
 ];
 
+const STAKEHOLDER_MODES = [
+  {
+    profile: "Gobierno",
+    input: "Nodos, fechas Sentinel-2, brechas y ledger público.",
+    output: "Prioridad de verificación y estado de inferencia responsable.",
+    nextAction: "Asignar revisión territorial donde la evidencia es más débil.",
+    notDecide: "No ordena cierre, sanción ni decisión de autoridad.",
+  },
+  {
+    profile: "Cooperativa",
+    input: "Passport, cola de acción y resumen de evidencia.",
+    output: "Mensaje de cautela para técnicos y miembros.",
+    nextAction: "Comunicar límites y esperar evidencia usable cuando haga falta.",
+    notDecide: "No confirma verdad de campo ni reemplaza revisión local.",
+  },
+  {
+    profile: "Crédito/seguro",
+    input: "validPercent, API status, Trust hash y eventos del ledger.",
+    output: "Preevaluación de si la evidencia alcanza para revisión.",
+    nextAction: "Enviar a revisión documental o pedir evidencia adicional.",
+    notDecide: "Nunca decide pago automático ni cobertura.",
+  },
+  {
+    profile: "Laboratorio/autoridad",
+    input: "Paquete mínimo: fecha, AOI/nodo, hashes, límites y brechas.",
+    output: "Ruta de escalamiento con evidencia trazable.",
+    nextAction: "Solicitar muestra, visita o acto formal por canal competente.",
+    notDecide: "No produce resultado de laboratorio ni decisión institucional.",
+  },
+];
+
+const MISSION_STEPS = [
+  {
+    page: "system",
+    date: "2025-06-10",
+    label: "Sistema",
+    title: "Ciclo completo de evidencia",
+    text: "Abre con la idea central: Kairós convierte observación Copernicus en decisión proporcional y trazable.",
+  },
+  {
+    page: "impact",
+    date: "2025-06-10",
+    label: "Impacto",
+    title: "31.4x de evidencia al esperar",
+    text: "Muestra que el valor del sistema es evitar una lectura débil y esperar una adquisición usable.",
+  },
+  {
+    page: "decision",
+    date: "2025-06-10",
+    label: "Decisión",
+    title: "2025-06-10: NO INFERIR",
+    text: "API OK no basta: esta escena se bloquea porque la evidencia válida no sostiene una inferencia responsable.",
+  },
+  {
+    page: "decision",
+    date: "2025-06-30",
+    label: "Contraste",
+    title: "2025-06-30: USABLE",
+    text: "El contraste enseña que Kairós no bloquea por defecto; cambia de salida cuando la evidencia observacional mejora.",
+  },
+  {
+    page: "watch",
+    date: "2025-06-30",
+    label: "Corredor",
+    title: "Tres nodos, capas auxiliares",
+    text: "Presenta el corredor como matriz regional: Sentinel-2 decide, SAR, CLMS e HydroClimate agregan contexto.",
+  },
+  {
+    page: "cases",
+    date: "2025-06-10",
+    label: "Acción",
+    title: "Cola de trabajo responsable",
+    text: "La evidencia se vuelve operación: priorizar revisión, documentar brechas y evitar saltos de dato a conclusión.",
+  },
+  {
+    page: "field",
+    date: "2025-06-10",
+    label: "Campo",
+    title: "Verificación lite",
+    text: "Campo organiza observación territorial sin convertirla en prueba final ni cambiar la clasificación Sentinel-2.",
+  },
+  {
+    page: "passport",
+    date: "2025-06-10",
+    label: "Passport",
+    title: "Artifact verificable",
+    text: "El Passport empaqueta decisión, límites, hashes y ruta Trust para una revisión portable.",
+  },
+  {
+    page: "technical",
+    date: "2025-06-10",
+    label: "Evidencia",
+    title: "Ledger y asistente",
+    text: "Cierra con trazabilidad: ledger, paquetes de evidencia y asistente que organiza, no decide.",
+  },
+];
+
 export default function App() {
   const [observations, setObservations] = useState([]);
   const [ledgerRows, setLedgerRows] = useState([]);
@@ -160,6 +257,7 @@ export default function App() {
   const [workbenchNodeId, setWorkbenchNodeId] = useState(CORRIDOR_NODE_ORDER[0]);
   const [workbenchLayer, setWorkbenchLayer] = useState("s2");
   const [decisionBarVisible, setDecisionBarVisible] = useState(false);
+  const [missionStepIndex, setMissionStepIndex] = useState(null);
   const [loadState, setLoadState] = useState({ status: "loading", message: "" });
   const [watchLoadState, setWatchLoadState] = useState({
     status: "loading",
@@ -385,6 +483,41 @@ export default function App() {
 
   const availableDates = observations.map((record) => record.date);
   const selectedState = getStateMeta(selectedRecord);
+  const missionStep =
+    missionStepIndex === null ? null : MISSION_STEPS[missionStepIndex] ?? null;
+
+  function navigateToPage(page) {
+    setActivePage(page);
+    setPageAndHash(page);
+  }
+
+  function openMissionStep(index) {
+    const boundedIndex = Math.max(0, Math.min(index, MISSION_STEPS.length - 1));
+    const step = MISSION_STEPS[boundedIndex];
+    setMissionStepIndex(boundedIndex);
+    if (step.date && availableDates.includes(step.date)) {
+      setSelectedDate(step.date);
+    }
+    if (step.page === "watch") {
+      setWorkbenchLayer("s2");
+      setWorkbenchNodeId(CORRIDOR_NODE_ORDER[0]);
+    }
+    if (step.page === "cases" || step.page === "field") {
+      setCasePanelMode("evidence");
+    }
+    navigateToPage(step.page);
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }
+
+  function advanceMission() {
+    if (missionStepIndex === null || missionStepIndex >= MISSION_STEPS.length - 1) {
+      setMissionStepIndex(null);
+      return;
+    }
+    openMissionStep(missionStepIndex + 1);
+  }
 
   return (
     <main className="app-shell">
@@ -392,19 +525,31 @@ export default function App() {
       <Header
         activePage={activePage}
         activeState={selectedState.label}
-        setActivePage={setPageAndHash}
+        missionActive={missionStepIndex !== null}
+        onStartMission={() => openMissionStep(0)}
+        setActivePage={navigateToPage}
       />
+
+      {missionStep ? (
+        <MissionReplayBanner
+          onClose={() => setMissionStepIndex(null)}
+          onNext={advanceMission}
+          step={missionStep}
+          stepIndex={missionStepIndex}
+          totalSteps={MISSION_STEPS.length}
+        />
+      ) : null}
 
       <StickyDecisionBar
         ledger={selectedLedger}
-        onOpenEvidence={() => setPageAndHash("technical")}
+        onOpenEvidence={() => navigateToPage("technical")}
         record={selectedRecord}
         state={selectedState}
         visible={decisionBarVisible}
       />
 
       {activePage === "system" ? (
-        <KairosCycle metrics={impactMetrics} onNavigate={setPageAndHash} />
+        <KairosCycle metrics={impactMetrics} onNavigate={navigateToPage} />
       ) : activePage === "impact" ? (
         <ImpactLab metrics={impactMetrics} />
       ) : activePage === "decision" ? (
@@ -422,7 +567,7 @@ export default function App() {
           exposureContext={exposureContext}
           hydroClimate={hydroClimate}
           loadState={watchLoadState}
-          onNavigate={setPageAndHash}
+          onNavigate={navigateToPage}
           sarContext={sarContext}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
@@ -440,7 +585,7 @@ export default function App() {
           casePanelMode={casePanelMode}
           setCasePanelMode={setCasePanelMode}
           exposureContext={exposureContext}
-          onNavigate={setPageAndHash}
+          onNavigate={navigateToPage}
           setSelectedDate={setSelectedDate}
         />
       ) : activePage === "field" ? (
@@ -449,7 +594,7 @@ export default function App() {
           loadState={decisionCasesLoadState}
           activeCaseId={activeCaseId}
           setActiveCaseId={setActiveCaseId}
-          onNavigate={setPageAndHash}
+          onNavigate={navigateToPage}
           setSelectedDate={setSelectedDate}
         />
       ) : activePage === "passport" ? (
@@ -458,7 +603,7 @@ export default function App() {
           decisionCases={decisionCases}
           ledger={selectedLedger}
           ledgerRows={selectedLedgerRows}
-          onNavigate={setPageAndHash}
+          onNavigate={navigateToPage}
           record={selectedRecord}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
@@ -667,7 +812,7 @@ function getInitialPage() {
   return "system";
 }
 
-function Header({ activePage, activeState, setActivePage }) {
+function Header({ activePage, activeState, missionActive, onStartMission, setActivePage }) {
   const normalizedState = String(activeState ?? "")
     .trim()
     .toUpperCase()
@@ -708,9 +853,43 @@ function Header({ activePage, activeState, setActivePage }) {
             <span className="az-navigation__dot" aria-hidden="true" />
             <span>COPERNICUS OFICIAL · LEDGER OK</span>
           </div>
+          <button
+            className={`mission-launch${missionActive ? " is-active" : ""}`}
+            onClick={onStartMission}
+            type="button"
+          >
+            Demo 3 min
+          </button>
         </div>
       </nav>
     </header>
+  );
+}
+
+function MissionReplayBanner({ onClose, onNext, step, stepIndex, totalSteps }) {
+  const isLast = stepIndex >= totalSteps - 1;
+
+  return (
+    <aside className="mission-replay" aria-label="Demo guiada de 3 minutos">
+      <div className="mission-replay__progress" aria-hidden="true">
+        <span style={{ "--mission-progress": `${((stepIndex + 1) / totalSteps) * 100}%` }} />
+      </div>
+      <div className="mission-replay__copy">
+        <span>
+          Paso {stepIndex + 1}/{totalSteps} · {step.label}
+        </span>
+        <strong>{step.title}</strong>
+        <p>{step.text}</p>
+      </div>
+      <div className="mission-replay__actions">
+        <button type="button" onClick={onNext}>
+          {isLast ? "Finalizar" : "Siguiente"}
+        </button>
+        <button type="button" onClick={onClose}>
+          Salir
+        </button>
+      </div>
+    </aside>
   );
 }
 
@@ -792,6 +971,42 @@ function KairosCycle({ metrics, onNavigate }) {
             <p>{card.text}</p>
           </article>
         ))}
+      </section>
+
+      <section className="stakeholder-modes" aria-label="Modos de uso por stakeholder">
+        <div className="stakeholder-modes__head">
+          <p className="small-label">Modos de uso</p>
+          <h2>La misma evidencia, cuatro decisiones responsables.</h2>
+          <p>
+            Kairós traduce la trazabilidad en una acción proporcional para cada
+            actor, sin convertir evidencia satelital en autoridad final.
+          </p>
+        </div>
+        <div className="stakeholder-grid">
+          {STAKEHOLDER_MODES.map((mode) => (
+            <article className="stakeholder-card" key={mode.profile}>
+              <span>{mode.profile}</span>
+              <dl>
+                <div>
+                  <dt>Input used</dt>
+                  <dd>{mode.input}</dd>
+                </div>
+                <div>
+                  <dt>Decision output</dt>
+                  <dd>{mode.output}</dd>
+                </div>
+                <div>
+                  <dt>Next responsible action</dt>
+                  <dd>{mode.nextAction}</dd>
+                </div>
+                <div>
+                  <dt>What Kairós does not decide</dt>
+                  <dd>{mode.notDecide}</dd>
+                </div>
+              </dl>
+            </article>
+          ))}
+        </div>
       </section>
 
       <section className="kairos-cycle-board" aria-label="Ciclo operativo">
