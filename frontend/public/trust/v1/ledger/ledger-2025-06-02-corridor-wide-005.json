@@ -4,12 +4,12 @@
   "event_type": "public_export_sanitized",
   "event_label": "Exportación pública sanitizada",
   "timestamp": "2026-05-29T00:58:20+00:00",
-  "artifact_ref": "/data/observations.json",
-  "artifact_ref_status": "public",
+  "artifact_ref": "",
+  "artifact_ref_status": "not_public_in_trust_layer",
   "status": "public_json_available",
-  "hash": "2a7a5a2cb2bbb0f5484ff0c395588ca5ec68ceb2f59e888a5910e7fc6e628609",
+  "hash": "4b0f6e38dd0a30c6f57e8abdd2e79de260c156f5cfd7a2b8ac41f40c054d58bb",
   "hash_method": "event_payload_sha256",
   "decision_id": "decision-official-corridor-wide-2025-06-02",
-  "passport_id": "KAIROS-P1-20250602-ed0c2b4e",
-  "verification_hash": "sha256:fcab09b2405cb70b4dae2bb071a096b1825493324f8dab7c61fbb475a53c8b1f"
+  "passport_id": "KAIROS-P1-20250602-d15084ea",
+  "verification_hash": "sha256:a25bb846957b974f9fb73316d49c1ec0ca02622314b00cc26ff58bab2535c049"
 }

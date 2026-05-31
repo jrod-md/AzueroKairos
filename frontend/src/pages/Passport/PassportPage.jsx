@@ -485,11 +485,10 @@ function buildTimeline(rows) {
     return {
       key: stage.eventType,
       artifact:
-        row?.artifact_ref ||
-        row?.brief_path ||
-        row?.processed_csv_path ||
-        row?.raw_json_path ||
-        "pendiente en ledger público",
+        publicArtifactRef(row?.artifact_ref) ||
+        publicArtifactRef(row?.public_artifact_ref) ||
+        publicArtifactRef(row?.public_ledger_ref) ||
+        "metadata pública sin ruta interna",
       available: Boolean(row),
       hashShort: row ? shortHash(row.event_hash || row.artifact_hash || row.hash_short, 12) : "pendiente",
       label: row?.event_label || stage.label,
@@ -501,8 +500,8 @@ function buildTimeline(rows) {
 function buildCoverage({ caseItem, decisionCases, record, rows }) {
   const checks = [
     Boolean(record),
-    Boolean(record?.raw_json_path),
-    Boolean(record?.brief_path || pickLedgerRow(rows, "brief_generated")),
+    Boolean(publicArtifactRef(record?.public_artifact_ref)),
+    Boolean(publicArtifactRef(record?.public_ledger_ref) || pickLedgerRow(rows, "brief_generated")),
     Boolean(pickLedgerRow(rows, "confidence_decision_computed")),
     Boolean(pickLedgerRow(rows, "public_export_sanitized")),
     Boolean(rows.some((row) => row.event_hash || row.artifact_hash)),
@@ -515,6 +514,13 @@ function buildCoverage({ caseItem, decisionCases, record, rows }) {
     total: checks.length,
     percent: Math.round((available / checks.length) * 100),
   };
+}
+
+function publicArtifactRef(value) {
+  const text = typeof value === "string" ? value.trim().replaceAll("\\", "/") : "";
+  if (!text) return "";
+  if (text.startsWith("/data/") || text.startsWith("/trust/")) return text;
+  return "";
 }
 
 function pickLedgerRow(rows, eventType) {

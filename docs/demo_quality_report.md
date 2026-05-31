@@ -1,6 +1,6 @@
 # Kairos demo quality report
 
-Generated UTC: 2026-05-31T19:56:12Z
+Generated UTC: 2026-05-31T20:38:17Z
 Overall status: passed
 
 ## Summary

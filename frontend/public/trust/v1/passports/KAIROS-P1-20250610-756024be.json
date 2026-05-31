@@ -36,33 +36,33 @@
   "ledger_refs": [
     {
       "event_type": "raw_observation_received",
-      "hash": "4fb32e7284543e62b78badfa150a0bf16ccad73e481b833c601896ed55480b56",
-      "hash_short": "4fb32e728454"
+      "hash": "95a46fb80f1407f5e473aa8e5788bdccde80e261b707fde7f0cce344918b9452",
+      "hash_short": "95a46fb80f14"
     },
     {
       "event_type": "processed_metrics_created",
-      "hash": "2db711642a396bcf35ca8b196606a426670a1cf15837da31ec8d5ba072733c36",
-      "hash_short": "2db711642a39"
+      "hash": "baabdedac0bc45b59835be2a6cc6ec7a5bd17142935a9658945624719747678e",
+      "hash_short": "baabdedac0bc"
     },
     {
       "event_type": "confidence_decision_computed",
-      "hash": "5835f0549c88760cf63a5f7ca133b23fa9520ede566169fa8622bf547c42cd0e",
-      "hash_short": "5835f0549c88"
+      "hash": "61cb650e462933f444b2e4b5575ac80117441f6a2f3f23046dd732854df8705b",
+      "hash_short": "61cb650e4629"
     },
     {
       "event_type": "brief_generated",
-      "hash": "1432b65501e3be6b7182a42071c71d9b140af78f834cf5cfbd832fd1b7b0237f",
-      "hash_short": "1432b65501e3"
+      "hash": "1344c179f352c7f5c650ae2a1dab6bbb18a8667fb0aa703f1a525120e3f1fcbf",
+      "hash_short": "1344c179f352"
     },
     {
       "event_type": "public_export_sanitized",
-      "hash": "26716d8c5bfa315d916238dbf8b0d0c8dea92af2d68bd5d7f4adc03c7d718845",
-      "hash_short": "26716d8c5bfa"
+      "hash": "81032d4030b7173d4e0cd1e0d79d10807e09fce831dbb09124ff0f308955881d",
+      "hash_short": "81032d4030b7"
     },
     {
       "event_type": "evidence_case_registered",
-      "hash": "220c3d05140fae2d4daa1d1ac25c5d56775086767c187d7c2d42e5cdedb012a7",
-      "hash_short": "220c3d05140f"
+      "hash": "8213cf903d41c7d54d7eb61646a13170417499f064e04acd54bf99c6d445546f",
+      "hash_short": "8213cf903d41"
     }
   ],
   "artifact_refs": {
@@ -73,5 +73,5 @@
   },
   "claim_limit": "La capa Trust no certifica condiciones quimicas, sanitarias ni operativas; verifica la trazabilidad del paquete de evidencia.",
   "verification_payload_version": "kairos-trust-payload-v1",
-  "verification_hash": "sha256:87e5e6ecf88f180134008c0940a2a43355c47afc61d291bb02883e8ff2e1b264"
+  "verification_hash": "sha256:a66194127cc04932691cfbee0dba2e9b86fe5983002099c1d56028c1ced1881f"
 }

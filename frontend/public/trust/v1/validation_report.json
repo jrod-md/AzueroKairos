@@ -1,6 +1,6 @@
 {
   "schema_version": "kairos.trust.validation.v1",
-  "generated_at_utc": "2026-05-31T19:56:12Z",
+  "generated_at_utc": "2026-05-31T20:38:17Z",
   "status": "passed",
   "summary": {
     "total_checks": 12,
@@ -145,7 +145,7 @@
     },
     {
       "id": "public_safety_scan",
-      "label": "No secrets, tokens, headers, local paths, or raw ignored payloads are exposed",
+      "label": "No secrets, tokens, headers, local paths, or raw ignored payloads are exposed in public data or Trust",
       "status": "pass",
       "detail": "0 unsafe exposure matches",
       "metrics": {

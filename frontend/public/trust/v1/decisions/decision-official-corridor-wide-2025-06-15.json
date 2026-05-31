@@ -16,7 +16,7 @@
     "clms": true,
     "hydroclimate": true
   },
-  "passport_id": "KAIROS-P1-20250615-715a50e6",
+  "passport_id": "KAIROS-P1-20250615-7515d3e3",
   "claim_limit": "La capa Trust no certifica condiciones quimicas, sanitarias ni operativas; verifica la trazabilidad del paquete de evidencia.",
-  "verification_hash": "sha256:172e114cc2cce1f14fed62adf374aedd02976a5e3550fe4dcdc8c72f86cd3dfe"
+  "verification_hash": "sha256:12d1f33cb343d2fce509e9ac7c421d0db81caf2dc85e2bb651d4e02796829aeb"
 }

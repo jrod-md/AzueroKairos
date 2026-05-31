@@ -1,5 +1,5 @@
 {
-  "source_csv": "outputs/processed_csv/sentinel2_node_confidence.csv",
+  "source_dataset": "sentinel2_node_confidence_public_metadata",
   "nodes": [
     {
       "node_id": "la_villa_central",
@@ -40,7 +40,8 @@
       "recommended_action": "Use for exploratory hydro-sedimentary interpretation with stated limits.",
       "api_status": "OK",
       "api_error": "",
-      "raw_json_path": "outputs/raw_json/nodes/2025-06-02_la_villa_oeste_mndwi_ndti_20m_s2_stats.json"
+      "public_artifact_ref": "/data/kairos_watch.json",
+      "source_artifact_status": "internal_artifact_not_public"
     },
     {
       "node_id": "la_villa_oeste",
@@ -60,7 +61,8 @@
       "recommended_action": "Do not make a satellite-based inference; wait for a new acquisition or request field verification.",
       "api_status": "OK",
       "api_error": "",
-      "raw_json_path": "outputs/raw_json/nodes/2025-06-10_la_villa_oeste_mndwi_ndti_20m_s2_stats.json"
+      "public_artifact_ref": "/data/kairos_watch.json",
+      "source_artifact_status": "internal_artifact_not_public"
     },
     {
       "node_id": "la_villa_oeste",
@@ -80,7 +82,8 @@
       "recommended_action": "Use for exploratory hydro-sedimentary interpretation with stated limits.",
       "api_status": "OK",
       "api_error": "",
-      "raw_json_path": "outputs/raw_json/nodes/2025-06-15_la_villa_oeste_mndwi_ndti_20m_s2_stats.json"
+      "public_artifact_ref": "/data/kairos_watch.json",
+      "source_artifact_status": "internal_artifact_not_public"
     },
     {
       "node_id": "la_villa_oeste",
@@ -100,7 +103,8 @@
       "recommended_action": "Use for exploratory hydro-sedimentary interpretation with stated limits.",
       "api_status": "OK",
       "api_error": "",
-      "raw_json_path": "outputs/raw_json/nodes/2025-06-30_la_villa_oeste_mndwi_ndti_20m_s2_stats.json"
+      "public_artifact_ref": "/data/kairos_watch.json",
+      "source_artifact_status": "internal_artifact_not_public"
     },
     {
       "node_id": "la_villa_oeste",
@@ -120,7 +124,8 @@
       "recommended_action": "Use for exploratory hydro-sedimentary interpretation with stated limits.",
       "api_status": "OK",
       "api_error": "",
-      "raw_json_path": "outputs/raw_json/nodes/2025-07-15_la_villa_oeste_mndwi_ndti_20m_s2_stats.json"
+      "public_artifact_ref": "/data/kairos_watch.json",
+      "source_artifact_status": "internal_artifact_not_public"
     },
     {
       "node_id": "la_villa_central",
@@ -140,7 +145,8 @@
       "recommended_action": "Use for exploratory hydro-sedimentary interpretation with stated limits.",
       "api_status": "OK",
       "api_error": "",
-      "raw_json_path": "outputs/raw_json/nodes/2025-06-02_la_villa_central_mndwi_ndti_20m_s2_stats.json"
+      "public_artifact_ref": "/data/kairos_watch.json",
+      "source_artifact_status": "internal_artifact_not_public"
     },
     {
       "node_id": "la_villa_central",
@@ -160,7 +166,8 @@
       "recommended_action": "Do not make a satellite-based inference; wait for a new acquisition or request field verification.",
       "api_status": "OK",
       "api_error": "",
-      "raw_json_path": "outputs/raw_json/nodes/2025-06-10_la_villa_central_mndwi_ndti_20m_s2_stats.json"
+      "public_artifact_ref": "/data/kairos_watch.json",
+      "source_artifact_status": "internal_artifact_not_public"
     },
     {
       "node_id": "la_villa_central",
@@ -180,7 +187,8 @@
       "recommended_action": "Use for exploratory hydro-sedimentary interpretation with stated limits.",
       "api_status": "OK",
       "api_error": "",
-      "raw_json_path": "outputs/raw_json/nodes/2025-06-15_la_villa_central_mndwi_ndti_20m_s2_stats.json"
+      "public_artifact_ref": "/data/kairos_watch.json",
+      "source_artifact_status": "internal_artifact_not_public"
     },
     {
       "node_id": "la_villa_central",
@@ -200,7 +208,8 @@
       "recommended_action": "Use for exploratory hydro-sedimentary interpretation with stated limits.",
       "api_status": "OK",
       "api_error": "",
-      "raw_json_path": "outputs/raw_json/nodes/2025-06-30_la_villa_central_mndwi_ndti_20m_s2_stats.json"
+      "public_artifact_ref": "/data/kairos_watch.json",
+      "source_artifact_status": "internal_artifact_not_public"
     },
     {
       "node_id": "la_villa_central",
@@ -220,7 +229,8 @@
       "recommended_action": "Use for exploratory hydro-sedimentary interpretation with stated limits.",
       "api_status": "OK",
       "api_error": "",
-      "raw_json_path": "outputs/raw_json/nodes/2025-07-15_la_villa_central_mndwi_ndti_20m_s2_stats.json"
+      "public_artifact_ref": "/data/kairos_watch.json",
+      "source_artifact_status": "internal_artifact_not_public"
     },
     {
       "node_id": "la_villa_este",
@@ -240,7 +250,8 @@
       "recommended_action": "Use for exploratory hydro-sedimentary interpretation with stated limits.",
       "api_status": "OK",
       "api_error": "",
-      "raw_json_path": "outputs/raw_json/nodes/2025-06-02_la_villa_este_mndwi_ndti_20m_s2_stats.json"
+      "public_artifact_ref": "/data/kairos_watch.json",
+      "source_artifact_status": "internal_artifact_not_public"
     },
     {
       "node_id": "la_villa_este",
@@ -260,7 +271,8 @@
       "recommended_action": "Do not make a satellite-based inference; wait for a new acquisition or request field verification.",
       "api_status": "OK",
       "api_error": "",
-      "raw_json_path": "outputs/raw_json/nodes/2025-06-10_la_villa_este_mndwi_ndti_20m_s2_stats.json"
+      "public_artifact_ref": "/data/kairos_watch.json",
+      "source_artifact_status": "internal_artifact_not_public"
     },
     {
       "node_id": "la_villa_este",
@@ -280,7 +292,8 @@
       "recommended_action": "Use for exploratory hydro-sedimentary interpretation with stated limits.",
       "api_status": "OK",
       "api_error": "",
-      "raw_json_path": "outputs/raw_json/nodes/2025-06-15_la_villa_este_mndwi_ndti_20m_s2_stats.json"
+      "public_artifact_ref": "/data/kairos_watch.json",
+      "source_artifact_status": "internal_artifact_not_public"
     },
     {
       "node_id": "la_villa_este",
@@ -300,7 +313,8 @@
       "recommended_action": "Use for exploratory hydro-sedimentary interpretation with stated limits.",
       "api_status": "OK",
       "api_error": "",
-      "raw_json_path": "outputs/raw_json/nodes/2025-06-30_la_villa_este_mndwi_ndti_20m_s2_stats.json"
+      "public_artifact_ref": "/data/kairos_watch.json",
+      "source_artifact_status": "internal_artifact_not_public"
     },
     {
       "node_id": "la_villa_este",
@@ -320,7 +334,8 @@
       "recommended_action": "Use for exploratory hydro-sedimentary interpretation with stated limits.",
       "api_status": "OK",
       "api_error": "",
-      "raw_json_path": "outputs/raw_json/nodes/2025-07-15_la_villa_este_mndwi_ndti_20m_s2_stats.json"
+      "public_artifact_ref": "/data/kairos_watch.json",
+      "source_artifact_status": "internal_artifact_not_public"
     }
   ],
   "summary_by_node": [

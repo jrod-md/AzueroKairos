@@ -41,7 +41,7 @@ def main(argv: list[str] | None = None) -> int:
 
     cases = [sanitize_case(row) for row in read_csv_rows(source_csv)]
     payload = {
-        "source_csv": relative_artifact_path(source_csv),
+        "source_dataset": "decision_cases_public_metadata",
         "layer_type": "decision_cases",
         "public_safe": True,
         "claim_firewall": (
@@ -133,20 +133,6 @@ def sanitize_text(value: Any) -> str:
     for pattern in SECRET_PATTERNS:
         text = pattern.sub(lambda match: match.group(1) + "[redacted]", text)
     return " ".join(text.split())[:900]
-
-
-def relative_artifact_path(value: Any) -> str:
-    text = sanitize_text(value)
-    if not text:
-        return ""
-
-    path = Path(text)
-    if path.is_absolute():
-        try:
-            return path.resolve().relative_to(PROJECT_ROOT).as_posix()
-        except ValueError:
-            return path.name
-    return path.as_posix()
 
 
 def write_json(path: Path, payload: Any) -> None:

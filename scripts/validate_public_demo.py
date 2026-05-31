@@ -121,8 +121,8 @@ def main(argv: list[str] | None = None) -> int:
         check_hydroclimate_context(context),
         check_ledger_hashes(context),
         check_trust_passport_hashes(context),
-        check_exposure_safety(trust_dir),
-        check_mojibake(trust_dir, docs_report),
+        check_exposure_safety(data_dir, trust_dir),
+        check_mojibake(data_dir, trust_dir, docs_report),
         check_positive_claims(trust_dir),
     ]
     report = build_report(checks=checks, context=context)
@@ -300,24 +300,25 @@ def check_trust_passport_hashes(context: dict[str, Any]) -> dict[str, Any]:
     )
 
 
-def check_exposure_safety(trust_dir: Path) -> dict[str, Any]:
+def check_exposure_safety(data_dir: Path, trust_dir: Path) -> dict[str, Any]:
     matches = []
-    for path, text in iter_text_files(trust_dir):
-        for label, pattern in UNSAFE_PATTERNS:
-            if pattern.search(text):
-                matches.append({"file": display_path(path), "pattern": label})
+    for scan_root in (data_dir, trust_dir):
+        for path, text in iter_text_files(scan_root):
+            for label, pattern in UNSAFE_PATTERNS:
+                if pattern.search(text):
+                    matches.append({"file": display_path(path), "pattern": label})
     return check(
         "public_safety_scan",
-        "No secrets, tokens, headers, local paths, or raw ignored payloads are exposed",
+        "No secrets, tokens, headers, local paths, or raw ignored payloads are exposed in public data or Trust",
         "pass" if not matches else "fail",
         f"{len(matches)} unsafe exposure matches",
         {"matches": matches[:25], "match_count": len(matches)},
     )
 
 
-def check_mojibake(trust_dir: Path, docs_report: Path) -> dict[str, Any]:
+def check_mojibake(data_dir: Path, trust_dir: Path, docs_report: Path) -> dict[str, Any]:
     matches = []
-    scan_roots = [trust_dir]
+    scan_roots = [data_dir, trust_dir]
     if docs_report.exists():
         scan_roots.append(docs_report)
     for root in scan_roots:

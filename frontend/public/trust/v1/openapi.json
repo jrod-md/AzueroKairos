@@ -1,7 +1,7 @@
 {
   "schema_version": "kairos.trust.v1",
   "title": "Kairos Trust Layer v1 static contract",
-  "generated_at_utc": "2026-05-31T19:49:06Z",
+  "generated_at_utc": "2026-05-31T20:37:00Z",
   "read_only": true,
   "public_safe": true,
   "base_path": "/trust/v1",
@@ -90,7 +90,7 @@
   },
   "examples": {
     "index": "/trust/v1/index.json",
-    "passport": "/trust/v1/passports/KAIROS-P1-20250602-ed0c2b4e.json",
+    "passport": "/trust/v1/passports/KAIROS-P1-20250602-d15084ea.json",
     "decision": "/trust/v1/decisions/decision-official-corridor-wide-2025-06-02.json",
     "ledger": "/trust/v1/ledger/ledger-2025-06-02-corridor-wide-001.json",
     "validation_report": "/trust/v1/validation_report.json",

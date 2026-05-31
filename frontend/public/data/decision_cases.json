@@ -1,5 +1,5 @@
 {
-  "source_csv": "outputs/processed_csv/decision_cases.csv",
+  "source_dataset": "decision_cases_public_metadata",
   "layer_type": "decision_cases",
   "public_safe": true,
   "curation_scope": "public_demo_set",

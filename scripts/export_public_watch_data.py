@@ -14,6 +14,8 @@ from typing import Any
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_NODE_CSV = PROJECT_ROOT / "outputs/processed_csv/sentinel2_node_confidence.csv"
 DEFAULT_OUTPUT_JSON = PROJECT_ROOT / "frontend/public/data/kairos_watch.json"
+PUBLIC_WATCH_REF = "/data/kairos_watch.json"
+PRIVATE_ARTIFACT_STATUS = "internal_artifact_not_public"
 
 CONFIDENCE_LABELS_ES = {
     "usable": "USABLE",
@@ -52,7 +54,7 @@ def main(argv: list[str] | None = None) -> int:
     summary_by_node = build_node_summaries(observations)
 
     payload = {
-        "source_csv": relative_artifact_path(source_csv),
+        "source_dataset": "sentinel2_node_confidence_public_metadata",
         "nodes": nodes,
         "dates": dates,
         "observations": observations,
@@ -103,7 +105,8 @@ def build_public_observation(row: dict[str, str]) -> dict[str, Any]:
         "recommended_action": clean(row.get("recommended_action")),
         "api_status": clean(row.get("api_status")),
         "api_error": sanitize_text(row.get("api_error")),
-        "raw_json_path": relative_artifact_path(row.get("raw_json_path")),
+        "public_artifact_ref": PUBLIC_WATCH_REF,
+        "source_artifact_status": PRIVATE_ARTIFACT_STATUS,
     }
 
 
@@ -192,20 +195,6 @@ def as_number(value: Any) -> int | float | str:
     if number.is_integer():
         return int(number)
     return number
-
-
-def relative_artifact_path(value: Any) -> str:
-    text = clean(value)
-    if not text:
-        return ""
-
-    path = Path(text)
-    if path.is_absolute():
-        try:
-            return path.resolve().relative_to(PROJECT_ROOT).as_posix()
-        except ValueError:
-            return path.name
-    return path.as_posix()
 
 
 def write_json(path: Path, payload: Any) -> None:

@@ -4,12 +4,12 @@
   "event_type": "evidence_case_registered",
   "event_label": "Caso de evidencia registrado",
   "timestamp": "2026-05-29T00:58:33+00:00",
-  "artifact_ref": "/data/decision_cases.json",
-  "artifact_ref_status": "public",
+  "artifact_ref": "",
+  "artifact_ref_status": "not_public_in_trust_layer",
   "status": "case_registry_available",
-  "hash": "a8f9c3189eee8c7676b7e46383383ef14b253bfb3fa23968ece1202186163ba3",
+  "hash": "3ffffa3ca0129e82635c11029ec2ca326a9ed2ff63bf9e598ae91e3c89a981bb",
   "hash_method": "event_payload_sha256",
   "decision_id": "decision-official-corridor-wide-2025-06-15",
-  "passport_id": "KAIROS-P1-20250615-715a50e6",
-  "verification_hash": "sha256:26f958a9c70f68c369af092bda2994cb2db27c547198c160f3e33cbdd9fadc85"
+  "passport_id": "KAIROS-P1-20250615-7515d3e3",
+  "verification_hash": "sha256:3b94a13c809043567815481c92b34aa20207f6d9978c17ff9962987d765276fb"
 }

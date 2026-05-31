@@ -328,6 +328,7 @@ function buildKnowledgeModel(record, ledger, stateLabel) {
     record?.recommended_action_es ||
     record?.recommended_action ||
     "Mantener la decisión dentro de los límites de evidencia disponibles.";
+  const publicRefs = buildPublicEvidenceRefs(record, ledger);
   const noInferContent =
     stateLabel === "NO INFERIR"
       ? (
@@ -370,9 +371,9 @@ function buildKnowledgeModel(record, ledger, stateLabel) {
         )),
         item("brief", (
           <>
-            Artefacto:{" "}
+            Artefacto público:{" "}
             <span className="data-value">
-              {record?.brief_path || ledger?.brief_path || "brief no disponible"}
+              {publicRefs[0] || "referencia pública no disponible"}
             </span>.
           </>
         )),
@@ -404,13 +405,14 @@ function buildKnowledgeModel(record, ledger, stateLabel) {
       title: "Próximo paso responsable",
       items: compactItems([
         item("action", action),
-        record?.raw_json_path
-          ? item("raw-json", (
-              <>
-                JSON fuente: <span className="data-value">{record.raw_json_path}</span>
-              </>
-            ))
-          : null,
+        item("public-refs", (
+          <>
+            Referencias verificables:{" "}
+            <span className="data-value">
+              {publicRefs.join(" | ") || "solo metadata pública"}
+            </span>.
+          </>
+        )),
       ]),
     },
   ];
@@ -430,11 +432,10 @@ function buildLedgerEntries(rows) {
         eventType: row.event_type || row.evidence_status || row.api_status || "audit_event",
         eventLabel: row.event_label || row.event_label_es || "Evento auditado",
         artifactRef:
-          row.artifact_ref ||
-          row.brief_path ||
-          row.processed_csv_path ||
-          row.raw_json_path ||
-          "sin artefacto",
+          publicArtifactRef(row.artifact_ref) ||
+          publicArtifactRef(row.public_artifact_ref) ||
+          publicArtifactRef(row.public_ledger_ref) ||
+          "metadata pública sin ruta interna",
         status: row.status || row.evidence_status || row.api_status || "sin estado",
         hashShort,
       };
@@ -451,14 +452,7 @@ function buildEvidencePacket({
   sarLoadState,
   stateLabel,
 }) {
-  const artifactRefs = uniqueAssistantItems([
-    record?.brief_path,
-    record?.raw_json_path,
-    ledger?.brief_path,
-    ledger?.raw_json_path,
-    ledger?.processed_csv_path,
-    ...ledgerEntries.map((entry) => entry.artifactRef),
-  ]);
+  const artifactRefs = buildPublicEvidenceRefs(record, ledger, ledgerEntries);
 
   return {
     assistant_lens: assistantLens,
@@ -504,6 +498,26 @@ function buildEvidencePacket({
     ],
     artifact_refs: artifactRefs.length ? artifactRefs : ["sin artefacto público"],
   };
+}
+
+function buildPublicEvidenceRefs(record, ledger, ledgerEntries = []) {
+  return uniqueAssistantItems([
+    publicArtifactRef(record?.public_artifact_ref),
+    publicArtifactRef(record?.public_ledger_ref),
+    publicArtifactRef(ledger?.artifact_ref),
+    publicArtifactRef(ledger?.public_artifact_ref),
+    publicArtifactRef(ledger?.public_ledger_ref),
+    "/data/observations.json",
+    "/data/evidence_ledger.json",
+    ...ledgerEntries.map((entry) => publicArtifactRef(entry.artifactRef)),
+  ]);
+}
+
+function publicArtifactRef(value) {
+  const text = typeof value === "string" ? value.trim().replaceAll("\\", "/") : "";
+  if (!text) return "";
+  if (text.startsWith("/data/") || text.startsWith("/trust/")) return text;
+  return "";
 }
 
 function buildDeterministicEvidenceBrief(packet, assistantLens) {

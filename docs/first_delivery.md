@@ -1,85 +1,200 @@
-# First Delivery: Azuero Kairós
+# Primera entrega: Azuero Kairós
 
-## Short Description
+## One-liner
 
-Azuero Kairós is a Copernicus-based satellite confidence decision layer for agricultural decision support in Azuero, Panama. It turns Sentinel-2 observation quality into a clear decision state and a traceable Confidence Brief.
+Azuero Kairós convierte evidencia satelital Copernicus en decisiones
+responsables: usar, revisar o no inferir.
 
-## Problem
+## Descripción corta
 
-Agricultural decision support often treats satellite scenes as if every observation is equally usable. In practice, clouds, no-data pixels, sparse valid samples, and acquisition limits can make a Sentinel scene inappropriate for inference. Without a confidence layer, weak evidence can be overread.
+Azuero Kairós es una capa de confianza para evidencia territorial en Azuero,
+Panamá. El sistema toma observaciones Sentinel-2, calcula calidad de evidencia,
+clasifica la escena y empaqueta la decisión en un artefacto verificable.
 
-## Solution
+No intenta probar contaminación, potabilidad ni condiciones sanitarias. Su valor
+es más defendible: evita que evidencia satelital débil se convierta en claims
+fuertes.
 
-The MVP separates observation confidence from interpretation. It runs official Sentinel-2 statistics for configured dates and AOIs, stores raw JSON evidence, converts it into a processed CSV, classifies each row with a deterministic confidence engine, and presents the result in a Spanish decision console and Confidence Brief.
+## Problema
 
-## Copernicus Use
+En agricultura, seguros, crédito rural y programas públicos, una mala lectura
+de datos satelitales puede generar decisiones prematuras. La escena puede tener
+nubes, píxeles sin dato, baja cobertura válida o señales auxiliares que parecen
+útiles pero no alcanzan para inferir.
 
-The MVP uses the Copernicus Data Space Ecosystem Statistical API with Sentinel-2 observations. The official run computes MNDWI and NDTI summary indicators, plus evidence quality metrics such as `sampleCount`, `noDataCount`, and `validPercent`.
+Sin una capa de confianza, el usuario ve un mapa o un índice y puede asumir que
+la evidencia es suficiente. Kairós pone una compuerta antes de la interpretación.
 
-Copernicus is used because it provides open, reproducible Earth Observation evidence that can be traced from API response to dashboard decision.
+## Solución
 
-## Decision States
+Kairós separa tres cosas que normalmente se mezclan:
 
-- `usable`: use for exploratory hydro-sedimentary interpretation with explicit limits.
-- `low_confidence`: review cautiously and consider territorial or field verification.
-- `do_not_infer`: do not make a satellite-based inference from this observation.
+- observación satelital;
+- contexto auxiliar;
+- decisión responsable.
 
-## Official MVP Status
+El sistema dice si una escena es `USABLE`, requiere `REVISAR` o debe quedar en
+`NO INFERIR`. Luego conserva la trazabilidad en un ledger y genera un Passport
+verificable para compartir la decisión con límites claros.
 
-The first delivery now includes:
+## Qué demuestra esta entrega
 
-- Official Sentinel-2 batch runner with API OK rows for five dates.
-- Raw JSON responses saved under `outputs/raw_json/`.
-- Processed CSV saved under `outputs/processed_csv/`.
-- Deterministic confidence engine.
-- Spanish Streamlit decision console connected to the official CSV.
-- Spanish Markdown Confidence Brief generator.
-- Evidence Ledger CLI for auditability.
-
-## Current Official Results
-
-These are confidence-of-observation results. They are not chemical or sanitary measurements.
-
-| Date | AOI | validPercent | confidence_class |
-| --- | --- | ---: | --- |
-| 2025-06-02 | corridor_wide | 49.15 | `usable` |
-| 2025-06-10 | corridor_wide | 2.26 | `do_not_infer` |
-| 2025-06-15 | corridor_wide | 44.22 | `usable` |
-| 2025-06-30 | corridor_wide | 71.06 | `usable` |
-| 2025-07-15 | corridor_wide | 52.22 | `usable` |
-
-The 2025-06-10 scene is important because it demonstrates restraint: the product tells the user not to infer when valid satellite evidence is too limited.
-
-## What the Demo Shows
-
-The demo shows the chain from Copernicus evidence to responsible action:
+La primera entrega ya muestra un ciclo completo:
 
 ```text
-Copernicus evidence -> confidence state -> decision -> Confidence Brief -> Evidence Ledger
+Copernicus CDSE
+  -> Sentinel-2
+  -> validPercent / calidad de observación
+  -> decisión de confianza
+  -> cola de acción
+  -> verificación lite
+  -> Passport
+  -> Trust Layer
+  -> Evidencia y ledger
 ```
 
-In under 30 seconds, judges should see:
+Módulos visibles:
 
-- A default `do_not_infer` case for 2025-06-10.
-- A comparison with a usable case on 2025-06-30.
-- Decision-critical metrics instead of generic charts.
-- A generated Confidence Brief with scientific limits.
-- An auditable ledger linking raw JSON, processed CSV, classification, and brief path.
+| Módulo | Qué comunica |
+| --- | --- |
+| Sistema | El ciclo completo de evidencia a decisión. |
+| Impacto | Por qué esperar una escena usable cambia la calidad del análisis. |
+| Decisión | Sello `USABLE`, `REVISAR` o `NO INFERIR` con métricas clave. |
+| Corredor | Tres nodos del río La Villa y capas auxiliares. |
+| Acción | Cola de casos y siguiente acción responsable. |
+| Campo | Ficha de verificación lite sin claims nuevos. |
+| Passport | Comprobante portable con hashes, ledger y límites. |
+| Evidencia | Archivo auditable y asistente de evidencia. |
 
-## Remaining Work Before Final Submission
+## Momento demo
 
-- Generate final briefs for all official rows that need them.
-- Re-run the Evidence Ledger after final brief generation.
-- Perform final dashboard visual QA on the demo machine.
-- Confirm every public-facing claim stays within the scientific limits.
-- Prepare final submission narrative and screenshots from the official build only.
+El pitch puede recorrerse con el botón `Demo 3 min`:
 
-## Scientific Limits
+1. Sistema: ciclo Kairós.
+2. Impacto: `31.4x` de evidencia válida al esperar.
+3. Decisión: `2025-06-10`, `NO INFERIR`.
+4. Contraste: `2025-06-30`, `USABLE`.
+5. Corredor: tres nodos y capas auxiliares.
+6. Acción: cola de revisión.
+7. Campo: verificación lite.
+8. Passport: artefacto Trust.
+9. Evidencia: ledger y asistente.
 
-Azuero Kairós does not detect pesticides, atrazine, pathogens, heavy metals, dissolved chemical contamination, or safe water. It does not validate a crisis, prove contamination, declare sanitary status, automate closures, or make operational readiness claims.
+La escena clave es `2025-06-10`: la API responde OK, pero solo hay `2.26%` de
+evidencia válida. Kairós no fuerza una conclusión. Dice `NO INFERIR`.
 
-The MVP only classifies whether a Sentinel-2 observation has enough usable evidence for cautious exploratory hydro-sedimentary interpretation. Chemical or sanitary claims require laboratory analysis or authorized field verification.
+El contraste es `2025-06-30`: la evidencia válida sube a `71.06%`, y la escena
+se vuelve `USABLE` para lectura exploratoria con límites.
 
-## Clean-Build Statement
+## Resultados oficiales
 
-This is the official hackathon build. Pre-hackathon work was limited to planning and discarded feasibility spikes. Official code, official outputs, dashboard views, briefs, and ledgers are generated during the hackathon window from this clean repository.
+| Fecha | AOI | validPercent | Decisión |
+| --- | --- | ---: | --- |
+| 2025-06-02 | `corridor_wide` | 49.15% | `USABLE` |
+| 2025-06-10 | `corridor_wide` | 2.26% | `NO INFERIR` |
+| 2025-06-15 | `corridor_wide` | 44.22% | `USABLE` |
+| 2025-06-30 | `corridor_wide` | 71.06% | `USABLE` |
+| 2025-07-15 | `corridor_wide` | 52.22% | `USABLE` |
+
+El aumento entre `2025-06-10` y `2025-06-30` es aproximadamente `31.4x` en
+evidencia válida.
+
+## Uso de Copernicus
+
+La entrega usa Copernicus Data Space Ecosystem y Sentinel-2 como capa primaria.
+El pipeline calcula métricas de observación como:
+
+- `validPercent`;
+- `sampleCount`;
+- `noDataCount`;
+- MNDWI;
+- NDTI;
+- estado de API.
+
+Las capas auxiliares SAR, CLMS e HydroClimate agregan contexto, pero no cambian
+la clasificación Sentinel-2 primaria.
+
+## Trust, Passport y evidencia pública
+
+La entrega incluye un Trust Layer v1 estático:
+
+```text
+/trust/v1/index.json
+/trust/v1/passports/<passport_id>.json
+/trust/v1/decisions/<decision_id>.json
+/trust/v1/ledger/<event_id>.json
+/trust/v1/validation_report.json
+```
+
+El Passport permite revisar:
+
+- `passport_id`;
+- `decision_id`;
+- fecha objetivo;
+- AOI o nodo;
+- clase de confianza;
+- `validPercent`;
+- estado API;
+- capa primaria;
+- resumen de contexto auxiliar;
+- hash de ledger;
+- hash de verificación;
+- límites de claim.
+
+La data pública está sanitizada. No expone rutas internas a raw JSON, CSV
+procesado ni briefs privados. Las referencias públicas apuntan a `/data/...` y
+`/trust/v1/...`.
+
+## Actores de uso
+
+| Actor | Uso responsable |
+| --- | --- |
+| Gobierno | Priorizar dónde verificar primero y documentar brechas. |
+| Cooperativa | Comunicar cautela y evitar inferencias débiles. |
+| Crédito/seguro | Preevaluar si la evidencia alcanza para revisión, nunca para pago automático. |
+| Laboratorio/autoridad | Recibir paquete mínimo de evidencia y límites para escalar. |
+
+## Qué no decide Kairós
+
+Kairós no declara potabilidad, contaminación, seguridad del agua, condiciones
+sanitarias, cierre operativo, crisis, rendimiento agrícola, pago automático,
+cobertura de seguro ni decisión de autoridad.
+
+Tampoco dice que las capas auxiliares modifiquen la clasificación Sentinel-2.
+Solo contextualizan.
+
+## Validación actual
+
+La entrega fue validada con:
+
+```powershell
+cd frontend
+npm.cmd run build
+cd ..
+python scripts/validate_public_demo.py
+```
+
+Resultado actual:
+
+- Build frontend: exitoso.
+- Validación pública: `12/12` checks.
+- Warnings: `0`.
+- Failures: `0`.
+- Safety scan: sin secretos, headers, rutas internas ni payloads crudos en
+  `/data` o `/trust`.
+- Claim scan: sin claims positivos prohibidos.
+
+## Por qué es una buena entrega de hackathon
+
+La mayoría de demos satelitales intentan impresionar con mapas. Kairós impresiona
+con disciplina: sabe cuándo no inferir, explica por qué y deja un artefacto
+verificable.
+
+Eso lo vuelve útil para organizaciones que necesitan decidir sin sobreprometer:
+cooperativas, gobiernos locales, crédito rural, seguros, equipos técnicos y
+auditores.
+
+## Frase final
+
+Azuero Kairós no convierte satélites en autoridad. Convierte observaciones
+Copernicus en decisiones trazables, prudentes y compartibles.

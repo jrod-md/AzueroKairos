@@ -1,120 +1,201 @@
 # Azuero Kairós
 
-Azuero Kairós is a Copernicus-based satellite confidence decision layer for agricultural decision support in Azuero, Panama.
+Sistema de confianza para evidencia territorial basada en Copernicus.
 
-The project does not detect contamination and does not declare water safe. It classifies Sentinel-2 observations into confidence states so a user can decide whether a scene is usable for cautious exploratory hydro-sedimentary interpretation, should be reviewed, or should not be used for inference.
+Azuero Kairós convierte observaciones Sentinel-2 en decisiones responsables,
+trazables y compartibles. Su promesa no es detectar lo invisible: su promesa es
+evitar inferir cuando la evidencia satelital no alcanza.
 
-## Decision States
+## Resumen para la hackathon
 
-- `usable`: the observation has enough valid evidence to support a limited satellite-based interpretation.
-- `low_confidence`: the observation may contain partial signal, but quality limits require caution.
-- `do_not_infer`: the observation does not support a responsible satellite-based inference.
+El piloto trabaja sobre el corredor del río La Villa, Azuero, Panamá. A partir
+de datos Copernicus, el sistema responde una pregunta concreta:
 
-## Current Official Sentinel-2 Results
+> ¿Esta observación satelital tiene evidencia válida suficiente para usarse con
+> cautela, debe revisarse, o no debe usarse para inferir?
 
-These are confidence-of-observation results from the official Sentinel-2 Statistical API run. They are not chemical or sanitary measurements.
+La salida principal no es una alerta ambiental, ni una certificación de campo.
+Es una decisión de confianza de observación:
 
-| Date | AOI | validPercent | confidence_class |
+- `USABLE`: la escena tiene evidencia válida suficiente para lectura
+  exploratoria con límites explícitos.
+- `REVISAR`: la escena tiene señal parcial o requiere cautela adicional.
+- `NO INFERIR`: la escena no sostiene una inferencia responsable.
+
+## Por qué importa
+
+Muchos productos de satélite muestran mapas y métricas aunque la escena sea
+débil. Kairós hace lo contrario: bloquea inferencias cuando la evidencia es
+insuficiente y documenta por qué.
+
+El caso clave del demo es el contraste:
+
+| Fecha | AOI | validPercent | Decisión |
 | --- | --- | ---: | --- |
-| 2025-06-02 | corridor_wide | 49.15 | `usable` |
-| 2025-06-10 | corridor_wide | 2.26 | `do_not_infer` |
-| 2025-06-15 | corridor_wide | 44.22 | `usable` |
-| 2025-06-30 | corridor_wide | 71.06 | `usable` |
-| 2025-07-15 | corridor_wide | 52.22 | `usable` |
+| 2025-06-10 | `corridor_wide` | 2.26% | `NO INFERIR` |
+| 2025-06-30 | `corridor_wide` | 71.06% | `USABLE` |
 
-The important product behavior is the contrast between scenes: Azuero Kairós does not force an alert when evidence is weak. It explicitly marks weak observations as `do_not_infer`.
+Esperar una adquisición usable produce un aumento de evidencia válida de
+aproximadamente `31.4x`. Esa es la tesis del producto: una buena decisión puede
+ser esperar, revisar o documentar límites.
 
-## Setup
+## Qué incluye la entrega
 
-Use Python 3.11 or newer.
+- Frontend público en React/Vite con navegación por módulos.
+- Sistema/Ciclo Kairós: del satélite a la auditoría.
+- Impacto: contraste de evidencia entre escenas débiles y usables.
+- Decisión: sello `USABLE`, `REVISAR` o `NO INFERIR`.
+- Corredor: matriz de nodos del río La Villa y capas auxiliares.
+- Acción: cola de casos para revisión responsable.
+- Campo: verificación lite sin claims nuevos.
+- Passport: artefacto portable verificable en `/trust/v1`.
+- Evidencia: ledger, paquete auditado y asistente con fallback determinístico.
+- Trust Layer v1: JSON estático público con decisiones, passports, ledger,
+  hashes y reporte de validación.
+
+## Flujo del demo en 3 minutos
+
+La interfaz incluye el control `Demo 3 min`, que guía el pitch:
+
+1. Sistema: ciclo completo de evidencia.
+2. Impacto: `31.4x` de evidencia al esperar.
+3. Decisión: `2025-06-10`, `NO INFERIR`.
+4. Contraste: `2025-06-30`, `USABLE`.
+5. Corredor: tres nodos y capas auxiliares.
+6. Acción: cola de revisión.
+7. Campo: verificación lite.
+8. Passport: artefacto Trust.
+9. Evidencia: ledger y asistente.
+
+## Datos oficiales del piloto
+
+Resultados Sentinel-2 oficiales para `corridor_wide`:
+
+| Fecha | validPercent | Clase |
+| --- | ---: | --- |
+| 2025-06-02 | 49.15% | `USABLE` |
+| 2025-06-10 | 2.26% | `NO INFERIR` |
+| 2025-06-15 | 44.22% | `USABLE` |
+| 2025-06-30 | 71.06% | `USABLE` |
+| 2025-07-15 | 52.22% | `USABLE` |
+
+La data pública está sanitizada. Los JSON servidos por el frontend no exponen
+rutas internas a artefactos crudos, CSV procesados ni archivos privados. Las
+referencias públicas usan `/data/...` y `/trust/v1/...`.
+
+## Cómo correr el frontend
+
+Desde la raíz del repositorio:
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+cd frontend
+npm install
+npm.cmd run dev
 ```
 
-## Environment Variables
+Para generar build de producción:
 
-The Sentinel-2 batch runner uses Copernicus Data Space Ecosystem OAuth credentials from environment variables only.
+```powershell
+cd frontend
+npm.cmd run build
+```
+
+La app consume JSON estáticos desde:
+
+```text
+frontend/public/data
+frontend/public/trust/v1
+```
+
+No se necesitan llamadas externas para correr el demo público.
+
+## Validación de entrega
+
+Comandos recomendados antes de presentar:
+
+```powershell
+cd frontend
+npm.cmd run build
+cd ..
+python scripts/validate_public_demo.py
+```
+
+El validador revisa:
+
+- observaciones oficiales esperadas;
+- contraste `2025-06-10` vs `2025-06-30`;
+- uplift de evidencia;
+- cobertura de Corredor, SAR, CLMS e HydroClimate;
+- hashes de ledger y Passport;
+- ausencia de rutas internas, secretos, headers o payloads crudos en público;
+- ausencia de mojibake en artefactos generados;
+- ausencia de claims positivos prohibidos.
+
+Estado actual de calidad: `12/12` checks, `0` warnings, `0` failures.
+
+## Trust Layer v1
+
+La capa Trust es estática y read-only. Permite verificar un Passport sin base de
+datos ni API externa.
+
+Rutas principales:
+
+```text
+/trust/v1/index.json
+/trust/v1/passports/<passport_id>.json
+/trust/v1/decisions/<decision_id>.json
+/trust/v1/ledger/<event_id>.json
+/trust/v1/validation_report.json
+/trust/v1/openapi.json
+```
+
+El Passport verifica trazabilidad del paquete de evidencia: fecha, AOI o nodo,
+clase de confianza, porcentaje válido, estado API, capa primaria, capas
+auxiliares, ledger, hash y límites.
+
+No certifica territorio, agua, contaminación, condiciones químicas, condiciones
+sanitarias ni preparación operativa.
+
+## Pipeline técnico
+
+El pipeline interno puede correr con credenciales de Copernicus Data Space
+Ecosystem por variables de entorno:
 
 ```powershell
 $env:CDSE_CLIENT_ID = "your-client-id"
 $env:CDSE_CLIENT_SECRET = "your-client-secret"
 ```
 
-Do not commit `.env` files or secrets. The repository is configured to ignore local environment files.
-
-## Run the Sentinel-2 Batch
-
-From the repository root:
+Comandos principales:
 
 ```powershell
 python scripts/run_official_s2_batch.py
-```
-
-Optional flags:
-
-```powershell
-python scripts/run_official_s2_batch.py --force --aoi corridor_wide --resolution 20
-```
-
-The runner writes raw API responses to `outputs/raw_json/` and the processed official CSV to `outputs/processed_csv/sentinel2_stats_confidence.csv`.
-
-## Run the Dashboard
-
-```powershell
-streamlit run dashboard/app.py
-```
-
-The dashboard loads the newest processed CSV when available. If no official CSV exists, it clearly labels fallback records as UI preview only.
-
-## Generate the Evidence Ledger
-
-```powershell
 python scripts/build_evidence_ledger.py
-```
-
-The ledger is written to `outputs/ledger/evidence_ledger.csv` and links the decision chain:
-
-```text
-raw JSON -> processed CSV -> confidence classification -> generated brief
-```
-
-## Export Public Demo Data
-
-```powershell
 python scripts/export_public_data.py
+python scripts/export_public_watch_data.py
+python scripts/export_public_decision_cases.py
+python scripts/export_trust_layer.py
+python scripts/validate_public_demo.py
 ```
 
-This writes sanitized deployment JSON to `frontend/public/data/observations.json` and `frontend/public/data/evidence_ledger.json`. These files use relative artifact paths and do not include credentials, tokens, request headers, or secrets.
+Los artefactos internos pueden existir bajo `outputs/`, pero la entrega pública
+usa exportaciones sanitizadas en `frontend/public`.
 
-## Create an Official Artifact Snapshot
+## Límites científicos
 
-```powershell
-python scripts/create_official_snapshot.py
-```
+Azuero Kairós no detecta pesticidas, atrazina, patógenos, metales pesados,
+contaminación química disuelta ni potabilidad. No declara si el agua es segura
+para consumo, riego, animales o contacto humano.
 
-This creates `official_artifacts/<run_id>/` with the official CSV, Evidence Ledger if present, raw JSON responses, generated briefs if present, and `RUN_NOTES.md`. Official snapshots may be large, so review them deliberately before committing.
+No valida crisis, no ordena cierres, no reemplaza laboratorio, no reemplaza
+autoridad competente y no toma decisiones de pago, crédito, seguro o sanción.
 
-## Module Demos
+La salida es una evaluación de confianza de observación satelital Sentinel-2,
+con contexto auxiliar que nunca modifica la clasificación primaria.
 
-```powershell
-python -m src.azuero_kairos.confidence_engine
-python -m src.azuero_kairos.brief_generator
-```
+## Declaración de build limpio
 
-The brief demo writes a Markdown Confidence Brief under `outputs/briefs/`.
-
-## Scientific Limits
-
-Azuero Kairós does not detect pesticides, atrazine, pathogens, heavy metals, dissolved chemical contamination, or safe water. It does not make chemical, sanitary, medical, legal, or regulatory claims. Laboratory or authorized field verification is required for chemical or sanitary claims.
-
-The output is a confidence assessment for satellite observation usability, not proof of contamination, safety, crisis conditions, or operational readiness.
-
-## Official Clean-Build Policy
-
-This repository is the official hackathon build for Azuero Kairós.
-
-Pre-hackathon work consisted only of planning and discarded feasibility spikes. Official code, official outputs, dashboard views, briefs, and ledgers are generated during the hackathon window from this clean repository.
+Este repositorio contiene la entrega oficial de hackathon de Azuero Kairós. El
+trabajo previo fue planificación y exploración descartada. El código, los
+artefactos oficiales, la interfaz pública, el ledger, Trust Layer y Passport se
+preparan desde este repositorio para revisión reproducible.

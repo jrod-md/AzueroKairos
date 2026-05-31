@@ -16,8 +16,9 @@
     "recommended_action_es": "Usar para lectura hidro-sedimentaria exploratoria con límites explícitos.",
     "api_status": "OK",
     "api_error": "",
-    "raw_json_path": "outputs/raw_json/2025-06-02_corridor_wide_mndwi_ndti_20m_s2_stats.json",
-    "brief_path": "outputs/briefs/2025-06-02_corridor_wide_confidence_brief.md"
+    "public_artifact_ref": "/data/observations.json",
+    "public_ledger_ref": "/data/evidence_ledger.json",
+    "source_artifact_status": "internal_artifact_not_public"
   },
   {
     "date": "2025-06-10",
@@ -36,8 +37,9 @@
     "recommended_action_es": "No usar esta observación para afirmar condiciones del territorio; esperar una nueva adquisición o solicitar verificación territorial.",
     "api_status": "OK",
     "api_error": "",
-    "raw_json_path": "outputs/raw_json/2025-06-10_corridor_wide_mndwi_ndti_20m_s2_stats.json",
-    "brief_path": "outputs/briefs/2025-06-10_corridor_wide_confidence_brief.md"
+    "public_artifact_ref": "/data/observations.json",
+    "public_ledger_ref": "/data/evidence_ledger.json",
+    "source_artifact_status": "internal_artifact_not_public"
   },
   {
     "date": "2025-06-15",
@@ -56,8 +58,9 @@
     "recommended_action_es": "Usar para lectura hidro-sedimentaria exploratoria con límites explícitos.",
     "api_status": "OK",
     "api_error": "",
-    "raw_json_path": "outputs/raw_json/2025-06-15_corridor_wide_mndwi_ndti_20m_s2_stats.json",
-    "brief_path": "outputs/briefs/2025-06-15_corridor_wide_confidence_brief.md"
+    "public_artifact_ref": "/data/observations.json",
+    "public_ledger_ref": "/data/evidence_ledger.json",
+    "source_artifact_status": "internal_artifact_not_public"
   },
   {
     "date": "2025-06-30",
@@ -76,8 +79,9 @@
     "recommended_action_es": "Usar para lectura hidro-sedimentaria exploratoria con límites explícitos.",
     "api_status": "OK",
     "api_error": "",
-    "raw_json_path": "outputs/raw_json/2025-06-30_corridor_wide_mndwi_ndti_20m_s2_stats.json",
-    "brief_path": "outputs/briefs/2025-06-30_corridor_wide_confidence_brief.md"
+    "public_artifact_ref": "/data/observations.json",
+    "public_ledger_ref": "/data/evidence_ledger.json",
+    "source_artifact_status": "internal_artifact_not_public"
   },
   {
     "date": "2025-07-15",
@@ -96,7 +100,8 @@
     "recommended_action_es": "Usar para lectura hidro-sedimentaria exploratoria con límites explícitos.",
     "api_status": "OK",
     "api_error": "",
-    "raw_json_path": "outputs/raw_json/2025-07-15_corridor_wide_mndwi_ndti_20m_s2_stats.json",
-    "brief_path": "outputs/briefs/2025-07-15_corridor_wide_confidence_brief.md"
+    "public_artifact_ref": "/data/observations.json",
+    "public_ledger_ref": "/data/evidence_ledger.json",
+    "source_artifact_status": "internal_artifact_not_public"
   }
 ]

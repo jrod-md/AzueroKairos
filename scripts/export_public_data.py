@@ -32,6 +32,9 @@ DEFAULT_PUBLIC_DATA_DIR = PROJECT_ROOT / "frontend/public/data"
 HASH_PAYLOAD_SCHEMA = (
     "event_type,observation_date,aoi_or_node_id,artifact_ref,status,source_layer,decision_class"
 )
+PUBLIC_OBSERVATIONS_REF = "/data/observations.json"
+PUBLIC_LEDGER_REF = "/data/evidence_ledger.json"
+PRIVATE_ARTIFACT_STATUS = "internal_artifact_not_public"
 
 OBSERVATION_FIELDS = [
     "date",
@@ -50,8 +53,9 @@ OBSERVATION_FIELDS = [
     "recommended_action_es",
     "api_status",
     "api_error",
-    "raw_json_path",
-    "brief_path",
+    "public_artifact_ref",
+    "public_ledger_ref",
+    "source_artifact_status",
 ]
 
 SECRET_PATTERNS = [
@@ -107,7 +111,6 @@ def build_public_observations(
     for row in read_csv_rows(processed_csv):
         confidence_class = clean(row.get("confidence_class"))
         ledger_row = ledger_by_key.get(row_key(row), {})
-        brief_path = available_brief_path(ledger_row, row)
         public_row = {
             "date": clean(row.get("date")),
             "aoi": clean(row.get("aoi")),
@@ -140,10 +143,9 @@ def build_public_observations(
             ),
             "api_status": clean(row.get("api_status")) or clean(ledger_row.get("api_status")),
             "api_error": sanitize_text(row.get("api_error") or ledger_row.get("api_error")),
-            "raw_json_path": relative_artifact_path(
-                row.get("raw_json_path") or ledger_row.get("raw_json_path")
-            ),
-            "brief_path": brief_path,
+            "public_artifact_ref": PUBLIC_OBSERVATIONS_REF,
+            "public_ledger_ref": PUBLIC_LEDGER_REF,
+            "source_artifact_status": PRIVATE_ARTIFACT_STATUS,
         }
         observations.append({field: public_row.get(field, "") for field in OBSERVATION_FIELDS})
     return observations
@@ -152,7 +154,7 @@ def build_public_observations(
 def build_public_ledger_rows(ledger_rows: list[dict[str, str]]) -> list[dict[str, Any]]:
     public_rows: list[dict[str, Any]] = []
     for row in ledger_rows:
-        artifact_ref = relative_artifact_path(row.get("artifact_ref"))
+        artifact_ref = public_artifact_ref(row)
         public_hash = hash_public_event_payload(row, artifact_ref)
         public_row = {
             "run_id": clean(row.get("run_id")),
@@ -162,6 +164,7 @@ def build_public_ledger_rows(ledger_rows: list[dict[str, str]]) -> list[dict[str
             "event_type": clean(row.get("event_type")) or "audit_event",
             "event_label": clean(row.get("event_label_es")) or clean(row.get("event_label")),
             "artifact_ref": artifact_ref,
+            "artifact_ref_status": "public" if artifact_ref else PRIVATE_ARTIFACT_STATUS,
             "status": clean(row.get("status")) or clean(row.get("evidence_status")),
             "source_layer": clean(row.get("source_layer")) or "sentinel_2",
             "decision_class": clean(row.get("decision_class")) or clean(row.get("confidence_class")),
@@ -187,9 +190,7 @@ def build_public_ledger_rows(ledger_rows: list[dict[str, str]]) -> list[dict[str
             "ndti_mean": as_number(row.get("ndti_mean")),
             "api_status": clean(row.get("api_status")),
             "api_error": sanitize_text(row.get("api_error")),
-            "raw_json_path": relative_artifact_path(row.get("raw_json_path")),
-            "processed_csv_path": relative_artifact_path(row.get("processed_csv_path")),
-            "brief_path": relative_artifact_path(row.get("brief_path")),
+            "source_artifact_status": PRIVATE_ARTIFACT_STATUS,
             "evidence_status": clean(row.get("evidence_status")),
         }
         public_rows.append(public_row)
@@ -229,19 +230,6 @@ def hash_public_event_payload(row: dict[str, str], artifact_ref: str) -> str:
     }
     payload_text = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload_text.encode("utf-8")).hexdigest()
-
-
-def available_brief_path(ledger_row: dict[str, str], observation_row: dict[str, str]) -> str:
-    candidate = clean(ledger_row.get("brief_path"))
-    if not candidate:
-        date = clean(observation_row.get("date"))
-        aoi = clean(observation_row.get("aoi"))
-        candidate = f"outputs/briefs/{date}_{aoi}_confidence_brief.md"
-
-    candidate_path = resolve_project_path(candidate)
-    if candidate_path.exists():
-        return relative_artifact_path(candidate_path)
-    return ""
 
 
 def read_csv_rows(path: Path) -> list[dict[str, str]]:
@@ -308,29 +296,41 @@ def as_bool(value: Any) -> bool:
     return clean(value).lower() == "true"
 
 
-def resolve_project_path(value: Any) -> Path:
-    text = clean(value)
-    if not text:
-        return PROJECT_ROOT
-    path = Path(text)
-    if path.is_absolute():
-        return path
-    return PROJECT_ROOT / path
+def public_artifact_ref(row: dict[str, str]) -> str:
+    direct_ref = safe_public_ref(row.get("artifact_ref"))
+    if direct_ref:
+        return direct_ref
+
+    event_type = clean(row.get("event_type"))
+    if event_type in {
+        "raw_observation_received",
+        "processed_metrics_created",
+        "confidence_decision_computed",
+        "brief_generated",
+        "public_export_sanitized",
+    }:
+        return PUBLIC_OBSERVATIONS_REF
+
+    return PUBLIC_LEDGER_REF
 
 
-def relative_artifact_path(value: Any) -> str:
+def safe_public_ref(value: Any) -> str:
     text = clean(value)
     if not text:
         return ""
 
+    text = text.replace("\\", "/")
     path = Path(text)
-    if path.is_absolute():
-        try:
-            return path.resolve().relative_to(PROJECT_ROOT).as_posix()
-        except ValueError:
-            return path.name
+    if path.is_absolute() or re.match(r"^[A-Za-z]:/", text):
+        return ""
+    if text.startswith("frontend/public/"):
+        return "/" + text.removeprefix("frontend/public/").lstrip("/")
+    if text.startswith("public/"):
+        return "/" + text.removeprefix("public/").lstrip("/")
+    if text.startswith("/data/") or text.startswith("/trust/"):
+        return text
 
-    return path.as_posix()
+    return ""
 
 
 def as_display_path(path: Path) -> str:

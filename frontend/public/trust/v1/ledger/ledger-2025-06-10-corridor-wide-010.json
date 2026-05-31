@@ -7,9 +7,9 @@
   "artifact_ref": "",
   "artifact_ref_status": "not_public_in_trust_layer",
   "status": "brief_available",
-  "hash": "1432b65501e3be6b7182a42071c71d9b140af78f834cf5cfbd832fd1b7b0237f",
+  "hash": "1344c179f352c7f5c650ae2a1dab6bbb18a8667fb0aa703f1a525120e3f1fcbf",
   "hash_method": "event_payload_sha256",
   "decision_id": "decision-official-corridor-wide-2025-06-10",
-  "passport_id": "KAIROS-P1-20250610-5835f054",
-  "verification_hash": "sha256:b84f9f56eadd4559797009ad1130a44cb020523daca4612e64f7686ab649c959"
+  "passport_id": "KAIROS-P1-20250610-61cb650e",
+  "verification_hash": "sha256:2678a575fd93a7d78e0270169b920f783163954d49cd172c2d093422ca2975c9"
 }

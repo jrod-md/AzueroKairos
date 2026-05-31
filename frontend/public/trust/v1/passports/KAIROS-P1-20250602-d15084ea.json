@@ -1,19 +1,19 @@
 {
   "schema_version": "kairos.trust.v1",
-  "passport_id": "KAIROS-P1-20250630-1a599fbe",
-  "decision_id": "decision-official-corridor-wide-2025-06-30",
+  "passport_id": "KAIROS-P1-20250602-d15084ea",
+  "decision_id": "decision-official-corridor-wide-2025-06-02",
   "scope_type": "official_observation",
   "aoi": "corridor_wide",
-  "target_date": "2025-06-30",
+  "target_date": "2025-06-02",
   "confidence_class": "usable",
   "confidence_label": "USABLE",
-  "validPercent": 71.06,
+  "validPercent": 49.15,
   "api_status": "OK",
   "primary_layer": "Sentinel-2",
   "auxiliary_layers": {
     "sar": {
       "available": true,
-      "status": "sar_no_acquisition",
+      "status": "sar_context_available",
       "matched_rows": 3,
       "claim_limit": "Contexto SAR auxiliar; no usado como evidencia principal."
     },
@@ -35,42 +35,42 @@
   "ledger_refs": [
     {
       "event_type": "raw_observation_received",
-      "hash": "233e935558ee0fb352691d4456447b66d55e087154abb478442c4f1e6e03db1e",
-      "hash_short": "233e935558ee"
+      "hash": "e36c480f256c7e5acfa67827f561db79bfcd0a1237c85df52c287b614c601ef2",
+      "hash_short": "e36c480f256c"
     },
     {
       "event_type": "processed_metrics_created",
-      "hash": "acc397ab26e91859ebf7a7f0eea6b95dbded9da82cf686a6e83be52aaab591aa",
-      "hash_short": "acc397ab26e9"
+      "hash": "40fcc7fdd9e9b2a2503c8589b70d2ae6e43624ee7d4b0aaafcacbd78d339d6f1",
+      "hash_short": "40fcc7fdd9e9"
     },
     {
       "event_type": "confidence_decision_computed",
-      "hash": "1a599fbe630e1a0987b2f1f3fcbf21ccc95d5aaf7e354895ec088f4c4f03ffaf",
-      "hash_short": "1a599fbe630e"
+      "hash": "d15084ea67dde768072fcd2568aa7b52270c3d6b00c0d9bcd95590491e35c513",
+      "hash_short": "d15084ea67dd"
     },
     {
       "event_type": "brief_generated",
-      "hash": "f9309d96b3d3874a314d6a6edb7df65bd00c30edfcc6d02bc2530bfc04e36e23",
-      "hash_short": "f9309d96b3d3"
+      "hash": "cf5b89551452ced7754f419e8afdbe339fc4e4c7ca86e3aebcdb8f7cadf9a2a4",
+      "hash_short": "cf5b89551452"
     },
     {
       "event_type": "public_export_sanitized",
-      "hash": "84695bf924c2667f06199cee14cd06363062f9fad8617201dc3334646deb7695",
-      "hash_short": "84695bf924c2"
+      "hash": "4b0f6e38dd0a30c6f57e8abdd2e79de260c156f5cfd7a2b8ac41f40c054d58bb",
+      "hash_short": "4b0f6e38dd0a"
     },
     {
       "event_type": "evidence_case_registered",
-      "hash": "97c52c6b97600c0824098767098a4fbc5e1e1f5a0de5ba9101bf5bf14785563e",
-      "hash_short": "97c52c6b9760"
+      "hash": "05672899f2a62cc99443abedeac7e6c061c58f1ffedd9704a4d7fd3483abbcac",
+      "hash_short": "05672899f2a6"
     }
   ],
   "artifact_refs": {
     "observations": "/data/observations.json",
     "evidence_ledger": "/data/evidence_ledger.json",
-    "decision": "/trust/v1/decisions/decision-official-corridor-wide-2025-06-30.json",
-    "passport": "/trust/v1/passports/KAIROS-P1-20250630-1a599fbe.json"
+    "decision": "/trust/v1/decisions/decision-official-corridor-wide-2025-06-02.json",
+    "passport": "/trust/v1/passports/KAIROS-P1-20250602-d15084ea.json"
   },
   "claim_limit": "La capa Trust no certifica condiciones quimicas, sanitarias ni operativas; verifica la trazabilidad del paquete de evidencia.",
   "verification_payload_version": "kairos-trust-payload-v1",
-  "verification_hash": "sha256:ec13ecccfb201d8b2087fba40cb0bb3b4774060abb0722317f65407c88b3834a"
+  "verification_hash": "sha256:ddd8f1a5518a75fe4d1f01e96e228ea641d8716d013f7627d40927d10b808c87"
 }
