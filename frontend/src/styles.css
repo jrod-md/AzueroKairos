@@ -2048,6 +2048,417 @@ button {
   background: color-mix(in oklch, var(--paper-soft) 62%, transparent);
 }
 
+.field-screen {
+  display: grid;
+  gap: 18px;
+  padding-bottom: var(--space-xl);
+}
+
+.field-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.44fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.field-hero > div,
+.field-readiness-card,
+.field-command-bar article,
+.field-route-panel,
+.field-packet-panel {
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  background: color-mix(in oklch, var(--paper) 82%, transparent);
+  box-shadow: var(--shadow-soft);
+}
+
+.field-hero > div {
+  display: grid;
+  align-content: center;
+  min-height: 320px;
+  padding: 42px;
+  background:
+    radial-gradient(circle at 84% 18%, color-mix(in oklch, var(--state-revisar) 12%, transparent), transparent 19rem),
+    linear-gradient(140deg, color-mix(in oklch, var(--paper) 96%, transparent), var(--paper-soft));
+}
+
+.field-hero h1 {
+  max-width: 18ch;
+  margin: 8px 0 0;
+  color: var(--river);
+  font-family: var(--font-display);
+  font-size: 2.9rem;
+  line-height: 0.98;
+}
+
+.field-hero p {
+  max-width: 62ch;
+  margin: 16px 0 0;
+  color: var(--river-soft);
+  font-size: 1rem;
+  font-weight: 720;
+  line-height: 1.5;
+}
+
+.field-hero-actions,
+.field-packet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.field-hero-actions button,
+.field-packet-actions button {
+  min-height: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 14px;
+  background: var(--text-primary);
+  color: var(--bg-surface);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 780;
+}
+
+.field-hero-actions button + button,
+.field-packet-actions button + button {
+  background: transparent;
+  color: var(--text-primary);
+}
+
+.field-readiness-card {
+  display: grid;
+  align-content: space-between;
+  gap: 14px;
+  padding: 24px;
+}
+
+.field-readiness-card > span,
+.field-command-bar span,
+.field-route-card__code,
+.field-packet-head span,
+.field-progress-box span,
+.field-stage-list span,
+.field-note-box span {
+  color: var(--muted);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 840;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+}
+
+.field-readiness-card > strong {
+  color: var(--state-revisar);
+  font-family: var(--font-data);
+  font-size: 3.2rem;
+  line-height: 0.92;
+}
+
+.field-readiness-card p,
+.field-command-bar p,
+.field-route-card p,
+.field-packet-head p,
+.field-stage-list p,
+.field-note-box p,
+.field-limit-note,
+.field-route-empty {
+  margin: 0;
+  color: var(--river-soft);
+  font-family: var(--font-ui);
+  font-size: 0.9rem;
+  font-weight: 720;
+  line-height: 1.42;
+}
+
+.field-readiness-card dl,
+.field-route-card dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.field-route-card dl {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field-readiness-card div,
+.field-route-card div {
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  background: color-mix(in oklch, var(--bg-base) 58%, transparent);
+}
+
+.field-readiness-card dt,
+.field-route-card dt {
+  color: var(--muted);
+  font-size: 0.64rem;
+  font-weight: 820;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.field-readiness-card dd,
+.field-route-card dd {
+  margin: 5px 0 0;
+  color: var(--river);
+  font-family: var(--font-data);
+  font-size: 0.9rem;
+  font-weight: 760;
+}
+
+.field-command-bar {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.field-command-bar article {
+  display: grid;
+  min-height: 126px;
+  align-content: space-between;
+  gap: 10px;
+  padding: 18px;
+}
+
+.field-command-bar strong {
+  color: var(--river);
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.field-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(360px, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.field-route-panel,
+.field-packet-panel {
+  padding: 20px;
+}
+
+.field-route-header {
+  display: grid;
+  gap: 16px;
+}
+
+.field-route-header h2,
+.field-packet-head h2 {
+  margin: 4px 0 0;
+  color: var(--river);
+  font-family: var(--font-display);
+  font-size: 2rem;
+  line-height: 1.05;
+}
+
+.field-filter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.field-filter-grid button {
+  display: grid;
+  min-height: 56px;
+  align-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  background: color-mix(in oklch, var(--bg-base) 58%, transparent);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  text-align: left;
+}
+
+.field-filter-grid button.is-active {
+  border-color: var(--text-primary);
+  background: var(--text-primary);
+  color: var(--bg-surface);
+}
+
+.field-filter-grid span {
+  font-size: 0.72rem;
+  font-weight: 780;
+}
+
+.field-filter-grid strong {
+  font-family: var(--font-data);
+  font-size: 1.05rem;
+}
+
+.field-route-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.field-route-card {
+  --field-case-color: var(--state-revisar);
+  display: grid;
+  min-width: 0;
+  gap: 9px;
+  border: 1px solid color-mix(in oklch, var(--field-case-color) 36%, var(--border));
+  border-radius: var(--radius-md);
+  padding: 14px;
+  background:
+    linear-gradient(180deg, color-mix(in oklch, var(--field-case-color) 8%, transparent), transparent 56%),
+    var(--bg-surface);
+  color: var(--text-primary);
+  text-align: left;
+  transition:
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.field-route-card.tone-stop {
+  --field-case-color: var(--state-no-inferir);
+}
+
+.field-route-card.tone-usable {
+  --field-case-color: var(--state-usable);
+}
+
+.field-route-card.is-active,
+.field-route-card:hover,
+.field-route-card:focus-visible {
+  border-color: var(--field-case-color);
+  box-shadow: 0 0 0 3px color-mix(in oklch, var(--field-case-color) 12%, transparent);
+  transform: translateY(-1px);
+}
+
+.field-route-card strong {
+  color: var(--river);
+  font-family: var(--font-display);
+  font-size: 1.28rem;
+  line-height: 1.08;
+}
+
+.field-route-empty {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  text-align: center;
+}
+
+.field-packet-panel {
+  position: sticky;
+  top: 16px;
+  display: grid;
+  gap: 16px;
+}
+
+.field-packet-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+.field-packet-head .decision-stamp {
+  margin-top: 6px;
+}
+
+.field-progress-box {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  background: color-mix(in oklch, var(--bg-base) 58%, transparent);
+}
+
+.field-progress-box > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.field-progress-box strong {
+  color: var(--river);
+  font-family: var(--font-data);
+  font-size: 1rem;
+}
+
+.field-progress-track {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--river) 10%, transparent);
+}
+
+.field-progress-track span {
+  display: block;
+  block-size: 100%;
+  max-inline-size: 100%;
+  border-radius: inherit;
+  background: var(--state-usable);
+  transition: inline-size var(--transition-fast);
+}
+
+.field-stage-list {
+  display: grid;
+  gap: 8px;
+}
+
+.field-stage-list article {
+  display: grid;
+  grid-template-columns: minmax(88px, 0.22fr) minmax(0, 1fr);
+  gap: 12px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 10px;
+}
+
+.field-checklist {
+  display: grid;
+  gap: 8px;
+}
+
+.field-checklist label {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 9px;
+  align-items: start;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px;
+  background: color-mix(in oklch, var(--paper-soft) 66%, transparent);
+  color: var(--river-soft);
+  font-size: 0.9rem;
+  font-weight: 720;
+  line-height: 1.38;
+}
+
+.field-checklist input {
+  accent-color: var(--state-usable);
+  margin-top: 3px;
+}
+
+.field-note-box {
+  display: grid;
+  gap: 8px;
+  border: 1px solid color-mix(in oklch, var(--state-revisar) 34%, var(--border));
+  border-radius: var(--radius-md);
+  padding: 14px;
+  background: color-mix(in oklch, var(--state-revisar) 8%, var(--bg-surface));
+}
+
+.field-packet-actions {
+  margin-top: 0;
+}
+
+.field-limit-note {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 12px;
+}
+
 .section-heading {
   display: flex;
   align-items: flex-end;
@@ -2102,7 +2513,10 @@ button {
   .cases-hero,
   .action-command-strip,
   .action-queue-toolbar,
-  .case-board-layout {
+  .case-board-layout,
+  .field-hero,
+  .field-command-bar,
+  .field-layout {
     grid-template-columns: 1fr;
     min-height: 0;
   }
@@ -2198,17 +2612,27 @@ button {
   .action-command-strip article,
   .case-board-section,
   .case-action-panel,
-  .cases-limit-note {
+  .cases-limit-note,
+  .field-hero > div,
+  .field-readiness-card,
+  .field-command-bar article,
+  .field-route-panel,
+  .field-packet-panel {
     padding: var(--space-md);
   }
 
   .kairos-system__copy h1,
   .impact-hero__copy h1,
   .corredor-workbench__hero h1,
-  .corredor-workbench__empty h1 {
+  .corredor-workbench__empty h1,
+  .field-hero h1 {
     max-width: 100%;
     font-size: 2.45rem;
     line-height: 1;
+  }
+
+  .field-hero h1 {
+    font-size: 2.25rem;
   }
 
   .kairos-cycle-board__head h2,
@@ -2238,8 +2662,21 @@ button {
   .action-queue-filters,
   .case-board-layout,
   .cases-insight-card dl,
-  .action-plan-card dl {
+  .action-plan-card dl,
+  .field-command-bar,
+  .field-filter-grid,
+  .field-readiness-card dl,
+  .field-route-card dl,
+  .field-stage-list article {
     grid-template-columns: 1fr;
+  }
+
+  .field-hero > div {
+    min-height: 0;
+  }
+
+  .field-packet-panel {
+    position: static;
   }
 
   .corredor-workbench__hero,

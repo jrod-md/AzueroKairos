@@ -19,6 +19,7 @@ const NAV_ITEMS = [
   { id: "decision", label: "Decisión" },
   { id: "watch", label: "Corredor" },
   { id: "cases", label: "Acción" },
+  { id: "field", label: "Campo" },
   { id: "passport", label: "Passport" },
   { id: "technical", label: "Evidencia" },
 ];
@@ -135,6 +136,13 @@ const ACTION_QUEUE_FILTERS = [
   { id: "urgent", label: "Urgentes" },
   { id: "verification", label: "Verificación" },
   { id: "usable", label: "Usables" },
+];
+
+const FIELD_QUEUE_FILTERS = [
+  { id: "priority", label: "Ruta" },
+  { id: "noInfer", label: "No inferir" },
+  { id: "usable", label: "Usables" },
+  { id: "all", label: "Todos" },
 ];
 
 export default function App() {
@@ -435,6 +443,15 @@ export default function App() {
           onNavigate={setPageAndHash}
           setSelectedDate={setSelectedDate}
         />
+      ) : activePage === "field" ? (
+        <FieldVerificationLite
+          data={decisionCases}
+          loadState={decisionCasesLoadState}
+          activeCaseId={activeCaseId}
+          setActiveCaseId={setActiveCaseId}
+          onNavigate={setPageAndHash}
+          setSelectedDate={setSelectedDate}
+        />
       ) : activePage === "passport" ? (
         <PassportPage
           availableDates={availableDates}
@@ -605,6 +622,8 @@ function setPageAndHash(page) {
       ? "#impacto"
       : page === "technical"
       ? "#evidencia"
+      : page === "field"
+      ? "#campo"
       : page === "passport"
       ? "#passport"
       : page === "watch"
@@ -635,6 +654,9 @@ function getInitialPage() {
   }
   if (hash === "#passport" || hash === "#pasaporte") {
     return "passport";
+  }
+  if (hash === "#campo" || hash === "#field" || hash === "#field-verification") {
+    return "field";
   }
   if (hash === "#kairos-watch" || hash === "#corredor") {
     return "watch";
@@ -725,6 +747,7 @@ function KairosCycle({ metrics, onNavigate }) {
     ["Decisión", "decision"],
     ["Corredor", "watch"],
     ["Acción", "cases"],
+    ["Campo", "field"],
     ["Passport", "passport"],
     ["Evidencia", "technical"],
   ];
@@ -1585,6 +1608,317 @@ function KairosCases({
         </p>
       </section>
     </section>
+  );
+}
+
+function FieldVerificationLite({
+  data,
+  loadState,
+  activeCaseId,
+  setActiveCaseId,
+  onNavigate,
+  setSelectedDate,
+}) {
+  const [fieldFilter, setFieldFilter] = useState("priority");
+  const [checkedItems, setCheckedItems] = useState({});
+  const ready = loadState.status === "ready" && data;
+  const cases = useMemo(() => {
+    if (!ready) return [];
+    return [...(data.cases ?? [])].sort(sortDecisionCase);
+  }, [data, ready]);
+  const filteredCases = useMemo(
+    () => filterFieldVerificationCases(cases, fieldFilter),
+    [cases, fieldFilter],
+  );
+  const metrics = useMemo(() => buildFieldVerificationMetrics(cases), [cases]);
+  const selectedCase =
+    filteredCases.find((caseItem) => caseItem.case_id === activeCaseId) ??
+    filteredCases[0] ??
+    cases.find((caseItem) => caseItem.case_id === activeCaseId) ??
+    cases[0] ??
+    null;
+  const fieldPlan = selectedCase ? buildFieldVerificationPlan(selectedCase) : null;
+  const checkedMap = selectedCase ? checkedItems[selectedCase.case_id] ?? {} : {};
+  const checkedCount = fieldPlan
+    ? fieldPlan.checklist.filter((item) => checkedMap[item.id]).length
+    : 0;
+  const completion = fieldPlan?.checklist.length
+    ? Math.round((checkedCount / fieldPlan.checklist.length) * 100)
+    : 0;
+
+  function selectCase(caseItem) {
+    setActiveCaseId(caseItem.case_id);
+  }
+
+  function toggleFieldItem(itemId) {
+    if (!selectedCase) return;
+    setCheckedItems((previous) => {
+      const caseState = previous[selectedCase.case_id] ?? {};
+      return {
+        ...previous,
+        [selectedCase.case_id]: {
+          ...caseState,
+          [itemId]: !caseState[itemId],
+        },
+      };
+    });
+  }
+
+  function markAllFieldItems() {
+    if (!selectedCase || !fieldPlan) return;
+    setCheckedItems((previous) => ({
+      ...previous,
+      [selectedCase.case_id]: Object.fromEntries(
+        fieldPlan.checklist.map((item) => [item.id, true]),
+      ),
+    }));
+  }
+
+  function resetFieldItems() {
+    if (!selectedCase) return;
+    setCheckedItems((previous) => ({
+      ...previous,
+      [selectedCase.case_id]: {},
+    }));
+  }
+
+  function openPassport() {
+    if (!selectedCase) return;
+    setSelectedDate(selectedCase.date);
+    onNavigate("passport");
+  }
+
+  if (!ready) {
+    return (
+      <section className="field-screen" aria-label="Field verification lite">
+        <div className="field-hero">
+          <div>
+            <p className="small-label">Field Verification Lite</p>
+            <h1>Ficha de campo sin evidencia disponible.</h1>
+            <p>
+              {loadState.message ||
+                "Campo estará disponible cuando se exporte decision_cases.json."}
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="field-screen" aria-label="Field verification lite">
+      <div className="field-hero">
+        <div>
+          <p className="small-label">Field Verification Lite</p>
+          <h1>Verificar sin convertir observación en veredicto.</h1>
+          <p>
+            Un modo liviano para preparar salidas de campo, registrar límites y
+            cerrar cada caso con una bitácora responsable. No guarda datos, no
+            emite resultados y no reemplaza a una autoridad competente.
+          </p>
+          <div className="field-hero-actions" aria-label="Accesos de campo">
+            <button type="button" onClick={() => onNavigate("cases")}>
+              Ver cola
+            </button>
+            <button type="button" onClick={openPassport}>
+              Ver passport
+            </button>
+          </div>
+        </div>
+
+        <article className="field-readiness-card">
+          <span>Despacho lite</span>
+          <strong>{metrics.priority}/{metrics.all}</strong>
+          <p>casos con verificación territorial recomendada antes de uso externo.</p>
+          <dl>
+            <div>
+              <dt>No inferir</dt>
+              <dd>{metrics.noInfer}</dd>
+            </div>
+            <div>
+              <dt>Lluvia</dt>
+              <dd>{metrics.rainContext}</dd>
+            </div>
+            <div>
+              <dt>Usable</dt>
+              <dd>{metrics.usable}</dd>
+            </div>
+          </dl>
+        </article>
+      </div>
+
+      <section className="field-command-bar" aria-label="Resumen de verificación lite">
+        <article>
+          <span>Caso activo</span>
+          <strong>{selectedCase?.node_display_name || "sin caso"}</strong>
+          <p>{fieldPlan?.risk || "Seleccione un caso de la ruta."}</p>
+        </article>
+        <article>
+          <span>Ficha local</span>
+          <strong>{completion}%</strong>
+          <p>{checkedCount} pasos marcados en esta sesión, sin persistencia.</p>
+        </article>
+        <article>
+          <span>Límite</span>
+          <strong>0 claims</strong>
+          <p>solo observación visible, contexto y trazabilidad del caso.</p>
+        </article>
+      </section>
+
+      <div className="field-layout">
+        <section className="field-route-panel" aria-label="Ruta de campo">
+          <div className="field-route-header">
+            <div>
+              <p className="small-label">Ruta</p>
+              <h2>Orden de visita responsable.</h2>
+            </div>
+            <div className="field-filter-grid" aria-label="Filtros de campo">
+              {FIELD_QUEUE_FILTERS.map((filter) => (
+                <button
+                  className={fieldFilter === filter.id ? "is-active" : ""}
+                  key={filter.id}
+                  onClick={() => setFieldFilter(filter.id)}
+                  type="button"
+                >
+                  <span>{filter.label}</span>
+                  <strong>{getFieldFilterCount(filter.id, metrics)}</strong>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="field-route-list">
+            {filteredCases.map((caseItem) => (
+              <FieldRouteCard
+                caseItem={caseItem}
+                isActive={selectedCase?.case_id === caseItem.case_id}
+                key={caseItem.case_id}
+                onSelect={selectCase}
+              />
+            ))}
+            {!filteredCases.length ? (
+              <div className="field-route-empty">No hay casos para este filtro.</div>
+            ) : null}
+          </div>
+        </section>
+
+        {selectedCase && fieldPlan ? (
+          <section className="field-packet-panel" aria-label="Ficha de campo lite">
+            <div className="field-packet-head">
+              <div>
+                <span>{fieldPlan.routeCode}</span>
+                <h2>{selectedCase.node_display_name || selectedCase.node_id}</h2>
+                <p>{selectedCase.date}</p>
+              </div>
+              <DecisionStamp
+                animated={false}
+                scale={0.78}
+                size="small"
+                state={decisionCaseStampState(selectedCase)}
+              />
+            </div>
+
+            <div className="field-progress-box">
+              <div>
+                <span>Preparación local</span>
+                <strong>{checkedCount}/{fieldPlan.checklist.length}</strong>
+              </div>
+              <div className="field-progress-track" aria-hidden="true">
+                <span style={{ inlineSize: `${completion}%` }} />
+              </div>
+            </div>
+
+            <div className="field-stage-list" aria-label="Secuencia de campo">
+              {fieldPlan.stages.map((stage) => (
+                <article key={stage.label}>
+                  <span>{stage.label}</span>
+                  <p>{stage.text}</p>
+                </article>
+              ))}
+            </div>
+
+            <FieldChecklist
+              checkedMap={checkedMap}
+              items={fieldPlan.checklist}
+              onToggle={toggleFieldItem}
+            />
+
+            <div className="field-note-box">
+              <span>Nota segura</span>
+              <p>{fieldPlan.note}</p>
+            </div>
+
+            <div className="field-packet-actions">
+              <button type="button" onClick={markAllFieldItems}>
+                Marcar lista
+              </button>
+              <button type="button" onClick={resetFieldItems}>
+                Reiniciar
+              </button>
+              <button type="button" onClick={() => onNavigate("cases")}>
+                Volver a acción
+              </button>
+            </div>
+
+            <p className="field-limit-note">
+              {selectedCase.claim_firewall || data.claim_firewall}
+            </p>
+          </section>
+        ) : (
+          <section className="field-packet-panel" aria-label="Ficha de campo vacía">
+            <span>Sin caso</span>
+            <p>No hay casos disponibles para preparar una salida.</p>
+          </section>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function FieldRouteCard({ caseItem, isActive, onSelect }) {
+  const tone = decisionCaseTone(caseItem);
+  const fieldPlan = buildFieldVerificationPlan(caseItem);
+
+  return (
+    <button
+      className={`field-route-card tone-${tone}${isActive ? " is-active" : ""}`}
+      onClick={() => onSelect(caseItem)}
+      type="button"
+    >
+      <span className="field-route-card__code">{fieldPlan.routeCode}</span>
+      <span className={`case-lane-chip lane-${buildActionQueueLane(caseItem).id}`}>
+        {fieldPlan.status}
+      </span>
+      <strong>{caseItem.node_display_name || caseItem.node_id}</strong>
+      <p>{fieldPlan.nextStep}</p>
+      <dl>
+        <div>
+          <dt>Fecha</dt>
+          <dd>{caseItem.date}</dd>
+        </div>
+        <div>
+          <dt>ValidPercent</dt>
+          <dd>{formatCasePercent(caseItem.primary_validPercent)}</dd>
+        </div>
+      </dl>
+    </button>
+  );
+}
+
+function FieldChecklist({ items, checkedMap, onToggle }) {
+  return (
+    <div className="field-checklist" aria-label="Checklist de campo no persistido">
+      {items.map((item) => (
+        <label key={item.id}>
+          <input
+            checked={Boolean(checkedMap[item.id])}
+            onChange={() => onToggle(item.id)}
+            type="checkbox"
+          />
+          <span>{item.label}</span>
+        </label>
+      ))}
+    </div>
   );
 }
 
@@ -2508,6 +2842,122 @@ function buildCaseActionPlan(caseItem, evidenceGaps) {
     window,
     gaps: evidenceGaps,
   };
+}
+
+function buildFieldVerificationMetrics(cases) {
+  return {
+    all: cases.length,
+    priority: cases.filter(isVerificationCase).length,
+    noInfer: cases.filter(isCaseNoInfer).length,
+    usable: cases.filter(isUsableCase).length,
+    rainContext: cases.filter(
+      (caseItem) => caseItem?.hydroclimate_status === "antecedent_rain",
+    ).length,
+  };
+}
+
+function filterFieldVerificationCases(cases, filter) {
+  if (filter === "priority") return cases.filter(isVerificationCase);
+  if (filter === "noInfer") return cases.filter(isCaseNoInfer);
+  if (filter === "usable") return cases.filter(isUsableCase);
+  return cases;
+}
+
+function getFieldFilterCount(filter, metrics) {
+  if (filter === "priority") return metrics.priority;
+  if (filter === "noInfer") return metrics.noInfer;
+  if (filter === "usable") return metrics.usable;
+  return metrics.all;
+}
+
+function buildFieldVerificationPlan(caseItem) {
+  const noInfer = isCaseNoInfer(caseItem);
+  const urgent = isUrgentCase(caseItem);
+  const rainContext = caseItem?.hydroclimate_status === "antecedent_rain";
+  const status = isVerificationCase(caseItem)
+    ? urgent
+      ? "Prioritaria"
+      : "Recomendada"
+    : "Opcional";
+  const nextStep = noInfer
+    ? "Preparar visita y esperar nueva adquisición antes de interpretar."
+    : "Usar como contraste exploratorio con límites visibles.";
+  const checklist = [
+    {
+      id: "case-header",
+      label: "Copiar nodo, fecha, decisión primaria y ValidPercent a la bitácora.",
+    },
+    {
+      id: "visible-only",
+      label: "Registrar solo observaciones visibles del sitio, sin explicar causas.",
+    },
+    {
+      id: "evidence-gap",
+      label: "Anotar brecha de evidencia como brecha, no como conclusión territorial.",
+    },
+    {
+      id: "authority-boundary",
+      label: "Mantener laboratorio o autoridad competente fuera de la ficha lite.",
+    },
+  ];
+
+  if (rainContext) {
+    checklist.splice(2, 0, {
+      id: "rain-context",
+      label: "Marcar lluvia antecedente como contexto de revisión, no como causa.",
+    });
+  }
+
+  if (noInfer) {
+    checklist.push({
+      id: "no-infer-lock",
+      label: "Cerrar la salida manteniendo NO INFERIR hasta nueva evidencia.",
+    });
+  } else {
+    checklist.push({
+      id: "passport-limit",
+      label: "Adjuntar límites explícitos si el caso se comparte en Passport.",
+    });
+  }
+
+  return {
+    checklist,
+    nextStep,
+    note: `Ficha lite para ${caseItem.node_display_name || caseItem.node_id}, ${caseItem.date}: ${caseItem.decision_label}. Uso permitido: preparar observación de campo y documentar límites. No declara condiciones del agua ni sustituye revisión técnica.`,
+    risk: urgent
+      ? "Prioridad alta por baja confianza y contexto de lluvia antecedente."
+      : noInfer
+        ? "Bloqueo de inferencia: requiere observación o nueva adquisición."
+        : "Caso usable: la visita es opcional y sirve como contexto.",
+    routeCode: buildFieldRouteCode(caseItem),
+    stages: [
+      {
+        label: "Preparar",
+        text: `Abrir caso ${buildFieldRouteCode(caseItem)} con fecha, nodo y estado ${caseItem.decision_label}.`,
+      },
+      {
+        label: "Observar",
+        text: noInfer
+          ? "Recolectar notas visibles para orientar revisión; la escena sigue bloqueada para interpretación."
+          : "Contrastar la lectura exploratoria con notas visibles, sin ampliar el alcance del dato.",
+      },
+      {
+        label: "Cerrar",
+        text: nextStep,
+      },
+    ],
+    status,
+  };
+}
+
+function buildFieldRouteCode(caseItem) {
+  const nodeCode = String(caseItem?.node_id || "node")
+    .split("_")
+    .map((part) => part.slice(0, 1))
+    .join("")
+    .toUpperCase();
+  const dateCode = String(caseItem?.date || "0000-00-00").replaceAll("-", "").slice(4);
+  return `${nodeCode}-${dateCode}`;
 }
 
 function isUrgentCase(caseItem) {
