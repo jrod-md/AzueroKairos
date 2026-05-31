@@ -193,6 +193,268 @@ button {
   animation: az-navigation-dot-pulse 2.4s ease-out infinite;
 }
 
+.kairos-system {
+  display: grid;
+  gap: var(--space-xl);
+  padding-bottom: var(--space-xl);
+}
+
+.kairos-system__hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.78fr);
+  gap: var(--space-xl);
+  min-height: min(620px, calc(100vh - 112px));
+  align-items: stretch;
+}
+
+.kairos-system__copy,
+.kairos-system__pilot,
+.kairos-proof-card,
+.kairos-system__ledger {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: color-mix(in oklch, var(--bg-surface) 92%, transparent);
+  box-shadow: 0 24px 70px color-mix(in oklch, var(--text-primary) 11%, transparent);
+}
+
+.kairos-system__copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 64px;
+  background:
+    linear-gradient(135deg, color-mix(in oklch, var(--bg-surface) 94%, white) 0%, transparent 52%),
+    linear-gradient(165deg, var(--bg-surface), var(--bg-base));
+}
+
+.kairos-system__copy h1 {
+  max-width: 13ch;
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 4.9rem;
+  font-weight: 760;
+  line-height: 0.94;
+  letter-spacing: 0;
+}
+
+.kairos-system__copy p:not(.small-label) {
+  max-width: 54ch;
+  margin: var(--space-lg) 0 0;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 1.16rem;
+  line-height: 1.55;
+}
+
+.kairos-system__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+.kairos-system__actions button {
+  min-height: 38px;
+  border: 1px solid var(--text-primary);
+  border-radius: 999px;
+  padding: 0 14px;
+  background: var(--text-primary);
+  color: var(--bg-surface);
+  font-family: var(--font-ui);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.kairos-system__actions button:not(:first-child) {
+  border-color: var(--border);
+  background: color-mix(in oklch, var(--bg-surface) 66%, transparent);
+  color: var(--text-primary);
+}
+
+.kairos-system__actions button:focus-visible,
+.kairos-cycle-step:focus-within {
+  outline: 3px solid color-mix(in oklch, var(--state-usable) 34%, transparent);
+  outline-offset: 3px;
+}
+
+.kairos-system__pilot {
+  display: grid;
+  min-width: 0;
+  overflow: hidden;
+  grid-template-rows: minmax(300px, 1fr) auto;
+}
+
+.kairos-system__pilot-photo {
+  min-height: 320px;
+  background:
+    linear-gradient(180deg, color-mix(in oklch, var(--text-primary) 6%, transparent), color-mix(in oklch, var(--text-primary) 34%, transparent)),
+    url("/img/aerial-view.png") center / cover;
+}
+
+.kairos-system__pilot-facts {
+  display: grid;
+  gap: 8px;
+  padding: var(--space-lg);
+}
+
+.kairos-system__pilot-facts span,
+.kairos-proof-card span,
+.kairos-cycle-step em,
+.kairos-aux-ledger dt {
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 820;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.kairos-system__pilot-facts strong {
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 1.85rem;
+  line-height: 1.05;
+}
+
+.kairos-system__pilot-facts p,
+.kairos-proof-card p,
+.kairos-ledger-copy p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  line-height: 1.5;
+}
+
+.kairos-system__proof {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+.kairos-proof-card {
+  display: grid;
+  min-height: 172px;
+  align-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-lg);
+}
+
+.kairos-proof-card strong {
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 2.35rem;
+  font-weight: 780;
+  line-height: 0.95;
+}
+
+.kairos-cycle-board {
+  display: grid;
+  gap: var(--space-lg);
+}
+
+.kairos-cycle-board__head {
+  display: grid;
+  max-width: 780px;
+  gap: 6px;
+}
+
+.kairos-cycle-board__head h2,
+.kairos-ledger-copy h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.kairos-cycle-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kairos-cycle-step {
+  position: relative;
+  display: grid;
+  min-height: 208px;
+  gap: var(--space-md);
+  align-content: start;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  background: color-mix(in oklch, var(--bg-surface) 76%, transparent);
+}
+
+.kairos-cycle-step__index {
+  color: var(--state-usable);
+  font-family: var(--font-data);
+  font-size: 0.95rem;
+  font-weight: 860;
+}
+
+.kairos-cycle-step strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.kairos-cycle-step p {
+  margin: var(--space-sm) 0 0;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.93rem;
+  line-height: 1.42;
+}
+
+.kairos-system__ledger {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.72fr);
+  gap: var(--space-lg);
+  align-items: center;
+  padding: var(--space-xl);
+}
+
+.kairos-ledger-copy {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.kairos-ledger-copy p:not(.small-label) {
+  max-width: 68ch;
+}
+
+.kairos-aux-ledger {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+  margin: 0;
+}
+
+.kairos-aux-ledger div {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  background: color-mix(in oklch, var(--bg-base) 58%, transparent);
+}
+
+.kairos-aux-ledger dd {
+  margin: 6px 0 0;
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 1.45rem;
+  font-weight: 800;
+}
+
 .impact-lab {
   display: grid;
   gap: var(--space-xl);
@@ -1627,6 +1889,8 @@ button {
 }
 
 @media (max-width: 1180px) {
+  .kairos-system__hero,
+  .kairos-system__ledger,
   .impact-hero,
   .impact-pilot-grid,
   .impact-aux-strip,
@@ -1636,6 +1900,14 @@ button {
   .case-board-layout {
     grid-template-columns: 1fr;
     min-height: 0;
+  }
+
+  .kairos-system__copy {
+    padding: 48px;
+  }
+
+  .kairos-system__copy h1 {
+    font-size: 3.8rem;
   }
 
   .impact-hero__copy h1 {
@@ -1651,6 +1923,8 @@ button {
     font-size: 3.5rem;
   }
 
+  .kairos-system__proof,
+  .kairos-cycle-list,
   .impact-metric-grid,
   .impact-calculator {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1700,6 +1974,11 @@ button {
 
   .impact-hero__copy,
   .impact-hero__instrument,
+  .kairos-system__copy,
+  .kairos-system__pilot-facts,
+  .kairos-proof-card,
+  .kairos-cycle-step,
+  .kairos-system__ledger,
   .impact-pilot-panel,
   .impact-metric-card,
   .impact-contrast-panel,
@@ -1717,6 +1996,7 @@ button {
     padding: var(--space-md);
   }
 
+  .kairos-system__copy h1,
   .impact-hero__copy h1,
   .corredor-workbench__hero h1,
   .corredor-workbench__empty h1 {
@@ -1725,10 +2005,23 @@ button {
     line-height: 1;
   }
 
+  .kairos-cycle-board__head h2,
+  .kairos-ledger-copy h2 {
+    font-size: 1.75rem;
+  }
+
+  .kairos-system__pilot-photo {
+    min-height: 240px;
+  }
+
   .impact-hero__instrument strong {
     font-size: 3.55rem;
   }
 
+  .kairos-system__proof,
+  .kairos-cycle-list,
+  .kairos-system__ledger,
+  .kairos-aux-ledger,
   .impact-metric-grid,
   .impact-contrast-grid,
   .impact-calculator,
@@ -1800,6 +2093,7 @@ button {
     font-size: clamp(2.2rem, 13vw, 3.4rem);
   }
 
+  .kairos-cycle-step,
   .case-card {
     min-height: 0;
   }
@@ -1855,6 +2149,9 @@ button {
   .sticky-decision-bar,
   .corredor-node-button,
   .corredor-matrix-cell,
+  .kairos-system__actions button,
+  .kairos-proof-card,
+  .kairos-cycle-step,
   .impact-metric-card,
   .impact-contrast-card,
   .case-card,
@@ -1867,6 +2164,9 @@ button {
   .sticky-decision-bar,
   .corredor-node-button,
   .corredor-matrix-cell,
+  .kairos-system__actions button,
+  .kairos-proof-card,
+  .kairos-cycle-step,
   .impact-metric-card,
   .impact-contrast-card,
   .case-card,
@@ -1875,6 +2175,13 @@ button {
       transform 180ms ease-out,
       box-shadow 180ms ease-out,
       background-color 180ms ease-out;
+  }
+
+  .kairos-system__actions button:hover,
+  .kairos-proof-card:hover,
+  .kairos-cycle-step:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-soft);
   }
 
   .case-card:hover {

@@ -13,11 +13,63 @@ const CORRIDOR_NODE_ORDER = [
 ];
 
 const NAV_ITEMS = [
+  { id: "system", label: "Sistema" },
   { id: "impact", label: "Impacto" },
   { id: "decision", label: "Decisión" },
   { id: "watch", label: "Corredor" },
   { id: "cases", label: "Acción" },
   { id: "technical", label: "Evidencia" },
+];
+
+const KAIROS_CYCLE_STEPS = [
+  {
+    id: "observa",
+    label: "Observa",
+    proof: "Copernicus CDSE",
+    text: "Registra escenas Sentinel-2 oficiales para el corredor piloto.",
+  },
+  {
+    id: "calibra",
+    label: "Calibra",
+    proof: "ValidPercent",
+    text: "Mide si la escena tiene evidencia válida suficiente antes de interpretar.",
+  },
+  {
+    id: "decide",
+    label: "Decide",
+    proof: "USABLE / NO INFERIR",
+    text: "Convierte calidad de observación en una decisión proporcional.",
+  },
+  {
+    id: "contextualiza",
+    label: "Contextualiza",
+    proof: "SAR / CLMS / HYDRO",
+    text: "Agrega capas auxiliares sin cambiar la clasificación primaria.",
+  },
+  {
+    id: "prioriza",
+    label: "Prioriza",
+    proof: "Cola de casos",
+    text: "Ordena revisión y verificación territorial según brecha de evidencia.",
+  },
+  {
+    id: "verifica",
+    label: "Verifica",
+    proof: "Campo / autoridad",
+    text: "Separa observación visible, laboratorio y autoridad competente.",
+  },
+  {
+    id: "emite",
+    label: "Emite",
+    proof: "Passport",
+    text: "Prepara un comprobante de confianza con decisión, hashes y límites.",
+  },
+  {
+    id: "audita",
+    label: "Audita",
+    proof: "Ledger",
+    text: "Conserva trazabilidad desde JSON crudo hasta auditoría de evidencia.",
+  },
 ];
 
 const IMPACT_CONTRAST_DATES = {
@@ -275,12 +327,22 @@ export default function App() {
     () =>
       buildImpactMetrics({
         observations,
+        ledgerRows,
         watchData,
         sarContext,
         hydroClimate,
+        decisionCases,
         exposureContext,
       }),
-    [observations, watchData, sarContext, hydroClimate, exposureContext],
+    [
+      observations,
+      ledgerRows,
+      watchData,
+      sarContext,
+      hydroClimate,
+      decisionCases,
+      exposureContext,
+    ],
   );
 
   if (loadState.status === "loading") {
@@ -319,7 +381,9 @@ export default function App() {
         visible={decisionBarVisible}
       />
 
-      {activePage === "impact" ? (
+      {activePage === "system" ? (
+        <KairosCycle metrics={impactMetrics} onNavigate={setPageAndHash} />
+      ) : activePage === "impact" ? (
         <ImpactLab metrics={impactMetrics} />
       ) : activePage === "decision" ? (
         <DecisionPage
@@ -506,7 +570,9 @@ async function loadExposureContext() {
 
 function setPageAndHash(page) {
   const nextHash =
-    page === "decision"
+    page === "system"
+      ? "#sistema"
+      : page === "decision"
       ? "#decision"
       : page === "impact"
       ? "#impacto"
@@ -516,7 +582,7 @@ function setPageAndHash(page) {
         ? "#corredor"
         : page === "cases"
           ? "#accion"
-          : "#decision";
+        : "#sistema";
   if (window.location.hash !== nextHash) {
     window.location.hash = nextHash;
     return;
@@ -526,7 +592,10 @@ function setPageAndHash(page) {
 function getInitialPage() {
   const hash =
     typeof window !== "undefined" ? window.location.hash.toLowerCase() : "";
-  if (hash === "" || hash === "#decision" || hash === "#decision-ejecutiva") {
+  if (hash === "" || hash === "#sistema" || hash === "#ciclo") {
+    return "system";
+  }
+  if (hash === "#decision" || hash === "#decision-ejecutiva") {
     return "decision";
   }
   if (hash === "#impacto" || hash === "#impact") {
@@ -541,7 +610,7 @@ function getInitialPage() {
   if (hash === "#kairos-cases" || hash === "#accion") {
     return "cases";
   }
-  return "decision";
+  return "system";
 }
 
 function Header({ activePage, activeState, setActivePage }) {
@@ -555,8 +624,8 @@ function Header({ activePage, activeState, setActivePage }) {
       <button
         className="brand-button"
         type="button"
-        onClick={() => setActivePage("decision")}
-        aria-label="Ir a Decision ejecutiva"
+        onClick={() => setActivePage("system")}
+        aria-label="Ir al ciclo Kairós"
       >
         Azuero Kairós
       </button>
@@ -588,6 +657,132 @@ function Header({ activePage, activeState, setActivePage }) {
         </div>
       </nav>
     </header>
+  );
+}
+
+function KairosCycle({ metrics, onNavigate }) {
+  const proofCards = [
+    {
+      label: "Contraste piloto",
+      value: `${formatMultiplier(metrics.evidenceUpliftRatio)}x`,
+      text: "Más evidencia válida al esperar una adquisición usable.",
+    },
+    {
+      label: "Escenas oficiales",
+      value: `${metrics.apiOkBlockedCount}/${metrics.officialObservationCount}`,
+      text: "API OK bloqueada de inferencia cuando la evidencia no alcanza.",
+    },
+    {
+      label: "Corredor regional",
+      value: `${metrics.nodeCount} x ${metrics.dateCount}`,
+      text: `${metrics.regionalObservationCount} observaciones nodo-fecha en la matriz pública.`,
+    },
+    {
+      label: "Ledger público",
+      value: formatInteger(metrics.ledgerEventCount),
+      text: "Eventos trazables desde evidencia cruda hasta decisión.",
+    },
+  ];
+  const auxiliaryRows = [
+    ["SAR", metrics.auxiliaryCoverage.sar],
+    ["CLMS", metrics.auxiliaryCoverage.clms],
+    ["HydroClimate", metrics.auxiliaryCoverage.hydro],
+  ];
+  const routeButtons = [
+    ["Impacto", "impact"],
+    ["Decisión", "decision"],
+    ["Corredor", "watch"],
+    ["Acción", "cases"],
+    ["Evidencia", "technical"],
+  ];
+
+  return (
+    <section className="kairos-system" aria-label="Sistema Kairós">
+      <div className="kairos-system__hero">
+        <div className="kairos-system__copy">
+          <p className="small-label">Sistema Kairós</p>
+          <h1>Ciclo de evidencia responsable.</h1>
+          <p>
+            Del satélite a la decisión: interpretar, revisar o no inferir según
+            la evidencia disponible.
+          </p>
+          <div className="kairos-system__actions" aria-label="Entradas del sistema">
+            {routeButtons.map(([label, page]) => (
+              <button key={page} type="button" onClick={() => onNavigate(page)}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <aside className="kairos-system__pilot" aria-label="Caso piloto Río La Villa">
+          <div className="kairos-system__pilot-photo" aria-hidden="true" />
+          <div className="kairos-system__pilot-facts">
+            <span>Río La Villa</span>
+            <strong>{metrics.nodeCount} nodos, {metrics.dateCount} fechas</strong>
+            <p>
+              Una escena con API OK y {formatMaybePercent(metrics.weakContrast?.validPercent)}
+              {" "}de evidencia válida fue bloqueada de inferencia.
+            </p>
+          </div>
+        </aside>
+      </div>
+
+      <section className="kairos-system__proof" aria-label="Prueba del ciclo">
+        {proofCards.map((card) => (
+          <article className="kairos-proof-card" key={card.label}>
+            <span>{card.label}</span>
+            <strong>{card.value}</strong>
+            <p>{card.text}</p>
+          </article>
+        ))}
+      </section>
+
+      <section className="kairos-cycle-board" aria-label="Ciclo operativo">
+        <div className="kairos-cycle-board__head">
+          <p className="small-label">Ciclo operativo</p>
+          <h2>La evidencia entra solo si cambia decisión, prioridad o incertidumbre.</h2>
+        </div>
+        <ol className="kairos-cycle-list">
+          {KAIROS_CYCLE_STEPS.map((step, index) => (
+            <li className={`kairos-cycle-step step-${step.id}`} key={step.id}>
+              <span className="kairos-cycle-step__index">{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <strong>{step.label}</strong>
+                <em>{step.proof}</em>
+                <p>{step.text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="kairos-system__ledger" aria-label="Cobertura y límites">
+        <div className="kairos-ledger-copy">
+          <p className="small-label">Frontera científica</p>
+          <h2>No inferir es una salida válida del sistema.</h2>
+          <p>
+            Kairós no detecta contaminación ni declara agua segura. Produce una
+            decisión de confianza de observación y deja la cadena lista para
+            auditoría, verificación territorial o autoridad competente.
+          </p>
+        </div>
+        <dl className="kairos-aux-ledger">
+          {auxiliaryRows.map(([label, coverage]) => (
+            <div key={label}>
+              <dt>{label}</dt>
+              <dd>
+                {coverage.available}/{coverage.total}
+              </dd>
+            </div>
+          ))}
+          <div>
+            <dt>Casos curados</dt>
+            <dd>{metrics.decisionCaseCount}</dd>
+          </div>
+        </dl>
+      </section>
+    </section>
   );
 }
 
@@ -1467,9 +1662,11 @@ function getStateMeta(record) {
 
 function buildImpactMetrics({
   observations,
+  ledgerRows,
   watchData,
   sarContext,
   hydroClimate,
+  decisionCases,
   exposureContext,
 }) {
   const officialObservations = Array.isArray(observations) ? observations : [];
@@ -1506,6 +1703,8 @@ function buildImpactMetrics({
     apiOkBlockedCount,
     regionalObservationCount,
     regionalReviewCount,
+    ledgerEventCount: Array.isArray(ledgerRows) ? ledgerRows.length : 0,
+    decisionCaseCount: getDecisionCaseRows(decisionCases).length,
     nodeCount: getRegionalNodeCount(watchData, regionalRows),
     dateCount: getRegionalDateCount(watchData, regionalRows),
     auxiliaryCoverage: {
@@ -1527,6 +1726,13 @@ function findOfficialContrastRecord(records, date) {
 function getRegionalRows(watchData) {
   if (Array.isArray(watchData?.observations)) return watchData.observations;
   if (Array.isArray(watchData?.rows)) return watchData.rows;
+  return [];
+}
+
+function getDecisionCaseRows(decisionCases) {
+  if (Array.isArray(decisionCases?.cases)) return decisionCases.cases;
+  if (Array.isArray(decisionCases?.rows)) return decisionCases.rows;
+  if (Array.isArray(decisionCases)) return decisionCases;
   return [];
 }
 
