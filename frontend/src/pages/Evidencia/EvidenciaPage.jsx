@@ -82,14 +82,20 @@ export default function EvidenciaPage({
               <div className="evidencia-ledger__row" key={entry.key}>
                 <span>[{entry.timestamp}]</span>
                 <span>[{entry.eventType}]</span>
-                <span>[{entry.id}]</span>
+                <span>{entry.eventLabel}</span>
+                <span>{entry.artifactRef}</span>
+                <span>[{entry.status}]</span>
+                <span>#{entry.hashShort}</span>
               </div>
             ))
           ) : (
             <div className="evidencia-ledger__row">
               <span>[sin timestamp]</span>
               <span>[sin ledger]</span>
-              <span>[sin id]</span>
+              <span>sin evento</span>
+              <span>sin artefacto</span>
+              <span>[sin estado]</span>
+              <span>#sin-hash</span>
             </div>
           )}
         </div>
@@ -202,21 +208,37 @@ function buildKnowledgeModel(record, ledger, stateLabel) {
 }
 
 function buildLedgerEntries(rows) {
-  return rows.map((row, index) => {
-    const id =
-      row.git_commit ||
-      row.run_id ||
-      row.raw_json_path ||
-      row.brief_path ||
-      `entry-${index + 1}`;
+  return [...rows]
+    .sort(compareLedgerRows)
+    .map((row, index) => {
+      const hashShort =
+        row.hash_short ||
+        String(row.event_hash || row.artifact_hash || row.git_commit || `entry-${index + 1}`).slice(0, 12);
 
-    return {
-      key: `${row.generated_at_utc || "sin-timestamp"}-${id}-${index}`,
-      timestamp: row.generated_at_utc || "sin timestamp",
-      eventType: row.evidence_status || row.api_status || row.confidence_class || "evento",
-      id,
-    };
-  });
+      return {
+        key: `${row.generated_at_utc || "sin-timestamp"}-${hashShort}-${index}`,
+        timestamp: row.generated_at_utc || "sin timestamp",
+        eventType: row.event_type || row.evidence_status || row.api_status || "audit_event",
+        eventLabel: row.event_label || row.event_label_es || "Evento auditado",
+        artifactRef:
+          row.artifact_ref ||
+          row.brief_path ||
+          row.processed_csv_path ||
+          row.raw_json_path ||
+          "sin artefacto",
+        status: row.status || row.evidence_status || row.api_status || "sin estado",
+        hashShort,
+      };
+    });
+}
+
+function compareLedgerRows(left, right) {
+  const leftIndex = Number(left.event_index);
+  const rightIndex = Number(right.event_index);
+  if (Number.isFinite(leftIndex) && Number.isFinite(rightIndex)) {
+    return leftIndex - rightIndex;
+  }
+  return String(left.generated_at_utc || "").localeCompare(String(right.generated_at_utc || ""));
 }
 
 function compactItems(items) {

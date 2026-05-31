@@ -17,6 +17,49 @@ const NODE_POSITIONS = [
   { x: 648, y: 34 },
 ];
 
+const CHAIN_STYLES = `
+  @keyframes gate-chain-node-reveal {
+    0% {
+      opacity: 0.28;
+      transform: scale(0.72);
+    }
+
+    72% {
+      opacity: 1;
+      transform: scale(1.08);
+    }
+
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes gate-chain-path-reveal {
+    0% {
+      opacity: 0.25;
+      stroke-dashoffset: 18;
+    }
+
+    100% {
+      opacity: 1;
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .gate-chain__connector {
+    animation: gate-chain-path-reveal 420ms ease-out both;
+    animation-delay: calc(var(--gate-step, 0) * 150ms);
+  }
+
+  .gate-chain__node-inner {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: gate-chain-node-reveal 360ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    animation-delay: calc(var(--gate-step, 0) * 150ms);
+  }
+`;
+
 export default function GateChain({ gates = DEFAULT_GATES }) {
   const normalizedGates = normalizeGates(gates);
   const connectors = normalizedGates.slice(0, -1).map((gate, index) => ({
@@ -38,16 +81,19 @@ export default function GateChain({ gates = DEFAULT_GATES }) {
         overflow: "visible",
       }}
     >
+      <style>{CHAIN_STYLES}</style>
       <g aria-hidden="true">
-        {connectors.map((connector) => (
+        {connectors.map((connector, index) => (
           <path
             key={connector.id}
+            className="gate-chain__connector"
             d={connector.path}
             fill="none"
             stroke="var(--border)"
             strokeWidth="2"
             strokeLinecap="round"
             strokeDasharray={connector.broken ? "4 4" : undefined}
+            style={{ "--gate-step": index + 1 }}
           />
         ))}
       </g>
@@ -58,6 +104,7 @@ export default function GateChain({ gates = DEFAULT_GATES }) {
 
         return (
           <g key={gate.id} transform={`translate(${position.x} ${position.y})`}>
+            <g className="gate-chain__node-inner" style={{ "--gate-step": index }}>
             <circle
               r={NODE_RADIUS}
               fill={visual.fill}
@@ -109,6 +156,7 @@ export default function GateChain({ gates = DEFAULT_GATES }) {
             >
               {gate.result}
             </text>
+            </g>
           </g>
         );
       })}

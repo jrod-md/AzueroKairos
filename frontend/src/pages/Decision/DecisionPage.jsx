@@ -71,6 +71,9 @@ export default function DecisionPage({
           <p className="decision-page__explanation">
             {record.reason_es || state.explanation}
           </p>
+          {state.stamp === "NO_INFERIR" ? (
+            <ScientificRigorNote record={record} ledger={ledger} />
+          ) : null}
           <div className="decision-page__next-action">
             <span className="section-label">Siguiente acción</span>
             <p>{record.recommended_action_es || state.action}</p>
@@ -81,7 +84,7 @@ export default function DecisionPage({
       </section>
 
       <section className="decision-page__gate-card" aria-label="Cadena de decisión">
-        <GateChain gates={gates} />
+        <GateChain key={`${record.date}-${record.aoi}-${state.stamp}`} gates={gates} />
       </section>
 
       <ContrastPanel records={contrastRecords} />
@@ -131,6 +134,25 @@ function TechnicalStrip({ rows }) {
         </div>
       ))}
     </dl>
+  );
+}
+
+function ScientificRigorNote({ record, ledger }) {
+  const apiStatus = record.api_status || ledger?.api_status || "pendiente";
+
+  return (
+    <aside
+      className="decision-page__science-note"
+      aria-label="Rigor cientifico de la decision"
+    >
+      <span className="section-label">Rigor cientifico</span>
+      <p>
+        API {displayValue(apiStatus)} confirma ejecucion tecnica; no autoriza
+        inferencia si solo {formatPercent(record.validPercent)} de la observacion
+        es evidencia valida. Kairos conserva trazabilidad hasta nueva adquisicion
+        o verificacion territorial.
+      </p>
+    </aside>
   );
 }
 

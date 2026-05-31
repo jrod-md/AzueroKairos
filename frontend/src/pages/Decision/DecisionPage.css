@@ -102,6 +102,26 @@
   -webkit-line-clamp: 2;
 }
 
+.decision-page__science-note {
+  display: grid;
+  gap: var(--space-xs);
+  width: 100%;
+  max-width: 38ch;
+  border-left: 3px solid var(--state-no-inferir);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--state-no-inferir-bg);
+}
+
+.decision-page__science-note p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 680;
+  line-height: 1.36;
+}
+
 .decision-page__next-action {
   display: grid;
   gap: var(--space-xs);

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useId } from "react";
 
 const STATE_CONFIG = {
   USABLE: {
@@ -6,48 +6,47 @@ const STATE_CONFIG = {
     color: "var(--state-usable)",
     background: "var(--state-usable-bg)",
     rotation: "0deg",
-    fontSize: "clamp(2.35rem, 6vw, 3rem)",
-    pulse: false,
+    shadow: "none",
   },
   REVISAR: {
     label: "REVISAR",
     color: "var(--state-revisar)",
     background: "var(--state-revisar-bg)",
-    rotation: "-1deg",
-    fontSize: "clamp(2.25rem, 5.5vw, 2.85rem)",
-    pulse: false,
+    rotation: "-0.8deg",
+    shadow: "none",
   },
   NO_INFERIR: {
     label: "NO INFERIR",
     color: "var(--state-no-inferir)",
     background: "var(--state-no-inferir-bg)",
-    rotation: "-1deg",
-    fontSize: "clamp(2rem, 5vw, 2.45rem)",
-    pulse: true,
+    rotation: "1.2deg",
+    shadow: "0 0 20px rgba(184, 76, 44, 0.15)",
   },
 };
 
 const STAMP_STYLES = `
-  @keyframes decision-stamp-enter {
-    from {
-      transform: scale(0.85) rotate(var(--rotation));
-      opacity: 0;
-    }
-
-    to {
-      transform: scale(1) rotate(var(--rotation));
-      opacity: 1;
-    }
-  }
-
-  @keyframes decision-stamp-pulse {
+  @keyframes stampDrop {
     0% {
-      box-shadow: 0 0 0 0 rgba(184, 76, 44, 0.3);
+      transform: translateY(-10px) rotate(var(--stamp-rotate)) scale(calc(var(--stamp-scale, 1) * 1.45));
+      opacity: 0;
+      filter: blur(2px);
     }
 
-    70%,
+    48% {
+      transform: translateY(1px) rotate(var(--stamp-rotate)) scale(calc(var(--stamp-scale, 1) * 0.96));
+      opacity: 1;
+      filter: blur(0);
+    }
+
+    72% {
+      transform: translateY(0) rotate(var(--stamp-rotate)) scale(calc(var(--stamp-scale, 1) * 1.035));
+      filter: blur(0);
+    }
+
     100% {
-      box-shadow: 0 0 0 8px rgba(184, 76, 44, 0);
+      transform: translateY(0) rotate(var(--stamp-rotate)) scale(var(--stamp-scale, 1));
+      opacity: 1;
+      filter: blur(0);
     }
   }
 
@@ -57,65 +56,81 @@ const STAMP_STYLES = `
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: fit-content;
+    width: min(100%, 300px);
+    aspect-ratio: 16 / 5;
     max-width: 100%;
-    border: 3px solid currentColor;
-    border-radius: 4px;
-    padding: 12px 24px;
     color: var(--stamp-color);
-    background: var(--stamp-background);
-    font-family: var(--font-display);
-    font-size: var(--stamp-font-size);
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    transform: rotate(var(--rotation));
-    animation: decision-stamp-enter var(--transition-stamp, 300ms ease);
+    background: transparent;
+    box-shadow: var(--stamp-shadow);
+    transform: rotate(var(--stamp-rotate)) scale(var(--stamp-scale, 1));
+    animation: stampDrop 420ms cubic-bezier(0.25, 1, 0.5, 1);
     animation-fill-mode: both;
+    transform-origin: center;
+    will-change: transform, opacity, filter;
   }
 
-  .decision-stamp::before {
-    content: "";
-    position: absolute;
-    inset: 7px;
-    border: 1px solid currentColor;
-    border-radius: 2px;
-    opacity: 0.76;
-    pointer-events: none;
+  .decision-stamp--static {
+    animation: none;
+    opacity: 1;
+    transform: rotate(var(--stamp-rotate)) scale(var(--stamp-scale, 1));
   }
 
-  .decision-stamp::after {
-    content: "";
+  .decision-stamp__frame {
     position: absolute;
     inset: 0;
-    border-radius: inherit;
-    background:
-      linear-gradient(90deg, transparent 0 18%, currentColor 18% 19%, transparent 19% 100%),
-      linear-gradient(0deg, transparent 0 44%, currentColor 44% 45%, transparent 45% 100%);
-    opacity: 0.025;
-    mix-blend-mode: multiply;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
     pointer-events: none;
   }
 
-  .decision-stamp--pulse {
-    animation:
-      decision-stamp-enter var(--transition-stamp, 300ms ease),
-      decision-stamp-pulse 3s ease-out infinite;
+  .decision-stamp__text {
+    position: relative;
+    z-index: 1;
+    padding: 0 22px;
+    color: currentColor;
+    font-family: var(--font-display);
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    font-weight: 700;
+    line-height: 0.95;
+    letter-spacing: 0.08em;
+    text-align: center;
+    text-transform: uppercase;
+    text-wrap: balance;
+    opacity: 0.94;
+    mix-blend-mode: multiply;
+    text-shadow: 0 1px 0 color-mix(in oklch, currentColor 12%, transparent);
+  }
+
+  .decision-stamp__outer {
+    fill: none;
+  }
+
+  .decision-stamp__outer,
+  .decision-stamp__inner {
+    stroke: currentColor;
+    vector-effect: non-scaling-stroke;
   }
 
   .decision-stamp--small {
-    padding: 8px 14px;
-    font-size: clamp(1rem, 2.1vw, 1.28rem);
-    letter-spacing: 0.05em;
+    width: min(100%, 190px);
   }
 
-  .decision-stamp--small::before {
-    inset: 5px;
+  .decision-stamp--small .decision-stamp__text {
+    padding: 0 14px;
+    font-size: clamp(0.95rem, 1.65vw, 1.18rem);
+    letter-spacing: 0.07em;
   }
 `;
 
-export default function DecisionStamp({ state, size = "default" }) {
+export default function DecisionStamp({
+  state,
+  size = "default",
+  animated = true,
+  scale = 1,
+}) {
+  const textureId = `stamp-texture-${useId().replace(/:/g, "")}`;
   const normalizedState = normalizeState(state);
   const config = STATE_CONFIG[normalizedState];
   const sizeClass = size === "small" ? " decision-stamp--small" : "";
@@ -125,15 +140,64 @@ export default function DecisionStamp({ state, size = "default" }) {
       <style>{STAMP_STYLES}</style>
       <div
         key={normalizedState}
-        className={`decision-stamp${sizeClass}${config.pulse ? " decision-stamp--pulse" : ""}`}
+        className={`decision-stamp${sizeClass}${animated ? "" : " decision-stamp--static"}`}
         style={{
-          "--rotation": config.rotation,
-          "--stamp-background": config.background,
           "--stamp-color": config.color,
-          "--stamp-font-size": config.fontSize,
+          "--stamp-rotate": config.rotation,
+          "--stamp-scale": scale,
+          "--stamp-shadow": config.shadow,
         }}
       >
-        {config.label}
+        <svg
+          className="decision-stamp__frame"
+          viewBox="0 0 320 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <defs>
+            <filter id={textureId} colorInterpolationFilters="sRGB">
+              <feTurbulence
+                type="turbulence"
+                baseFrequency="0.045"
+                numOctaves="2"
+                seed="7"
+                result="distortion"
+              />
+              <feDisplacementMap
+                in="SourceGraphic"
+                in2="distortion"
+                scale="1.7"
+                xChannelSelector="R"
+                yChannelSelector="G"
+              />
+            </filter>
+          </defs>
+          <rect
+            className="decision-stamp__outer"
+            x="3"
+            y="3"
+            width="314"
+            height="94"
+            rx="3"
+            ry="3"
+            strokeWidth="3"
+            filter={`url(#${textureId})`}
+          />
+          <rect
+            className="decision-stamp__inner"
+            x="11"
+            y="11"
+            width="298"
+            height="78"
+            rx="3"
+            ry="3"
+            strokeWidth="1.5"
+            fill={config.background}
+            fillOpacity="0.6"
+          />
+        </svg>
+        <span className="decision-stamp__text">{config.label}</span>
       </div>
     </>
   );
