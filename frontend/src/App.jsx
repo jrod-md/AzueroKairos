@@ -3,6 +3,7 @@ import StatusBar from "./components/StatusBar/StatusBar.jsx";
 import DecisionStamp from "./components/DecisionStamp/DecisionStamp.jsx";
 import DecisionPage from "./pages/Decision/DecisionPage.jsx";
 import EvidenciaPage from "./pages/Evidencia/EvidenciaPage.jsx";
+import PassportPage from "./pages/Passport/PassportPage.jsx";
 
 const DEFAULT_DATE = "2025-06-10";
 const COMPARISON_DATES = ["2025-06-10", "2025-06-30"];
@@ -18,6 +19,7 @@ const NAV_ITEMS = [
   { id: "decision", label: "Decisión" },
   { id: "watch", label: "Corredor" },
   { id: "cases", label: "Acción" },
+  { id: "passport", label: "Passport" },
   { id: "technical", label: "Evidencia" },
 ];
 
@@ -305,10 +307,15 @@ export default function App() {
     );
   }, [observations, selectedDate]);
 
-  const selectedLedger = useMemo(() => {
-    if (!selectedRecord) return null;
-    return findLedgerForRecord(ledgerRows, selectedRecord);
+  const selectedLedgerRows = useMemo(() => {
+    if (!selectedRecord) return [];
+    return findLedgerRowsForRecord(ledgerRows, selectedRecord);
   }, [ledgerRows, selectedRecord]);
+
+  const selectedLedger = useMemo(
+    () => (selectedRecord ? findLedgerForRecord(ledgerRows, selectedRecord) : null),
+    [ledgerRows, selectedRecord],
+  );
 
   const selectedHydroClimateContext = useMemo(() => {
     if (!selectedRecord) return null;
@@ -418,6 +425,17 @@ export default function App() {
           casePanelMode={casePanelMode}
           setCasePanelMode={setCasePanelMode}
           exposureContext={exposureContext}
+        />
+      ) : activePage === "passport" ? (
+        <PassportPage
+          availableDates={availableDates}
+          decisionCases={decisionCases}
+          ledger={selectedLedger}
+          ledgerRows={selectedLedgerRows}
+          onNavigate={setPageAndHash}
+          record={selectedRecord}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
         />
       ) : (
         <EvidenciaPage
@@ -578,6 +596,8 @@ function setPageAndHash(page) {
       ? "#impacto"
       : page === "technical"
       ? "#evidencia"
+      : page === "passport"
+      ? "#passport"
       : page === "watch"
         ? "#corredor"
         : page === "cases"
@@ -603,6 +623,9 @@ function getInitialPage() {
   }
   if (hash === "#datos-tecnicos" || hash === "#technical" || hash === "#evidencia") {
     return "technical";
+  }
+  if (hash === "#passport" || hash === "#pasaporte") {
+    return "passport";
   }
   if (hash === "#kairos-watch" || hash === "#corredor") {
     return "watch";
@@ -693,6 +716,7 @@ function KairosCycle({ metrics, onNavigate }) {
     ["Decisión", "decision"],
     ["Corredor", "watch"],
     ["Acción", "cases"],
+    ["Passport", "passport"],
     ["Evidencia", "technical"],
   ];
 
@@ -2000,13 +2024,16 @@ function isDoNotInfer(record) {
 }
 
 function findLedgerForRecord(rows, record) {
-  return pickPreferredLedgerRow(
-    rows.filter(
-      (row) =>
-        row.date === record.date &&
-        row.aoi === record.aoi &&
-        Number(row.resolution_m) === Number(record.resolution_m),
-    ),
+  return pickPreferredLedgerRow(findLedgerRowsForRecord(rows, record));
+}
+
+function findLedgerRowsForRecord(rows, record) {
+  if (!record) return [];
+  return rows.filter(
+    (row) =>
+      row.date === record.date &&
+      row.aoi === record.aoi &&
+      Number(row.resolution_m) === Number(record.resolution_m),
   );
 }
 
