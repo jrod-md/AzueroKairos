@@ -288,6 +288,106 @@
   gap: var(--space-sm);
 }
 
+.passport-trust {
+  display: grid;
+  gap: var(--space-sm);
+  border-top: 1px solid var(--border-subtle);
+  padding-top: var(--space-md);
+}
+
+.passport-trust__header {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.passport-trust__status {
+  flex: 0 0 auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 820;
+}
+
+.passport-trust__status.tone-ready {
+  border-color: color-mix(in oklch, var(--state-usable) 48%, var(--border));
+  background: color-mix(in oklch, var(--state-usable-bg) 70%, var(--bg-surface));
+}
+
+.passport-trust__status.tone-error {
+  border-color: color-mix(in oklch, var(--state-no-inferir) 42%, var(--border));
+  background: color-mix(in oklch, var(--state-no-inferir-bg) 72%, var(--bg-surface));
+}
+
+.passport-trust__facts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.passport-trust__facts div {
+  min-width: 0;
+}
+
+.passport-trust__facts dt,
+.passport-trust__path span {
+  color: var(--text-muted);
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 820;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.passport-trust__facts dd {
+  margin: 3px 0 0;
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 0.82rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.passport-trust__path {
+  display: grid;
+  gap: 6px;
+}
+
+.passport-trust__path input {
+  min-width: 0;
+  min-height: 38px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+  background: color-mix(in oklch, var(--bg-base) 58%, transparent);
+  color: var(--text-primary);
+  font-family: var(--font-data);
+  font-size: 0.82rem;
+}
+
+.passport-trust__copy {
+  min-height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in oklch, var(--bg-base) 62%, transparent);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-weight: 820;
+}
+
+.passport-trust p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-ui);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
 .passport-verifier {
   grid-template-columns: minmax(0, 0.7fr) minmax(300px, 1fr);
   align-items: center;

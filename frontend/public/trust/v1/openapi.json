@@ -1,0 +1,99 @@
+{
+  "schema_version": "kairos.trust.v1",
+  "title": "Kairos Trust Layer v1 static contract",
+  "generated_at_utc": "2026-05-31T19:49:06Z",
+  "read_only": true,
+  "public_safe": true,
+  "base_path": "/trust/v1",
+  "primary_layer": "Sentinel-2",
+  "claim_limit": "La capa Trust no certifica condiciones quimicas, sanitarias ni operativas; verifica la trazabilidad del paquete de evidencia.",
+  "limits": [
+    "Static JSON only; no database and no external API call is required.",
+    "Trust Layer verifies traceability of the evidence packet.",
+    "Auxiliary layers never modify the Sentinel-2 confidence classification.",
+    "No chemical, sanitary, water-safety, operational-readiness, or authority-level certification is provided."
+  ],
+  "collections": {
+    "index": {
+      "path": "/trust/v1/index.json",
+      "fields": [
+        "schema_version",
+        "generated_at_utc",
+        "pilot_name",
+        "public_safe",
+        "counts",
+        "available_collections",
+        "example_verification_paths"
+      ]
+    },
+    "passports": {
+      "path": "/trust/v1/passports/{passport_id}.json",
+      "id_field": "passport_id",
+      "fields": [
+        "passport_id",
+        "decision_id",
+        "scope_type",
+        "node_id",
+        "aoi",
+        "target_date",
+        "confidence_class",
+        "validPercent",
+        "primary_layer",
+        "auxiliary_layers",
+        "ledger_refs",
+        "artifact_refs",
+        "claim_limit",
+        "verification_hash"
+      ]
+    },
+    "decisions": {
+      "path": "/trust/v1/decisions/{decision_id}.json",
+      "id_field": "decision_id",
+      "fields": [
+        "decision_id",
+        "target_date",
+        "node_id",
+        "aoi",
+        "confidence_class",
+        "validPercent",
+        "decision_reason",
+        "recommended_action",
+        "primary_layer",
+        "passport_id",
+        "verification_hash"
+      ]
+    },
+    "ledger": {
+      "path": "/trust/v1/ledger/{event_id}.json",
+      "id_field": "event_id",
+      "fields": [
+        "event_id",
+        "event_type",
+        "event_label",
+        "timestamp",
+        "artifact_ref",
+        "status",
+        "hash",
+        "decision_id",
+        "passport_id"
+      ]
+    },
+    "validation_report": {
+      "path": "/trust/v1/validation_report.json",
+      "fields": [
+        "status",
+        "generated_at_utc",
+        "checks",
+        "summary"
+      ]
+    }
+  },
+  "examples": {
+    "index": "/trust/v1/index.json",
+    "passport": "/trust/v1/passports/KAIROS-P1-20250602-ed0c2b4e.json",
+    "decision": "/trust/v1/decisions/decision-official-corridor-wide-2025-06-02.json",
+    "ledger": "/trust/v1/ledger/ledger-2025-06-02-corridor-wide-001.json",
+    "validation_report": "/trust/v1/validation_report.json",
+    "contract": "/trust/v1/openapi.json"
+  }
+}

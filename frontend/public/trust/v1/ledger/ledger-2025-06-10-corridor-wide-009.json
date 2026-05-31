@@ -1,0 +1,15 @@
+{
+  "schema_version": "kairos.trust.v1",
+  "event_id": "ledger-2025-06-10-corridor-wide-009",
+  "event_type": "confidence_decision_computed",
+  "event_label": "Decisión de confianza calculada",
+  "timestamp": "2026-05-29T00:58:24+00:00",
+  "artifact_ref": "",
+  "artifact_ref_status": "not_public_in_trust_layer",
+  "status": "decision_do_not_infer",
+  "hash": "5835f0549c88760cf63a5f7ca133b23fa9520ede566169fa8622bf547c42cd0e",
+  "hash_method": "event_payload_sha256",
+  "decision_id": "decision-official-corridor-wide-2025-06-10",
+  "passport_id": "KAIROS-P1-20250610-5835f054",
+  "verification_hash": "sha256:bdd8a087d91c1557188819b36c3a4e7ba1ef891f076588ec3fdb29d89cc439f0"
+}

@@ -1,0 +1,77 @@
+{
+  "schema_version": "kairos.trust.v1",
+  "passport_id": "KAIROS-P1-20250715-9acd9e15",
+  "decision_id": "decision-case-la-villa-oeste-2025-07-15",
+  "scope_type": "node_date_case",
+  "node_id": "la_villa_oeste",
+  "node_name": "La Villa Oeste",
+  "target_date": "2025-07-15",
+  "confidence_class": "usable",
+  "confidence_label": "USABLE",
+  "validPercent": 69.26,
+  "api_status": "OK",
+  "primary_layer": "Sentinel-2",
+  "auxiliary_layers": {
+    "sar": {
+      "available": true,
+      "status": "sar_context_available",
+      "matched_rows": 3,
+      "claim_limit": "Contexto SAR auxiliar; no usado como evidencia principal."
+    },
+    "clms": {
+      "available": true,
+      "status": "exposure_available",
+      "matched_nodes": 3,
+      "reference_year": 2020,
+      "claim_limit": "Contexto territorial CLMS 2020. Capa auxiliar; no se usa como evidencia principal y no sustituye verificacion territorial, laboratorio ni autoridad competente."
+    },
+    "hydroclimate": {
+      "available": true,
+      "status": "normal_context",
+      "matched_rows": 3,
+      "claim_limit": "Contexto hidroclimatico auxiliar de lluvia antecedente; no modifica la clasificacion Sentinel-2 ni sustituye verificacion territorial, laboratorio o autoridad competente."
+    },
+    "limits": "Auxiliary layers are context only and do not modify the Sentinel-2 confidence classification."
+  },
+  "ledger_refs": [
+    {
+      "event_type": "raw_observation_received",
+      "hash": "36fd6c5543e9210c6b84087b4192c4622fc8f530f27fff818b7d4974dd109ac8",
+      "hash_short": "36fd6c5543e9"
+    },
+    {
+      "event_type": "processed_metrics_created",
+      "hash": "e54a300a83a36be95b5ae1f2a1d1ea138b307057dbbec17f1f9c2cf959bd9a20",
+      "hash_short": "e54a300a83a3"
+    },
+    {
+      "event_type": "confidence_decision_computed",
+      "hash": "b5f4c3041d8ec37301fcb52454b7f421621f6117299900485ce142225d3d3167",
+      "hash_short": "b5f4c3041d8e"
+    },
+    {
+      "event_type": "brief_generated",
+      "hash": "ace061b1c4b86015fcb242f064c7838643c1ed0795b0850df3d1ec48257845fc",
+      "hash_short": "ace061b1c4b8"
+    },
+    {
+      "event_type": "public_export_sanitized",
+      "hash": "0c17f2e97cdbad6de7c568572eae6443699c17fa520846f84529ad755ef0c718",
+      "hash_short": "0c17f2e97cdb"
+    },
+    {
+      "event_type": "evidence_case_registered",
+      "hash": "c03e01e782d12e0d99f9eaf5ac9a7f03798362175aee109fceaf9f8e09e81e0e",
+      "hash_short": "c03e01e782d1"
+    }
+  ],
+  "artifact_refs": {
+    "kairos_watch": "/data/kairos_watch.json",
+    "decision_cases": "/data/decision_cases.json",
+    "decision": "/trust/v1/decisions/decision-case-la-villa-oeste-2025-07-15.json",
+    "passport": "/trust/v1/passports/KAIROS-P1-20250715-9acd9e15.json"
+  },
+  "claim_limit": "La capa Trust no certifica condiciones quimicas, sanitarias ni operativas; verifica la trazabilidad del paquete de evidencia.",
+  "verification_payload_version": "kairos-trust-payload-v1",
+  "verification_hash": "sha256:716b53ac827ccca548ca54d75bcbdd323323751ad4cf3a9833061c281396f219"
+}

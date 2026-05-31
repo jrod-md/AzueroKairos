@@ -1,0 +1,23 @@
+{
+  "schema_version": "kairos.trust.v1",
+  "decision_id": "decision-case-la-villa-central-2025-06-10",
+  "target_date": "2025-06-10",
+  "scope_type": "node_date_case",
+  "node_id": "la_villa_central",
+  "node_name": "La Villa Central",
+  "confidence_class": "do_not_infer",
+  "confidence_label": "NO INFERIR",
+  "validPercent": 0.01,
+  "api_status": "OK",
+  "decision_reason": "El caso separa disponibilidad tecnica de confianza de observacion; tener registro no autoriza una inferencia cuando la fraccion valida es 0.01%.",
+  "recommended_action": "Registrar la brecha de evidencia, solicitar verificacion de campo si se necesita contexto local y esperar una nueva adquisicion.",
+  "primary_layer": "Sentinel-2",
+  "auxiliary_context_available": {
+    "sar": true,
+    "clms": true,
+    "hydroclimate": true
+  },
+  "passport_id": "KAIROS-P1-20250610-756024be",
+  "claim_limit": "La capa Trust no certifica condiciones quimicas, sanitarias ni operativas; verifica la trazabilidad del paquete de evidencia.",
+  "verification_hash": "sha256:39c0652255b7d608088930516dd580518288c6805245dae49469ee7e1ae5e5d7"
+}

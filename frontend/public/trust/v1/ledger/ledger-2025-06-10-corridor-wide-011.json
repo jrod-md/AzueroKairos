@@ -1,0 +1,15 @@
+{
+  "schema_version": "kairos.trust.v1",
+  "event_id": "ledger-2025-06-10-corridor-wide-011",
+  "event_type": "public_export_sanitized",
+  "event_label": "Exportación pública sanitizada",
+  "timestamp": "2026-05-29T00:58:26+00:00",
+  "artifact_ref": "/data/observations.json",
+  "artifact_ref_status": "public",
+  "status": "public_json_available",
+  "hash": "26716d8c5bfa315d916238dbf8b0d0c8dea92af2d68bd5d7f4adc03c7d718845",
+  "hash_method": "event_payload_sha256",
+  "decision_id": "decision-official-corridor-wide-2025-06-10",
+  "passport_id": "KAIROS-P1-20250610-5835f054",
+  "verification_hash": "sha256:9ed1a05986858ebf2862d2f73ec9b709e7315792eb252add5939606415e6e750"
+}

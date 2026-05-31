@@ -1,0 +1,22 @@
+{
+  "schema_version": "kairos.trust.v1",
+  "decision_id": "decision-official-corridor-wide-2025-06-10",
+  "target_date": "2025-06-10",
+  "scope_type": "official_observation",
+  "aoi": "corridor_wide",
+  "confidence_class": "do_not_infer",
+  "confidence_label": "NO INFERIR",
+  "validPercent": 2.26,
+  "api_status": "OK",
+  "decision_reason": "La observación no tiene suficiente evidencia válida para una inferencia responsable.",
+  "recommended_action": "No usar esta observación para afirmar condiciones del territorio; esperar una nueva adquisición o solicitar verificación territorial.",
+  "primary_layer": "Sentinel-2",
+  "auxiliary_context_available": {
+    "sar": true,
+    "clms": true,
+    "hydroclimate": true
+  },
+  "passport_id": "KAIROS-P1-20250610-5835f054",
+  "claim_limit": "La capa Trust no certifica condiciones quimicas, sanitarias ni operativas; verifica la trazabilidad del paquete de evidencia.",
+  "verification_hash": "sha256:d3f3bb943534bcf9d89e0fcd28932f39e94a4ecca2ba21c4697d07a74d8c6a6c"
+}

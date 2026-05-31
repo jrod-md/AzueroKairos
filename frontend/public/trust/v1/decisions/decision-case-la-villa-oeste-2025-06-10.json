@@ -1,0 +1,23 @@
+{
+  "schema_version": "kairos.trust.v1",
+  "decision_id": "decision-case-la-villa-oeste-2025-06-10",
+  "target_date": "2025-06-10",
+  "scope_type": "node_date_case",
+  "node_id": "la_villa_oeste",
+  "node_name": "La Villa Oeste",
+  "confidence_class": "do_not_infer",
+  "confidence_label": "NO INFERIR",
+  "validPercent": 3.07,
+  "api_status": "OK",
+  "decision_reason": "La Villa Oeste reproduce el patron de baja evidencia del 2025-06-10, por lo que el sistema mantiene la misma barrera de inferencia sin extrapolar entre nodos.",
+  "recommended_action": "Comparar con los otros nodos del mismo dia, mantener trazabilidad de la brecha y esperar nueva adquisicion antes de interpretar.",
+  "primary_layer": "Sentinel-2",
+  "auxiliary_context_available": {
+    "sar": true,
+    "clms": true,
+    "hydroclimate": true
+  },
+  "passport_id": "KAIROS-P1-20250610-eaf10144",
+  "claim_limit": "La capa Trust no certifica condiciones quimicas, sanitarias ni operativas; verifica la trazabilidad del paquete de evidencia.",
+  "verification_hash": "sha256:d95e0a0bf6eabefc80c0c9799e4f3009dab367033c0467bfe5462ecf08e087c0"
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": "kairos.trust.v1",
+  "event_id": "ledger-2025-06-10-corridor-wide-010",
+  "event_type": "brief_generated",
+  "event_label": "Brief de evidencia generado",
+  "timestamp": "2026-05-29T00:58:25+00:00",
+  "artifact_ref": "",
+  "artifact_ref_status": "not_public_in_trust_layer",
+  "status": "brief_available",
+  "hash": "1432b65501e3be6b7182a42071c71d9b140af78f834cf5cfbd832fd1b7b0237f",
+  "hash_method": "event_payload_sha256",
+  "decision_id": "decision-official-corridor-wide-2025-06-10",
+  "passport_id": "KAIROS-P1-20250610-5835f054",
+  "verification_hash": "sha256:b84f9f56eadd4559797009ad1130a44cb020523daca4612e64f7686ab649c959"
+}

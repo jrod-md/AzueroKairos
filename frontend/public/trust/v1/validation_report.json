@@ -1,0 +1,176 @@
+{
+  "schema_version": "kairos.trust.validation.v1",
+  "generated_at_utc": "2026-05-31T19:56:12Z",
+  "status": "passed",
+  "summary": {
+    "total_checks": 12,
+    "passed": 12,
+    "warnings": 0,
+    "failed": 0,
+    "counts": {
+      "official_observations": 5,
+      "kairos_watch_observations": 15,
+      "decision_cases": 5,
+      "evidence_ledger_events": 30,
+      "trust_passports": 10,
+      "trust_decisions": 10,
+      "trust_ledger_events": 30
+    },
+    "evidence_uplift": {
+      "from_date": "2025-06-10",
+      "from_validPercent": 2.26,
+      "to_date": "2025-06-30",
+      "to_validPercent": 71.06,
+      "uplift_ratio": 31.44,
+      "uplift_delta_points": 68.8
+    }
+  },
+  "checks": [
+    {
+      "id": "official_observations",
+      "label": "Expected official observations exist",
+      "status": "pass",
+      "detail": "5 official observations; missing dates: none",
+      "metrics": {
+        "count": 5,
+        "dates": [
+          "2025-06-02",
+          "2025-06-10",
+          "2025-06-15",
+          "2025-06-30",
+          "2025-07-15"
+        ],
+        "expected": [
+          "2025-06-02",
+          "2025-06-10",
+          "2025-06-15",
+          "2025-06-30",
+          "2025-07-15"
+        ]
+      }
+    },
+    {
+      "id": "contrast_dates",
+      "label": "2025-06-10 and 2025-06-30 contrast exists",
+      "status": "pass",
+      "detail": "Contrast dates present: 2025-06-10, 2025-06-30",
+      "metrics": {
+        "missing": []
+      }
+    },
+    {
+      "id": "evidence_uplift",
+      "label": "Evidence uplift can be computed",
+      "status": "pass",
+      "detail": "2025-06-10 -> 2025-06-30: 31.44x valid evidence",
+      "metrics": {
+        "from_date": "2025-06-10",
+        "from_validPercent": 2.26,
+        "to_date": "2025-06-30",
+        "to_validPercent": 71.06,
+        "uplift_ratio": 31.44,
+        "uplift_delta_points": 68.8
+      }
+    },
+    {
+      "id": "kairos_watch_rows",
+      "label": "Kairos Watch has 15 node-date observations",
+      "status": "pass",
+      "detail": "15 node-date rows",
+      "metrics": {
+        "expected": 15,
+        "count": 15
+      }
+    },
+    {
+      "id": "sar_context_rows",
+      "label": "SAR context has expected row count and availability summary",
+      "status": "pass",
+      "detail": "15 SAR rows; summary available",
+      "metrics": {
+        "expected": 15,
+        "count": 15,
+        "summary": {
+          "rows_total": 15,
+          "available": 13,
+          "no_acquisition": 2,
+          "low_observation": 0,
+          "api_error": 0
+        }
+      }
+    },
+    {
+      "id": "clms_node_coverage",
+      "label": "CLMS has expected node coverage",
+      "status": "pass",
+      "detail": "3 CLMS nodes covered",
+      "metrics": {
+        "expected_minimum": 3,
+        "nodes": [
+          "la_villa_central",
+          "la_villa_este",
+          "la_villa_oeste"
+        ]
+      }
+    },
+    {
+      "id": "hydroclimate_rows",
+      "label": "HydroClimate has expected row coverage",
+      "status": "pass",
+      "detail": "15 HydroClimate rows",
+      "metrics": {
+        "expected": 15,
+        "count": 15
+      }
+    },
+    {
+      "id": "ledger_hashes",
+      "label": "Evidence ledger has non-identical hashes for visible events",
+      "status": "pass",
+      "detail": "30 visible hashes; 30 unique",
+      "metrics": {
+        "hash_count": 30,
+        "unique_hash_count": 30
+      }
+    },
+    {
+      "id": "trust_passport_hashes",
+      "label": "Generated Trust passports have verification_hash values",
+      "status": "pass",
+      "detail": "10 Trust passports checked; missing: 0",
+      "metrics": {
+        "passport_count": 10,
+        "missing": []
+      }
+    },
+    {
+      "id": "public_safety_scan",
+      "label": "No secrets, tokens, headers, local paths, or raw ignored payloads are exposed",
+      "status": "pass",
+      "detail": "0 unsafe exposure matches",
+      "metrics": {
+        "matches": [],
+        "match_count": 0
+      }
+    },
+    {
+      "id": "mojibake_scan",
+      "label": "No mojibake in generated public artifacts",
+      "status": "pass",
+      "detail": "0 files with mojibake",
+      "metrics": {
+        "files": []
+      }
+    },
+    {
+      "id": "positive_claim_scan",
+      "label": "Generated Trust Layer has no prohibited positive claims",
+      "status": "pass",
+      "detail": "0 prohibited positive claim matches",
+      "metrics": {
+        "matches": [],
+        "match_count": 0
+      }
+    }
+  ]
+}

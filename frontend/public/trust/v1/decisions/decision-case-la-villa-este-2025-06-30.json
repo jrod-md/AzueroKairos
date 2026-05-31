@@ -1,0 +1,23 @@
+{
+  "schema_version": "kairos.trust.v1",
+  "decision_id": "decision-case-la-villa-este-2025-06-30",
+  "target_date": "2025-06-30",
+  "scope_type": "node_date_case",
+  "node_id": "la_villa_este",
+  "node_name": "La Villa Este",
+  "confidence_class": "usable",
+  "confidence_label": "USABLE",
+  "validPercent": 83.7,
+  "api_status": "OK",
+  "decision_reason": "La fraccion valida de Sentinel-2 es alta para este set de demostracion, por lo que la observacion permite una lectura exploratoria de confianza de observacion.",
+  "recommended_action": "Usar como contraste demostrativo frente a los NO INFERIR del 2025-06-10, manteniendo trazabilidad y limites visibles.",
+  "primary_layer": "Sentinel-2",
+  "auxiliary_context_available": {
+    "sar": true,
+    "clms": true,
+    "hydroclimate": true
+  },
+  "passport_id": "KAIROS-P1-20250630-c6cc7f0d",
+  "claim_limit": "La capa Trust no certifica condiciones quimicas, sanitarias ni operativas; verifica la trazabilidad del paquete de evidencia.",
+  "verification_hash": "sha256:24cc2e2b4a11b1b50f64a92fc37f9623aeab512caa2663a71d9d3f7610b1de6b"
+}

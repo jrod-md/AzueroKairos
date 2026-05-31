@@ -1,0 +1,22 @@
+{
+  "schema_version": "kairos.trust.v1",
+  "decision_id": "decision-official-corridor-wide-2025-06-02",
+  "target_date": "2025-06-02",
+  "scope_type": "official_observation",
+  "aoi": "corridor_wide",
+  "confidence_class": "usable",
+  "confidence_label": "USABLE",
+  "validPercent": 49.15,
+  "api_status": "OK",
+  "decision_reason": "El porcentaje de observación válida supera el umbral mínimo de confianza.",
+  "recommended_action": "Usar para lectura hidro-sedimentaria exploratoria con límites explícitos.",
+  "primary_layer": "Sentinel-2",
+  "auxiliary_context_available": {
+    "sar": true,
+    "clms": true,
+    "hydroclimate": true
+  },
+  "passport_id": "KAIROS-P1-20250602-ed0c2b4e",
+  "claim_limit": "La capa Trust no certifica condiciones quimicas, sanitarias ni operativas; verifica la trazabilidad del paquete de evidencia.",
+  "verification_hash": "sha256:ff253fcf7fc08de1251e4c1c46a8d9af0a7c243eb61cd78fae77af4c560e66b8"
+}

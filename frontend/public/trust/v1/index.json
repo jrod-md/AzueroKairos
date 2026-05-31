@@ -1,0 +1,46 @@
+{
+  "schema_version": "kairos.trust.v1",
+  "generated_at_utc": "2026-05-31T19:49:06Z",
+  "pilot_name": "Azuero Kairos - Rio La Villa",
+  "public_safe": true,
+  "primary_layer": "Sentinel-2",
+  "claim_limit": "La capa Trust no certifica condiciones quimicas, sanitarias ni operativas; verifica la trazabilidad del paquete de evidencia.",
+  "counts": {
+    "official_observations": 5,
+    "kairos_watch_observations": 15,
+    "decision_cases": 5,
+    "evidence_ledger_events": 30,
+    "trust_passports": 10,
+    "trust_decisions": 10,
+    "trust_ledger_events": 30,
+    "sar_rows": 15,
+    "clms_nodes": 3,
+    "hydroclimate_rows": 15
+  },
+  "source_public_data": [
+    "decision_cases",
+    "evidence_ledger",
+    "exposure_context",
+    "hydroclimate_context",
+    "kairos_watch",
+    "observations",
+    "sar_context"
+  ],
+  "available_collections": [
+    "index",
+    "passports",
+    "decisions",
+    "ledger",
+    "openapi",
+    "validation_report"
+  ],
+  "example_verification_paths": {
+    "index": "/trust/v1/index.json",
+    "passport": "/trust/v1/passports/KAIROS-P1-20250602-ed0c2b4e.json",
+    "decision": "/trust/v1/decisions/decision-official-corridor-wide-2025-06-02.json",
+    "ledger": "/trust/v1/ledger/ledger-2025-06-02-corridor-wide-001.json",
+    "validation_report": "/trust/v1/validation_report.json",
+    "contract": "/trust/v1/openapi.json"
+  },
+  "generated_files_root": "/trust/v1"
+}

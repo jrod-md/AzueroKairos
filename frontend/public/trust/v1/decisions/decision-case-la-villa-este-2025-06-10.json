@@ -1,0 +1,23 @@
+{
+  "schema_version": "kairos.trust.v1",
+  "decision_id": "decision-case-la-villa-este-2025-06-10",
+  "target_date": "2025-06-10",
+  "scope_type": "node_date_case",
+  "node_id": "la_villa_este",
+  "node_name": "La Villa Este",
+  "confidence_class": "do_not_infer",
+  "confidence_label": "NO INFERIR",
+  "validPercent": 3.7,
+  "api_status": "OK",
+  "decision_reason": "La observacion queda por debajo del umbral de confianza y coincide con contexto hidroclimatico antecedente; esto aumenta la necesidad de revisar sin convertir el caso en una afirmacion territorial.",
+  "recommended_action": "Priorizar verificacion de campo y esperar una nueva adquisicion antes de usar la escena como evidencia interpretativa.",
+  "primary_layer": "Sentinel-2",
+  "auxiliary_context_available": {
+    "sar": true,
+    "clms": true,
+    "hydroclimate": true
+  },
+  "passport_id": "KAIROS-P1-20250610-4f798319",
+  "claim_limit": "La capa Trust no certifica condiciones quimicas, sanitarias ni operativas; verifica la trazabilidad del paquete de evidencia.",
+  "verification_hash": "sha256:010b6553ca8e6dc5317603b943c77969f1930850b30a969f08d50126d9c2c0ab"
+}

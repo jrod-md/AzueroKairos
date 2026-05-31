@@ -1,0 +1,23 @@
+{
+  "schema_version": "kairos.trust.v1",
+  "decision_id": "decision-case-la-villa-oeste-2025-07-15",
+  "target_date": "2025-07-15",
+  "scope_type": "node_date_case",
+  "node_id": "la_villa_oeste",
+  "node_name": "La Villa Oeste",
+  "confidence_class": "usable",
+  "confidence_label": "USABLE",
+  "validPercent": 69.26,
+  "api_status": "OK",
+  "decision_reason": "La observacion vuelve a un nivel usable posterior al evento de baja confianza, lo que permite mostrar continuidad temporal sin afirmar cambios ambientales.",
+  "recommended_action": "Mantener el caso como lectura demostrativa posterior y documentar que la comparacion temporal es de confianza de observacion.",
+  "primary_layer": "Sentinel-2",
+  "auxiliary_context_available": {
+    "sar": true,
+    "clms": true,
+    "hydroclimate": true
+  },
+  "passport_id": "KAIROS-P1-20250715-9acd9e15",
+  "claim_limit": "La capa Trust no certifica condiciones quimicas, sanitarias ni operativas; verifica la trazabilidad del paquete de evidencia.",
+  "verification_hash": "sha256:aa8bf2a1072b52835dac990273ce87a7dc7e84a3eaec7798e05b69bca5925020"
+}

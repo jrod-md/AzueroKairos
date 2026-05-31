@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import DecisionStamp from "../../components/DecisionStamp/DecisionStamp.jsx";
 import "./PassportPage.css";
 
@@ -37,6 +37,8 @@ const PASSPORT_STAGES = [
 
 const CLAIM_LIMIT =
   "No certifica contaminación, potabilidad, salud pública, aptitud de uso ni respuesta institucional.";
+const TRUST_LIMIT_COPY =
+  "La capa Trust no certifica condiciones químicas, sanitarias ni operativas; verifica la trazabilidad del paquete de evidencia.";
 
 export default function PassportPage({
   availableDates = [],
@@ -49,10 +51,56 @@ export default function PassportPage({
   setSelectedDate,
 }) {
   const [copyState, setCopyState] = useState("idle");
+  const [trustCopyState, setTrustCopyState] = useState("idle");
+  const [trustVerification, setTrustVerification] = useState({
+    reportStatus: "pendiente",
+    status: "loading",
+    verificationHash: "",
+  });
   const passport = useMemo(
     () => buildPassport({ decisionCases, ledger, ledgerRows, record }),
     [decisionCases, ledger, ledgerRows, record],
   );
+  const trustPath = useMemo(() => buildTrustPassportPath(passport.id), [passport.id]);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadTrustVerification() {
+      setTrustVerification({
+        reportStatus: "pendiente",
+        status: "loading",
+        verificationHash: "",
+      });
+      try {
+        const [passportResponse, reportResponse] = await Promise.all([
+          fetch(trustPath),
+          fetch("/trust/v1/validation_report.json"),
+        ]);
+        const passportPayload = passportResponse.ok ? await passportResponse.json() : null;
+        const reportPayload = reportResponse.ok ? await reportResponse.json() : null;
+        if (!active) return;
+
+        setTrustVerification({
+          reportStatus: reportPayload?.status || "no disponible",
+          status: passportResponse.ok ? "ready" : "missing",
+          verificationHash: passportPayload?.verification_hash || "",
+        });
+      } catch {
+        if (!active) return;
+        setTrustVerification({
+          reportStatus: "no disponible",
+          status: "error",
+          verificationHash: "",
+        });
+      }
+    }
+
+    loadTrustVerification();
+    return () => {
+      active = false;
+    };
+  }, [trustPath]);
 
   async function copyPassportPacket() {
     const packet = buildPortablePacket(passport);
@@ -66,6 +114,20 @@ export default function PassportPage({
       setCopyState("copied");
     } catch {
       setCopyState("blocked");
+    }
+  }
+
+  async function copyTrustPath() {
+    if (!navigator?.clipboard?.writeText) {
+      setTrustCopyState("unavailable");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(trustPath);
+      setTrustCopyState("copied");
+    } catch {
+      setTrustCopyState("blocked");
     }
   }
 
@@ -159,6 +221,14 @@ export default function PassportPage({
               Ver acción
             </button>
           </div>
+
+          <TrustVerificationPanel
+            copyState={trustCopyState}
+            onCopy={copyTrustPath}
+            passportId={passport.id}
+            trustPath={trustPath}
+            verification={trustVerification}
+          />
         </aside>
       </div>
 
@@ -241,6 +311,43 @@ function PassportFact({ label, value }) {
       <dt>{label}</dt>
       <dd>{value || "pendiente"}</dd>
     </div>
+  );
+}
+
+function TrustVerificationPanel({ copyState, onCopy, passportId, trustPath, verification }) {
+  return (
+    <section className="passport-trust" aria-label="Verificación Trust">
+      <div className="passport-trust__header">
+        <p className="small-label">Verificación Trust</p>
+        <span className={`passport-trust__status tone-${getTrustTone(verification.status)}`}>
+          {getTrustStatusLabel(verification)}
+        </span>
+      </div>
+
+      <dl className="passport-trust__facts">
+        <div>
+          <dt>Passport ID</dt>
+          <dd>{passportId}</dd>
+        </div>
+        <div>
+          <dt>Hash</dt>
+          <dd>{verification.verificationHash || "pendiente"}</dd>
+        </div>
+        <div>
+          <dt>Validación</dt>
+          <dd>{verification.reportStatus}</dd>
+        </div>
+      </dl>
+
+      <label className="passport-trust__path">
+        <span>Ruta pública</span>
+        <input readOnly value={trustPath} />
+      </label>
+      <button className="passport-trust__copy" type="button" onClick={onCopy}>
+        {getTrustCopyLabel(copyState)}
+      </button>
+      <p>{TRUST_LIMIT_COPY}</p>
+    </section>
   );
 }
 
@@ -414,6 +521,31 @@ function getCopyButtonLabel(state) {
   if (state === "blocked") return "Permiso requerido";
   if (state === "unavailable") return "No disponible";
   return "Copiar paquete";
+}
+
+function getTrustCopyLabel(state) {
+  if (state === "copied") return "Ruta copiada";
+  if (state === "blocked") return "Permiso requerido";
+  if (state === "unavailable") return "No disponible";
+  return "Copiar ruta Trust";
+}
+
+function getTrustStatusLabel(verification) {
+  if (verification.status === "ready") return "Trust disponible";
+  if (verification.status === "missing") return "Trust pendiente";
+  if (verification.status === "error") return "Trust no disponible";
+  return "Cargando Trust";
+}
+
+function getTrustTone(status) {
+  if (status === "ready") return "ready";
+  if (status === "missing") return "pending";
+  if (status === "error") return "error";
+  return "loading";
+}
+
+function buildTrustPassportPath(passportId) {
+  return `/trust/v1/passports/${encodeURIComponent(passportId)}.json`;
 }
 
 function shortHash(value, length) {
