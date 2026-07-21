@@ -53,6 +53,33 @@ ser esperar, revisar o documentar límites.
 - Trust Layer v1: JSON estático público con decisiones, passports, ledger,
   hashes y reporte de validación.
 
+## Screenshots
+
+A desktop walkthrough of the public Azuero Kairós demo. The sequence moves from
+the evidence cycle to a deterministic decision, then to auditability and the
+read-only Trust Layer. These views illustrate the reproducible public export;
+they are not a live operational dashboard.
+
+### Azuero Kairós: Responsible Evidence Cycle
+
+![Azuero Kairós: Responsible Evidence Cycle](linkedin-screenshots/01-system-overview.png)
+
+### Sentinel-2 Evidence Contrast: 2.26% vs. 71.06% Valid Coverage
+
+![Sentinel-2 Evidence Contrast](linkedin-screenshots/02-evidence-contrast.png)
+
+### Deterministic Decision Gate: NO INFERIR
+
+![Deterministic Decision Gate: NO INFERIR](linkedin-screenshots/03-decision-no-infer.png)
+
+### Territorial Evidence Archive: Decisions, Limits, and Ledger Traceability
+
+![Territorial Evidence Archive](linkedin-screenshots/04-audit-archive.png)
+
+### Kairós Trust Passport: Portable Evidence and Hash-Based Provenance
+
+![Kairós Trust Passport](linkedin-screenshots/05-trust-passport.png)
+
 ## Flujo del demo en 3 minutos
 
 La interfaz incluye el control `Demo 3 min`, que guía el pitch:

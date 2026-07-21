@@ -55,6 +55,8 @@ cache/
 *.jpeg
 !frontend/public/img/
 !frontend/public/img/*.png
+!linkedin-screenshots/
+!linkedin-screenshots/*.png
 
 # Generated outputs
 outputs/raw_json/*
