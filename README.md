@@ -1,57 +1,58 @@
 # Azuero Kairós
 
-Sistema de confianza para evidencia territorial basada en Copernicus.
+A Copernicus-based trust system for territorial evidence.
 
-Azuero Kairós convierte observaciones Sentinel-2 en decisiones responsables,
-trazables y compartibles. Su promesa no es detectar lo invisible: su promesa es
-evitar inferir cuando la evidencia satelital no alcanza.
+Azuero Kairós turns Sentinel-2 observations into responsible, traceable, and
+shareable decisions. Its promise is not to detect the invisible. Its promise is
+to avoid inference when the available satellite evidence is not strong enough.
 
-## Resumen para la hackathon
+## Hackathon Summary
 
-El piloto trabaja sobre el corredor del río La Villa, Azuero, Panamá. A partir
-de datos Copernicus, el sistema responde una pregunta concreta:
+The pilot focuses on the Río La Villa corridor in Azuero, Panama. Using
+Copernicus data, the system answers one concrete question:
 
-> ¿Esta observación satelital tiene evidencia válida suficiente para usarse con
-> cautela, debe revisarse, o no debe usarse para inferir?
+> Does this satellite observation contain enough valid evidence to be used with
+> caution, require review, or remain unsuitable for inference?
 
-La salida principal no es una alerta ambiental, ni una certificación de campo.
-Es una decisión de confianza de observación:
+The primary output is not an environmental alert or a field certification. It
+is an observation-confidence decision:
 
-- `USABLE`: la escena tiene evidencia válida suficiente para lectura
-  exploratoria con límites explícitos.
-- `REVISAR`: la escena tiene señal parcial o requiere cautela adicional.
-- `NO INFERIR`: la escena no sostiene una inferencia responsable.
+- `USABLE`: the scene has enough valid evidence for exploratory reading with
+  explicit limits.
+- `REVIEW`: the scene contains partial evidence or requires additional
+  caution.
+- `NO INFERIR`: the scene does not support a responsible inference.
 
-## Por qué importa
+## Why It Matters
 
-Muchos productos de satélite muestran mapas y métricas aunque la escena sea
-débil. Kairós hace lo contrario: bloquea inferencias cuando la evidencia es
-insuficiente y documenta por qué.
+Many satellite products display maps and metrics even when the scene is weak.
+Kairós does the opposite: it blocks inference when evidence is insufficient and
+documents why.
 
-El caso clave del demo es el contraste:
+The key demo case is the contrast:
 
-| Fecha | AOI | validPercent | Decisión |
+| Date | AOI | validPercent | Decision |
 | --- | --- | ---: | --- |
 | 2025-06-10 | `corridor_wide` | 2.26% | `NO INFERIR` |
 | 2025-06-30 | `corridor_wide` | 71.06% | `USABLE` |
 
-Esperar una adquisición usable produce un aumento de evidencia válida de
-aproximadamente `31.4x`. Esa es la tesis del producto: una buena decisión puede
-ser esperar, revisar o documentar límites.
+Waiting for a usable acquisition produces approximately `31.4x` more valid
+evidence. That is the product thesis: a responsible decision may be to wait,
+review, or document limits.
 
-## Qué incluye la entrega
+## What Is Included
 
-- Frontend público en React/Vite con navegación por módulos.
-- Sistema/Ciclo Kairós: del satélite a la auditoría.
-- Impacto: contraste de evidencia entre escenas débiles y usables.
-- Decisión: sello `USABLE`, `REVISAR` o `NO INFERIR`.
-- Corredor: matriz de nodos del río La Villa y capas auxiliares.
-- Acción: cola de casos para revisión responsable.
-- Campo: verificación lite sin claims nuevos.
-- Passport: artefacto portable verificable en `/trust/v1`.
-- Evidencia: ledger, paquete auditado y asistente con fallback determinístico.
-- Trust Layer v1: JSON estático público con decisiones, passports, ledger,
-  hashes y reporte de validación.
+- Public React/Vite frontend with module-based navigation.
+- Kairós System/Cycle: from satellite observation to audit.
+- Evidence Contrast: comparison between weak and usable scenes.
+- Decision: `USABLE`, `REVIEW`, or `NO INFERIR` status.
+- Corridor: Río La Villa node matrix and auxiliary layers.
+- Action: case queue for responsible review.
+- Field: lightweight verification preparation with no new claims.
+- Passport: portable artifact verifiable through `/trust/v1`.
+- Evidence: ledger, audited package, and assistant with deterministic fallback.
+- Trust Layer v1: public static JSON with decisions, Passports, ledger events,
+  hashes, and a validation report.
 
 ## Screenshots
 
@@ -62,43 +63,43 @@ they are not a live operational dashboard.
 
 ### Azuero Kairós: Responsible Evidence Cycle
 
-![Azuero Kairós: Responsible Evidence Cycle](linkedin-screenshots/01-system-overview.png)
+![Azuero Kairós: Responsible Evidence Cycle](screenshots/01-system-overview.png)
 
 ### Sentinel-2 Evidence Contrast: 2.26% vs. 71.06% Valid Coverage
 
-![Sentinel-2 Evidence Contrast](linkedin-screenshots/02-evidence-contrast.png)
+![Sentinel-2 Evidence Contrast](screenshots/02-evidence-contrast.png)
 
 ### Deterministic Decision Gate: NO INFERIR
 
-![Deterministic Decision Gate: NO INFERIR](linkedin-screenshots/03-decision-no-infer.png)
+![Deterministic Decision Gate: NO INFERIR](screenshots/03-decision-no-infer.png)
 
 ### Territorial Evidence Archive: Decisions, Limits, and Ledger Traceability
 
-![Territorial Evidence Archive](linkedin-screenshots/04-audit-archive.png)
+![Territorial Evidence Archive](screenshots/04-audit-archive.png)
 
 ### Kairós Trust Passport: Portable Evidence and Hash-Based Provenance
 
-![Kairós Trust Passport](linkedin-screenshots/05-trust-passport.png)
+![Kairós Trust Passport](screenshots/05-trust-passport.png)
 
-## Flujo del demo en 3 minutos
+## 3-Minute Demo Flow
 
-La interfaz incluye el control `Demo 3 min`, que guía el pitch:
+The interface includes a `Demo 3 min` control that guides the pitch:
 
-1. Sistema: ciclo completo de evidencia.
-2. Impacto: `31.4x` de evidencia al esperar.
-3. Decisión: `2025-06-10`, `NO INFERIR`.
-4. Contraste: `2025-06-30`, `USABLE`.
-5. Corredor: tres nodos y capas auxiliares.
-6. Acción: cola de revisión.
-7. Campo: verificación lite.
-8. Passport: artefacto Trust.
-9. Evidencia: ledger y asistente.
+1. System: complete evidence cycle.
+2. Evidence Contrast: `31.4x` more valid evidence when waiting.
+3. Decision: `2025-06-10`, `NO INFERIR`.
+4. Contrast: `2025-06-30`, `USABLE`.
+5. Corridor: three nodes and auxiliary layers.
+6. Action: review queue.
+7. Field: lightweight verification preparation.
+8. Passport: Trust artifact.
+9. Evidence: ledger and assistant.
 
-## Datos oficiales del piloto
+## Official Pilot Data
 
-Resultados Sentinel-2 oficiales para `corridor_wide`:
+Official Sentinel-2 results for `corridor_wide`:
 
-| Fecha | validPercent | Clase |
+| Date | validPercent | Class |
 | --- | ---: | --- |
 | 2025-06-02 | 49.15% | `USABLE` |
 | 2025-06-10 | 2.26% | `NO INFERIR` |
@@ -106,13 +107,13 @@ Resultados Sentinel-2 oficiales para `corridor_wide`:
 | 2025-06-30 | 71.06% | `USABLE` |
 | 2025-07-15 | 52.22% | `USABLE` |
 
-La data pública está sanitizada. Los JSON servidos por el frontend no exponen
-rutas internas a artefactos crudos, CSV procesados ni archivos privados. Las
-referencias públicas usan `/data/...` y `/trust/v1/...`.
+The public data is sanitized. JSON served by the frontend does not expose
+internal paths to raw artifacts, processed CSV files, or private files. Public
+references use `/data/...` and `/trust/v1/...`.
 
-## Cómo correr el frontend
+## Running the Frontend
 
-Desde la raíz del repositorio:
+From the repository root:
 
 ```powershell
 cd frontend
@@ -120,25 +121,25 @@ npm install
 npm.cmd run dev
 ```
 
-Para generar build de producción:
+To create a production build:
 
 ```powershell
 cd frontend
 npm.cmd run build
 ```
 
-La app consume JSON estáticos desde:
+The app consumes static JSON from:
 
 ```text
 frontend/public/data
 frontend/public/trust/v1
 ```
 
-No se necesitan llamadas externas para correr el demo público.
+No external calls are required to run the public demo.
 
-## Validación de entrega
+## Delivery Validation
 
-Comandos recomendados antes de presentar:
+Recommended commands before presenting:
 
 ```powershell
 cd frontend
@@ -147,51 +148,51 @@ cd ..
 python scripts/validate_public_demo.py
 ```
 
-El validador revisa:
+The validator checks:
 
-- observaciones oficiales esperadas;
-- contraste `2025-06-10` vs `2025-06-30`;
-- uplift de evidencia;
-- cobertura de Corredor, SAR, CLMS e HydroClimate;
-- hashes de ledger y Passport;
-- ausencia de rutas internas, secretos, headers o payloads crudos en público;
-- ausencia de mojibake en artefactos generados;
-- ausencia de claims positivos prohibidos.
+- expected official observations;
+- the `2025-06-10` vs. `2025-06-30` contrast;
+- evidence uplift;
+- Corridor, SAR, CLMS, and HydroClimate coverage;
+- ledger and Passport hashes;
+- absence of internal paths, secrets, headers, or raw payloads in public data;
+- absence of mojibake in generated artifacts;
+- absence of prohibited positive claims.
 
-Estado actual de calidad: `12/12` checks, `0` warnings, `0` failures.
+Current quality status: `12/12` checks, `0` warnings, `0` failures.
 
-## Claim-firewall oficial
+## Official Claim Firewall
 
-El claim-firewall oficial vive en `scripts/validate_public_demo.py`. No es un
-grep suelto sobre todo el repositorio: es una validación enfocada en la
-superficie pública de entrega.
+The official claim firewall lives in `scripts/validate_public_demo.py`. It is
+not a loose grep across the whole repository. It is a focused validation of the
+public delivery surface.
 
-Comando oficial:
+Official command:
 
 ```powershell
 python scripts/validate_public_demo.py
 ```
 
-Qué protege:
+It protects the following boundaries:
 
-- `/data` y `/trust/v1` no deben exponer secretos, headers, rutas locales ni
-  payloads crudos.
-- Trust Layer no debe contener claims positivos de contaminación, detección
-  química, validación sanitaria, potabilidad, seguridad del agua, crisis,
-  cierre automático, preparación operativa, decisión de autoridad, rendimiento
-  o pérdida medida.
-- Las frases de límite son válidas cuando niegan explícitamente esos alcances,
-  por ejemplo: "no certifica condiciones químicas, sanitarias ni operativas".
+- `/data` and `/trust/v1` must not expose secrets, headers, local paths, or
+  raw payloads.
+- The Trust Layer must not contain positive claims about contamination,
+  chemical detection, sanitary validation, potability, water safety, crisis
+  status, automatic closure, operational readiness, authority decisions,
+  measured performance, or measured loss.
+- Limitation statements are valid when they explicitly deny those scopes, for
+  example: "does not certify chemical, sanitary, or operational conditions."
 
-Regla de oro: Kairós verifica trazabilidad y confianza de observación; no
-certifica condiciones del territorio.
+The rule is simple: Kairós verifies observation confidence and traceability. It
+does not certify territorial conditions.
 
 ## Trust Layer v1
 
-La capa Trust es estática y read-only. Permite verificar un Passport sin base de
-datos ni API externa.
+The Trust Layer is static and read-only. It allows a Passport to be verified
+without a database or external API.
 
-Rutas principales:
+Primary routes:
 
 ```text
 /trust/v1/index.json
@@ -202,24 +203,24 @@ Rutas principales:
 /trust/v1/openapi.json
 ```
 
-El Passport verifica trazabilidad del paquete de evidencia: fecha, AOI o nodo,
-clase de confianza, porcentaje válido, estado API, capa primaria, capas
-auxiliares, ledger, hash y límites.
+The Passport verifies traceability for the evidence package: date, AOI or node,
+confidence class, valid percentage, API status, primary layer, auxiliary
+layers, ledger, hash, and usage limits.
 
-No certifica territorio, agua, contaminación, condiciones químicas, condiciones
-sanitarias ni preparación operativa.
+It does not certify territory, water, contamination, chemical conditions,
+sanitary conditions, or operational readiness.
 
-## Pipeline técnico
+## Technical Pipeline
 
-El pipeline interno puede correr con credenciales de Copernicus Data Space
-Ecosystem por variables de entorno:
+The internal pipeline can run with Copernicus Data Space Ecosystem credentials
+provided through environment variables:
 
 ```powershell
 $env:CDSE_CLIENT_ID = "your-client-id"
 $env:CDSE_CLIENT_SECRET = "your-client-secret"
 ```
 
-Comandos principales:
+Main commands:
 
 ```powershell
 python scripts/run_official_s2_batch.py
@@ -231,24 +232,25 @@ python scripts/export_trust_layer.py
 python scripts/validate_public_demo.py
 ```
 
-Los artefactos internos pueden existir bajo `outputs/`, pero la entrega pública
-usa exportaciones sanitizadas en `frontend/public`.
+Internal artifacts may exist under `outputs/`, but the public delivery uses
+sanitized exports under `frontend/public`.
 
-## Límites científicos
+## Scientific Limits
 
-Azuero Kairós no detecta pesticidas, atrazina, patógenos, metales pesados,
-contaminación química disuelta ni potabilidad. No declara si el agua es segura
-para consumo, riego, animales o contacto humano.
+Azuero Kairós does not detect pesticides, atrazine, pathogens, heavy metals,
+dissolved chemical contamination, or potability. It does not determine whether
+water is safe for consumption, irrigation, animals, or human contact.
 
-No valida crisis, no ordena cierres, no reemplaza laboratorio, no reemplaza
-autoridad competente y no toma decisiones de pago, crédito, seguro o sanción.
+It does not validate crises, order closures, replace laboratory testing,
+replace a competent authority, or make payment, credit, insurance, or sanction
+decisions.
 
-La salida es una evaluación de confianza de observación satelital Sentinel-2,
-con contexto auxiliar que nunca modifica la clasificación primaria.
+The output is a Sentinel-2 satellite-observation confidence assessment,
+supported by auxiliary context that never changes the primary classification.
 
-## Declaración de build limpio
+## Clean Build Statement
 
-Este repositorio contiene la entrega oficial de hackathon de Azuero Kairós. El
-trabajo previo fue planificación y exploración descartada. El código, los
-artefactos oficiales, la interfaz pública, el ledger, Trust Layer y Passport se
-preparan desde este repositorio para revisión reproducible.
+This repository contains the official Azuero Kairós hackathon delivery. Earlier
+work was planning and discarded exploration. The code, official artifacts,
+public interface, ledger, Trust Layer, and Passports are prepared from this
+repository for reproducible review.
