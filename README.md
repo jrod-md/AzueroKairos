@@ -81,6 +81,17 @@ they are not a live operational dashboard.
 
 ![Kairós Trust Passport](screenshots/05-trust-passport.png)
 
+## Documentation
+
+- [Architecture](docs/architecture.md): the implemented Copernicus-to-ledger
+  pipeline.
+- [Decision Rules](docs/decision_rules.md): deterministic classification and
+  auxiliary-layer guardrails.
+- [Scientific Limits](docs/scientific_limits.md): the claims the system does
+  not make.
+- [Demo Quality Report](docs/demo_quality_report.md): the checked-in public-export
+  validation summary.
+
 ## 3-Minute Demo Flow
 
 The interface includes a `Demo 3 min` control that guides the pitch:
@@ -248,9 +259,8 @@ decisions.
 The output is a Sentinel-2 satellite-observation confidence assessment,
 supported by auxiliary context that never changes the primary classification.
 
-## Clean Build Statement
+## Repository Scope
 
-This repository contains the official Azuero Kairós hackathon delivery. Earlier
-work was planning and discarded exploration. The code, official artifacts,
-public interface, ledger, Trust Layer, and Passports are prepared from this
-repository for reproducible review.
+This repository contains the reproducible Azuero Kairós hackathon delivery. The
+shipped code, official artifact snapshot, public interface, ledger, Trust Layer,
+and Passports are prepared from this repository for technical review.

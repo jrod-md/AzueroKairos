@@ -25,14 +25,9 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Non-official Markdown drafts and generated notes.
-# Keep the official hackathon docs trackable.
-DESIGN.md
+# Markdown drafts and generated notes.
 *.md
 !README.md
-!COMPLIANCE_AND_ORIGINALITY.md
-!SCIENTIFIC_LIMITS.md
-!ROADMAP.md
 !docs/
 !docs/*.md
 
