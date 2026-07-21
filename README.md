@@ -19,7 +19,7 @@ is an observation-confidence decision:
 
 - `USABLE`: the scene has enough valid evidence for exploratory reading with
   explicit limits.
-- `REVIEW`: the scene contains partial evidence or requires additional
+- `REVISAR`: the scene contains partial evidence or requires additional
   caution.
 - `NO INFERIR`: the scene does not support a responsible inference.
 
@@ -45,7 +45,7 @@ review, or document limits.
 - Public React/Vite frontend with module-based navigation.
 - Kairós System/Cycle: from satellite observation to audit.
 - Evidence Contrast: comparison between weak and usable scenes.
-- Decision: `USABLE`, `REVIEW`, or `NO INFERIR` status.
+- Decision: `USABLE`, `REVISAR`, or `NO INFERIR` status.
 - Corridor: Río La Villa node matrix and auxiliary layers.
 - Action: case queue for responsible review.
 - Field: lightweight verification preparation with no new claims.
