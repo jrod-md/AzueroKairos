@@ -42,44 +42,41 @@ review, or document limits.
 
 ## What Is Included
 
-- Public React/Vite frontend with module-based navigation.
-- Kairós System/Cycle: from satellite observation to audit.
-- Evidence Contrast: comparison between weak and usable scenes.
-- Decision: `USABLE`, `REVISAR`, or `NO INFERIR` status.
-- Corridor: Río La Villa node matrix and auxiliary layers.
-- Action: case queue for responsible review.
-- Field: lightweight verification preparation with no new claims.
-- Passport: portable artifact verifiable through `/trust/v1`.
-- Evidence: ledger, audited package, and assistant with deterministic fallback.
+- Public React/Vite frontend organized as a single observation log with three
+  views and one shared date selector.
+- Observación: a staff-gauge chart of valid Sentinel-2 coverage per acquisition
+  with the 10% and 30% decision thresholds drawn to scale, the `USABLE`,
+  `REVISAR`, or `NO INFERIR` verdict for the selected date, and the three
+  Río La Villa nodes with their auxiliary radar, rainfall, and land-cover context.
+- Acción: case queue for responsible review, with lightweight field-verification
+  preparation inside each case and no new claims.
+- Registro: Passport verifiable through `/trust/v1`, ledger event chain,
+  package summary with deterministic fallback, and the export validation report.
+- Acerca: the decision rule, the evidence cycle, pilot counts, audiences, and
+  limits.
 - Trust Layer v1: public static JSON with decisions, Passports, ledger events,
   hashes, and a validation report.
 
 ## Screenshots
 
-A desktop walkthrough of the public Azuero Kairós demo. The sequence moves from
-the evidence cycle to a deterministic decision, then to auditability and the
-read-only Trust Layer. These views illustrate the reproducible public export;
-they are not a live operational dashboard.
+A desktop walkthrough of the public Azuero Kairós demo. These views illustrate
+the reproducible public export; they are not a live operational dashboard.
 
-### Azuero Kairós: Responsible Evidence Cycle
+### Observación: Valid Coverage per Acquisition and the NO INFERIR Verdict
 
-![Azuero Kairós: Responsible Evidence Cycle](screenshots/01-system-overview.png)
+![Observation gauge and verdict](screenshots/01-observation-gauge.png)
 
-### Sentinel-2 Evidence Contrast: 2.26% vs. 71.06% Valid Coverage
+### Acción: Review Queue and Field-Verification Preparation
 
-![Sentinel-2 Evidence Contrast](screenshots/02-evidence-contrast.png)
+![Action queue](screenshots/02-action-queue.png)
 
-### Deterministic Decision Gate: NO INFERIR
+### Registro: Trust Passport and Ledger Event Chain
 
-![Deterministic Decision Gate: NO INFERIR](screenshots/03-decision-no-infer.png)
+![Verifiable record](screenshots/03-verifiable-record.png)
 
-### Territorial Evidence Archive: Decisions, Limits, and Ledger Traceability
+### Acerca: The Rule, the Cycle, and the Limits
 
-![Territorial Evidence Archive](screenshots/04-audit-archive.png)
-
-### Kairós Trust Passport: Portable Evidence and Hash-Based Provenance
-
-![Kairós Trust Passport](screenshots/05-trust-passport.png)
+![Rule and limits](screenshots/04-rule-and-limits.png)
 
 ## Documentation
 
@@ -94,17 +91,14 @@ they are not a live operational dashboard.
 
 ## 3-Minute Demo Flow
 
-The interface includes a `Demo 3 min` control that guides the pitch:
+The interface includes a `Demo guiada` control that walks through the pitch:
 
-1. System: complete evidence cycle.
-2. Evidence Contrast: `31.4x` more valid evidence when waiting.
-3. Decision: `2025-06-10`, `NO INFERIR`.
-4. Contrast: `2025-06-30`, `USABLE`.
-5. Corridor: three nodes and auxiliary layers.
-6. Action: review queue.
-7. Field: lightweight verification preparation.
-8. Passport: Trust artifact.
-9. Evidence: ledger and assistant.
+1. Observación, `2025-06-10`: the API answered, 2.26% valid, `NO INFERIR`.
+2. Observación, `2025-06-30`: 71.06% valid, `USABLE`.
+3. Nodes: three nodes and auxiliary context that never changes the class.
+4. Acción: from the evidence gap to a review case.
+5. Registro: Passport, linked ledger events, and verification hash.
+6. Acerca: the rule and what Kairós does not claim.
 
 ## Official Pilot Data
 
