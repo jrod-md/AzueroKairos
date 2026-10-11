@@ -1,17 +1,17 @@
 /* Azuero Kairós: bitácora de observación.
-   One sheet of paper, ruled sections, three state inks. */
+   One sheet of chart paper, ruled sections, three state inks. */
 
 :root {
-  --paper: oklch(0.953 0.022 88);
-  --paper-light: oklch(0.975 0.015 90);
-  --paper-sunk: oklch(0.922 0.028 86);
-  --rule: oklch(0.845 0.034 84);
+  --paper: oklch(0.947 0.011 168);
+  --paper-light: oklch(0.974 0.007 168);
+  --paper-sunk: oklch(0.917 0.015 168);
+  --rule: oklch(0.83 0.02 175);
   --ink: oklch(0.285 0.058 256);
-  --ink-2: oklch(0.42 0.035 62);
-  --ink-3: oklch(0.52 0.03 68);
+  --ink-2: oklch(0.42 0.025 215);
+  --ink-3: oklch(0.52 0.022 210);
 
-  --usable: oklch(0.58 0.078 212);
-  --usable-ink: oklch(0.44 0.075 215);
+  --usable: oklch(0.5 0.1 240);
+  --usable-ink: oklch(0.42 0.1 242);
   --review: oklch(0.73 0.135 72);
   --review-ink: oklch(0.5 0.105 62);
   --stop: oklch(0.55 0.15 38);
@@ -82,7 +82,7 @@ body::before {
   pointer-events: none;
   opacity: 0.5;
   mix-blend-mode: multiply;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.36  0 0 0 0 0.22  0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2  0 0 0 0 0.34  0 0 0 0 0.32  0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 h1,
@@ -1096,10 +1096,10 @@ button {
   background: oklch(0.78 0.11 96);
 }
 .land--water {
-  background: oklch(0.6 0.075 238);
+  background: oklch(0.66 0.08 225);
 }
 .land--built {
-  background: oklch(0.6 0.02 60);
+  background: oklch(0.6 0.015 215);
 }
 .legend {
   display: flex;
@@ -1539,7 +1539,7 @@ button {
   aspect-ratio: 16 / 10;
   object-fit: cover;
   border-radius: 3px;
-  filter: saturate(0.85) sepia(0.12);
+  filter: saturate(0.82);
 }
 .about__figure figcaption {
   margin-top: 8px;
